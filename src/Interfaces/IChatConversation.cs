@@ -2,5 +2,5 @@
 
 public interface IChatConversation
 {
-    IEnumerable<IChatMessage> Messages { get; set; }
+    ICollection<IChatMessage> Messages { get; set; }
 }
