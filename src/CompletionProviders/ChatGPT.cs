@@ -51,3 +51,11 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
         return message;
     }
 }
+
+public class ChatGPT : ChatGPT<ChatConversation, ChatMessage>
+{
+    public ChatGPT() { }
+
+    [SetsRequiredMembers]
+    public ChatGPT(string apiKey, string model = "gpt-3.5-turbo") : base(apiKey, model) { }
+}

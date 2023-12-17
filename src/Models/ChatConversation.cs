@@ -2,46 +2,53 @@
 
 namespace GenerativeCS.Models;
 
-public record ChatConversation : IChatConversation<ChatMessage>
+public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMessage : IChatMessage, new()
 {
     public ChatConversation() { }
 
     public ChatConversation(string systemMessage)
     {
-        Messages.Add(ChatMessage.FromSystem(systemMessage));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(systemMessage));
     }
 
-    public ICollection<ChatMessage> Messages { get; set; } =  new List<ChatMessage>();
+    public ICollection<TMessage> Messages { get; set; } = new List<TMessage>();
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
     public void FromSystem(string message)
     {
-        Messages.Add(ChatMessage.FromSystem(message));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
     }
 
     public void FromUser(string message)
     {
-        Messages.Add(ChatMessage.FromUser(message));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
     }
 
     public void FromUser(string name, string message)
     {
-        Messages.Add(ChatMessage.FromUser(name, message));
+        Messages.Add(IChatMessage.FromUser<TMessage>(name, message));
     }
 
     public void FromAssistant(string message)
     {
-        Messages.Add(ChatMessage.FromAssistant(message));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(message));
     }
 
     public void FromAssistant(IFunctionCall functionCall)
     {
-        Messages.Add(ChatMessage.FromAssistant(functionCall));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
     }
 
     public void FromFunction(string name, string message)
     {
-        Messages.Add(ChatMessage.FromFunction(name, message));
+        Messages.Add(IChatMessage.FromFunction<TMessage>(name, message));
     }
+}
+
+public record ChatConversation : ChatConversation<ChatMessage>
+{
+    public ChatConversation() { }
+
+    public ChatConversation(string systemMessage) : base(systemMessage) { }
 }
