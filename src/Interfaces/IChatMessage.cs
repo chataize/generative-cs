@@ -8,7 +8,7 @@ public interface IChatMessage
 
     string? Name { get; set; }
 
-    string Content { get; set; }
+    string? Content { get; set; }
 
     IFunctionCall? FunctionCall { get; set; }
 }
