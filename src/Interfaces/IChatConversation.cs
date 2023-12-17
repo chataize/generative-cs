@@ -1,6 +1,6 @@
 ﻿namespace GenerativeCS.Interfaces;
 
-public interface IChatConversation
+public interface IChatConversation<TMessageCollection, TMessage> where TMessageCollection : ICollection<TMessage> where TMessage : IChatMessage
 {
-    ICollection<IChatMessage> Messages { get; set; }
+    TMessageCollection Messages { get; }
 }
