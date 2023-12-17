@@ -1,8 +1,8 @@
 ﻿namespace GenerativeCS.Interfaces;
 
-public interface ICompletionProvider<TMessageCollection, TMessage> where TMessageCollection : ICollection<TMessage> where TMessage : IChatMessage
+public interface ICompletionProvider<TConversation, TMessage> where TConversation : IChatConversation<TMessage> where TMessage : IChatMessage, new()
 {
     Task<string> CompleteAsync(string prompt);
 
-    Task<string> CompleteAsync(IChatConversation<TMessageCollection, TMessage> conversation);
+    Task<string> CompleteAsync(TConversation conversation);
 }

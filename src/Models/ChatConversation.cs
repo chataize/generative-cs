@@ -2,7 +2,7 @@
 
 namespace GenerativeCS.Models;
 
-public record ChatConversation : IChatConversation<List<ChatMessage>, ChatMessage>
+public record ChatConversation : IChatConversation<ChatMessage>
 {
     public ChatConversation() { }
 
@@ -11,7 +11,7 @@ public record ChatConversation : IChatConversation<List<ChatMessage>, ChatMessag
         Messages.Add(ChatMessage.FromSystem(systemMessage));
     }
 
-    public List<ChatMessage> Messages { get; set; } = [];
+    public ICollection<ChatMessage> Messages { get; set; } =  new List<ChatMessage>();
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
