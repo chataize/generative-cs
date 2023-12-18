@@ -25,6 +25,8 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public string Model { get; set; } = "gemini-pro";
 
+    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+
     public async Task<string> CompleteAsync(string prompt)
     {
         var payload = new

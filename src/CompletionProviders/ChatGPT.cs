@@ -28,6 +28,8 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
 
     public string Model { get; set; } = "gpt-3.5-turbo";
 
+    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+
     public async Task<string> CompleteAsync(string prompt)
     {
         var conversation = new TConversation();
