@@ -68,13 +68,13 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
             Contents = new object[] { previousMessages }
         };
 
-         var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", payload);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", payload);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync();
         var document = await JsonDocument.ParseAsync(content);
         var newMessage = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
-    
+
         conversation.FromAssistant(newMessage);
         return newMessage;
     }
