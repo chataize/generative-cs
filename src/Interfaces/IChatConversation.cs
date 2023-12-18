@@ -35,4 +35,19 @@ public interface IChatConversation<TMessage> where TMessage : IChatMessage, new(
     {
         Messages.Add(IChatMessage.FromFunction<TMessage>(name, content));
     }
+
+    void AddFunction(Delegate function) 
+    {
+        Functions.Add(function);
+    }
+
+    void RemoveFunction(Delegate function) 
+    {
+        Functions.Remove(function);
+    }
+
+    void ClearFunctions() 
+    {
+        Functions.Clear();
+    }
 }
