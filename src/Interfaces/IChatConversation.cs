@@ -4,6 +4,8 @@ public interface IChatConversation<TMessage> where TMessage : IChatMessage, new(
 {
     ICollection<TMessage> Messages { get; }
 
+    ICollection<Delegate> Functions { get; }
+
     void FromSystem(string content) 
     {
         Messages.Add(IChatMessage.FromSystem<TMessage>(content));

@@ -13,6 +13,8 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
 
     public ICollection<TMessage> Messages { get; set; } = new List<TMessage>();
 
+    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
     public void FromSystem(string message)
