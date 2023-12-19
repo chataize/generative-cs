@@ -6,47 +6,47 @@ public interface IChatConversation<TMessage> where TMessage : IChatMessage, new(
 
     ICollection<Delegate> Functions { get; }
 
-    void FromSystem(string content) 
+    void FromSystem(string message)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(content));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
     }
 
-    void FromUser(string content) 
+    void FromUser(string message)
     {
-        Messages.Add(IChatMessage.FromUser<TMessage>(content));
+        Messages.Add(IChatMessage.FromUser<TMessage>(message));
     }
 
-    void FromUser(string name, string content) 
+    void FromUser(string name, string message)
     {
-        Messages.Add(IChatMessage.FromUser<TMessage>(name, content));
+        Messages.Add(IChatMessage.FromUser<TMessage>(name, message));
     }
 
-    void FromAssistant(string content) 
+    void FromAssistant(string message)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(content));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(message));
     }
 
-    void FromAssistant(IFunctionCall functionCall) 
+    void FromAssistant(IFunctionCall functionCall)
     {
         Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
     }
 
-    void FromFunction(string name, string content) 
+    void FromFunction(string name, string message)
     {
-        Messages.Add(IChatMessage.FromFunction<TMessage>(name, content));
+        Messages.Add(IChatMessage.FromFunction<TMessage>(name, message));
     }
 
-    void AddFunction(Delegate function) 
+    void AddFunction(Delegate function)
     {
         Functions.Add(function);
     }
 
-    void RemoveFunction(Delegate function) 
+    void RemoveFunction(Delegate function)
     {
         Functions.Remove(function);
     }
 
-    void ClearFunctions() 
+    void ClearFunctions()
     {
         Functions.Clear();
     }
