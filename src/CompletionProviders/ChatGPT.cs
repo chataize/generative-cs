@@ -40,13 +40,16 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
 
     public async Task<string> CompleteAsync(TConversation conversation)
     {
-        var request = new CompletionRequest<TMessage>(Model, conversation.Messages);
-        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request);
+        var request = new
+        {
+            Model,
+            Messages = conversation.Messages.Select(m => new { m.Role, m.Name, m.Content }).ToList()
+        };
 
+        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request);
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync();
-        var document = await JsonDocument.ParseAsync(content);
+        var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         var message = document.RootElement.GetProperty("choices")[0].GetProperty("text").GetString()!;
 
         conversation.FromAssistant(message);
