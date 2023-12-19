@@ -1,4 +1,5 @@
-﻿using GenerativeCS.Interfaces;
+﻿using GenerativeCS.Events;
+using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
 
@@ -11,6 +12,8 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
         Messages.Add(IChatMessage.FromSystem<TMessage>(systemMessage));
     }
 
+    public event EventHandler<MessageAddedEventArgs<TMessage>>? MessageAdded;
+
     public ICollection<TMessage> Messages { get; set; } = new List<TMessage>();
 
     public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
@@ -19,32 +22,50 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
 
     public void FromSystem(string message)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
+        var chatMessage = IChatMessage.FromSystem<TMessage>(message);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
     public void FromUser(string message)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
+        var chatMessage = IChatMessage.FromUser<TMessage>(message);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
     public void FromUser(string name, string message)
     {
-        Messages.Add(IChatMessage.FromUser<TMessage>(name, message));
+        var chatMessage = IChatMessage.FromUser<TMessage>(name, message);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
     public void FromAssistant(string message)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(message));
+        var chatMessage = IChatMessage.FromAssistant<TMessage>(message);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
     public void FromAssistant(IFunctionCall functionCall)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
+        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCall);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
     public void FromFunction(string name, string message)
     {
-        Messages.Add(IChatMessage.FromFunction<TMessage>(name, message));
+        var chatMessage = IChatMessage.FromFunction<TMessage>(name, message);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 }
 
