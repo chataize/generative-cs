@@ -29,19 +29,18 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public async Task<string> CompleteAsync(string prompt)
     {
-        var payload = new
+        var request = new
         {
             Contents = new
             {
-                Parts = new object[] {
-                    new {
-                        Text = prompt
-                    }
+                Parts = new [] 
+                { 
+                    new { Text = prompt } 
                 }
             }
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", payload);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync();
@@ -53,24 +52,16 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public async Task<string> CompleteAsync(TConversation conversation)
     {
-        var previousMessages = new List<object>();
-        foreach (var conversationMessage in conversation.Messages)
+        var request = new
         {
-            previousMessages.Add(new
+            Contents = conversation.Messages.Select(m => new
             {
-                Role = conversationMessage.Role == ChatRole.Assistant ? "model" : "user",
-                Parts = new object[] {
-                    new { Text = conversationMessage.Content }
-                }
-            });
-        }
-
-        var payload = new
-        {
-            Contents = new object[] { previousMessages }
+                Role = m.Role == ChatRole.Assistant ? "model" : "user",
+                Parts = new[] { new { Text = m.Content } }
+            }).ToList()
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", payload);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync();
