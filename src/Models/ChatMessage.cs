@@ -1,4 +1,4 @@
-﻿using GenerativeCS.Enums;
+using GenerativeCS.Enums;
 using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
@@ -26,6 +26,12 @@ public record ChatMessage : IChatMessage
         FunctionCall = functionCall;
     }
 
+    public ChatMessage(IFunctionResult functionResult)
+    {
+        Role = ChatRole.Function;
+        FunctionResult = functionResult;
+    }
+
     public ChatRole Role { get; set; }
 
     public string? Name { get; set; }
@@ -33,6 +39,8 @@ public record ChatMessage : IChatMessage
     public string? Content { get; set; }
 
     public IFunctionCall? FunctionCall { get; set; }
+
+    public IFunctionResult? FunctionResult { get; set; }
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
@@ -61,8 +69,8 @@ public record ChatMessage : IChatMessage
         return new ChatMessage(functionCall);
     }
 
-    public static ChatMessage FromFunction(string name, string content)
+    public static ChatMessage FromFunction(IFunctionResult functionResult)
     {
-        return new ChatMessage(ChatRole.Function, name, content);
+        return new ChatMessage(functionResult);
     }
 }

@@ -60,9 +60,9 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromFunction(string name, string message)
+    public void FromFunction(IFunctionResult functionResult)
     {
-        var chatMessage = IChatMessage.FromFunction<TMessage>(name, message);
+        var chatMessage = IChatMessage.FromFunction<TMessage>(functionResult);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));

@@ -1,4 +1,4 @@
-﻿namespace GenerativeCS.Interfaces;
+namespace GenerativeCS.Interfaces;
 
 public interface IChatConversation<TMessage> where TMessage : IChatMessage, new()
 {
@@ -31,9 +31,9 @@ public interface IChatConversation<TMessage> where TMessage : IChatMessage, new(
         Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
     }
 
-    void FromFunction(string name, string message)
+    void FromFunction(IFunctionResult functionResult)
     {
-        Messages.Add(IChatMessage.FromFunction<TMessage>(name, message));
+        Messages.Add(IChatMessage.FromFunction<TMessage>(functionResult));
     }
 
     void AddFunction(Delegate function)

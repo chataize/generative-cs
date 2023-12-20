@@ -1,4 +1,4 @@
-﻿using GenerativeCS.Enums;
+using GenerativeCS.Enums;
 
 namespace GenerativeCS.Interfaces;
 
@@ -11,6 +11,8 @@ public interface IChatMessage
     string? Content { get; set; }
 
     IFunctionCall? FunctionCall { get; set; }
+
+    IFunctionResult? FunctionResult { get; set; }
 
     static T FromSystem<T>(string content) where T : IChatMessage, new()
     {
@@ -57,13 +59,12 @@ public interface IChatMessage
         };
     }
 
-    static T FromFunction<T>(string name, string content) where T : IChatMessage, new()
+    static T FromFunction<T>(IFunctionResult functionResult) where T : IChatMessage, new()
     {
         return new T
         {
             Role = ChatRole.Function,
-            Name = name,
-            Content = content
+            FunctionResult = functionResult
         };
     }
 }
