@@ -55,6 +55,7 @@ public interface IChatMessage
     {
         return new T
         {
+            Role = ChatRole.Assistant,
             FunctionCall = functionCall
         };
     }
