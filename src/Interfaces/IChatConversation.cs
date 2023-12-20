@@ -1,4 +1,4 @@
-namespace GenerativeCS.Interfaces;
+﻿namespace GenerativeCS.Interfaces;
 
 public interface IChatConversation<TMessage> where TMessage : IChatMessage, new()
 {

@@ -43,7 +43,7 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
         var request = new
         {
             Model,
-            Messages = conversation.Messages.Select(m => new { m.Role, m.Name, m.Content }).ToList()
+            Messages = conversation.Messages.Select(m => new { m.Role, m.Author, m.Content }).ToList()
         };
 
         var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request);

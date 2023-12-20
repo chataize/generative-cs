@@ -1,4 +1,4 @@
-using GenerativeCS.Enums;
+﻿using GenerativeCS.Enums;
 using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
@@ -16,7 +16,7 @@ public record ChatMessage : IChatMessage
     public ChatMessage(ChatRole role, string name, string content)
     {
         Role = role;
-        Name = name;
+        Author = name;
         Content = content;
     }
 
@@ -34,7 +34,7 @@ public record ChatMessage : IChatMessage
 
     public ChatRole Role { get; set; }
 
-    public string? Name { get; set; }
+    public string? Author { get; set; }
 
     public string? Content { get; set; }
 

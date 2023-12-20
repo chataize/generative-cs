@@ -1,4 +1,4 @@
-using GenerativeCS.Enums;
+﻿using GenerativeCS.Enums;
 
 namespace GenerativeCS.Interfaces;
 
@@ -6,7 +6,7 @@ public interface IChatMessage
 {
     ChatRole Role { get; set; }
 
-    string? Name { get; set; }
+    string? Author { get; set; }
 
     string? Content { get; set; }
 
@@ -37,7 +37,7 @@ public interface IChatMessage
         return new T
         {
             Role = ChatRole.User,
-            Name = name,
+            Author = name,
             Content = content
         };
     }
