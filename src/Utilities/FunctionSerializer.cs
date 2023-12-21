@@ -56,9 +56,13 @@ internal static class FunctionSerializer
 
         var functionObject = new JsonObject
         {
-            { "name", function.Method.Name },
-            { "parameters", parametersObject }
+            { "name", function.Method.Name }
         };
+
+        if (propertiesObject.Count > 0)
+        {
+            functionObject.Add("parameters", parametersObject);
+        }
 
         var description = GetDescription(function.Method);
         if (!string.IsNullOrEmpty(description))
