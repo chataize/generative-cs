@@ -151,9 +151,7 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
                 conversation.FromAssistant(new FunctionCall(functionName, arguments));
 
-                var simplifiedName = functionName.Replace("_", "");
-                var function = Functions.FirstOrDefault(f => f.Method.Name.Equals(simplifiedName, StringComparison.InvariantCultureIgnoreCase));
-
+                var function = Functions.FirstOrDefault(f => f.Method.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     var result = await FunctionInvoker.InvokeAsync(function, arguments, cancellationToken);
@@ -163,7 +161,7 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
                 }
                 else
                 {
-                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{simplifiedName}' not found."));
+                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
                 }
             }
 

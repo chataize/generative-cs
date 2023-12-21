@@ -20,7 +20,7 @@ internal static class FunctionInvoker
                 continue;
             }
 
-            if (arguments.TryGetProperty(parameter.Name!.ToSnakeCase(), out var argument))
+            if (arguments.TryGetProperty(parameter.Name!, out var argument))
             {
                 try
                 {
@@ -29,7 +29,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!.ToSnakeCase(), Type = parameter.ParameterType };
+                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!, Type = parameter.ParameterType };
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != null)
@@ -38,7 +38,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return new { IsSuccess = false, Error = "Value is missing for required parameter.", Parameter = parameter.Name!.ToSnakeCase() };
+                return new { IsSuccess = false, Error = "Value is missing for required parameter.", Parameter = parameter.Name! };
             }
         }
 

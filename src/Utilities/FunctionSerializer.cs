@@ -32,7 +32,7 @@ internal static class FunctionSerializer
                 continue;
             }
 
-            var parameterName = parameter.Name!.ToSnakeCase();
+            var parameterName = parameter.Name!;
             var propertyObject = SerializeParameter(parameter);
 
             propertiesObject.Add(parameterName, propertyObject);
@@ -56,7 +56,7 @@ internal static class FunctionSerializer
 
         var functionObject = new JsonObject
         {
-            { "name", function.Method.Name.ToSnakeCase() },
+            { "name", function.Method.Name },
             { "parameters", parametersObject }
         };
 
@@ -103,7 +103,7 @@ internal static class FunctionSerializer
             var membersArray = new JsonArray();
             foreach (var enumMember in Enum.GetNames(propertyType))
             {
-                membersArray.Add(enumMember.ToSnakeCase());
+                membersArray.Add(enumMember);
             }
 
             propertyObject.Add("enum", membersArray);
@@ -126,7 +126,7 @@ internal static class FunctionSerializer
                 var propertiesObject = new JsonObject();
                 foreach (var property in properties)
                 {
-                    propertiesObject.Add(property.Name.ToSnakeCase(), SerializeProperty(property.PropertyType));
+                    propertiesObject.Add(property.Name, SerializeProperty(property.PropertyType));
                 }
 
                 propertyObject.Add("properties", propertiesObject);
