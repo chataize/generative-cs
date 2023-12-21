@@ -29,7 +29,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!, Type = parameter.ParameterType };
+                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!, Type = parameter.ParameterType.Name };
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != null)
