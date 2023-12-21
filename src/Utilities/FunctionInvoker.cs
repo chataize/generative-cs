@@ -9,11 +9,9 @@ internal static class FunctionInvoker
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<string> InvokeAsync(Delegate function, string arguments, CancellationToken cancellationToken = default)
+    internal static async Task<object> InvokeAsync(Delegate function, JsonElement arguments, CancellationToken cancellationToken = default)
     {
-        var modelArguments = JsonDocument.Parse(arguments);
         var parsedArguments = new List<object?>();
-
         foreach (var parameter in function.Method.GetParameters())
         {
             if (parameter.ParameterType == typeof(CancellationToken))
@@ -22,7 +20,7 @@ internal static class FunctionInvoker
                 continue;
             }
 
-            if (modelArguments.RootElement.TryGetProperty(parameter.Name!.ToSnakeCase(), out var argument))
+            if (arguments.TryGetProperty(parameter.Name!.ToSnakeCase(), out var argument))
             {
                 try
                 {
@@ -31,7 +29,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return $"{{\"is_success\":false,\"error\":\"Argument does not match parameter type.\",\"parameter\":\"{parameter.Name!.ToPascalCase()}\",\"type\":\"{parameter.ParameterType}\"}}";
+                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!.ToSnakeCase(), Type = parameter.ParameterType };
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != null)
@@ -40,7 +38,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return $"{{\"is_success\":false,\"error\":\"Value is missing for required parameter.\",\"parameter\":\"{parameter.Name!.ToSnakeCase()}\"}}";
+                return new { IsSuccess = false, Error = "Value is missing for required parameter.", Parameter = parameter.Name!.ToSnakeCase() };
             }
         }
 
@@ -58,9 +56,9 @@ internal static class FunctionInvoker
 
         if (invocationResult == null)
         {
-            return "{\"is_success\":true}";
+            return new { IsSuccess = true };
         }
 
-        return JsonSerializer.Serialize(invocationResult);
+        return invocationResult;
     }
 }

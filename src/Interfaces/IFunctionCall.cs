@@ -1,8 +1,10 @@
-﻿namespace GenerativeCS.Interfaces;
+﻿using System.Text.Json;
+
+namespace GenerativeCS.Interfaces;
 
 public interface IFunctionCall
 {
     string Name { get; set; }
 
-    string Arguments { get; set; }
+    JsonElement Arguments { get; set; }
 }
