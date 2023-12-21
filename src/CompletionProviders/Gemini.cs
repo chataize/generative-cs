@@ -144,9 +144,9 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
         string text = null!;
         foreach (var part in parts.EnumerateArray())
         {
-            if (part.TryGetProperty("functionCall", out var functionCall))
+            if (part.TryGetProperty("functionCall", out var functionCall) && functionCall.TryGetProperty("name", out var functionNameProperty))
             {
-                var functionName = functionCall.GetProperty("name").GetString()!;
+                var functionName = functionNameProperty.GetString()!;
                 var arguments = functionCall.GetProperty("args");
 
                 conversation.FromAssistant(new FunctionCall(functionName, arguments));
@@ -164,9 +164,16 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
                     conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
                 }
             }
-
-            text = part.GetProperty("text").GetString()!;
-            conversation.FromAssistant(text);
+            else if (part.TryGetProperty("text", out var textProperty))
+            {
+                text = textProperty.GetString()!;
+                conversation.FromAssistant(text);
+            }
+            else
+            {
+                conversation.FromFunction(new FunctionResult("Error", "Either call a valid function or reply with text."));
+                return await CompleteAsync(conversation, cancellationToken);
+            }
         }
 
         return text;
