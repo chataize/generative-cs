@@ -2,9 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
 using GenerativeCS.Interfaces;
 using GenerativeCS.Models;
+using GenerativeCS.Utilities;
 
 namespace GenerativeCS.CompletionProviders;
 
@@ -29,18 +31,43 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public async Task<string> CompleteAsync(string prompt)
     {
-        var request = new
+        var partObject = new JsonObject
         {
-            Contents = new
-            {
-                Parts = new [] 
-                { 
-                    new { Text = prompt } 
-                }
-            }
+            { "text", prompt }
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request);
+        var partsArray = new JsonArray
+        {
+            partObject
+        };
+
+        var contentObject = new JsonObject
+        {
+            { "parts", partsArray}
+        };
+
+        var contentsArray = new JsonArray
+        {
+           contentObject
+        };
+
+        var functionsObject = new JsonObject
+        {
+            { "function_declarations", FunctionSerializer.Serialize(Functions) }
+        };
+
+        var toolsArray = new JsonArray
+        {
+            functionsObject
+        };
+
+        var requestObject = new JsonObject
+        {
+            { "contents", contentsArray },
+            { "tools", toolsArray }
+        };
+
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync();
@@ -52,24 +79,121 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public async Task<string> CompleteAsync(TConversation conversation)
     {
-        var request = new
+
+        var contentsArray = new JsonArray();
+        foreach (var message in conversation.Messages)
         {
-            Contents = conversation.Messages.Select(m => new
+            var partObject = new JsonObject();
+            if (message.FunctionCall != null)
             {
-                Role = m.Role == ChatRole.Assistant ? "model" : "user",
-                Parts = new[] { new { Text = m.Content } }
-            }).ToList()
+                var functionCallObject = new JsonObject
+                {
+                    { "name", message.FunctionCall.Name },
+                    { "args", JsonObject.Create(message.FunctionCall.Arguments) }
+                };
+
+                partObject.Add("functionCall", functionCallObject);
+            }
+            else if (message.FunctionResult != null)
+            {
+                var responseObject = new JsonObject
+                {
+                    { "name", message.FunctionResult.Name },
+                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Result) }
+                };
+
+                var functionResponseObject = new JsonObject
+                {
+                    { "name", message.FunctionResult.Name },
+                    { "response", responseObject }
+                };
+
+                partObject.Add("functionResponse", functionResponseObject);
+            }
+            else
+            {
+                partObject.Add("text", message.Content);
+            }
+
+            var partsArray = new JsonArray
+            {
+                partObject
+            };
+
+            var contentObject = new JsonObject
+            {
+                { "role", GetRoleName(message.Role) },
+                { "parts", partsArray }
+            };
+
+            contentsArray.Add(contentObject);
+        }
+
+        var functionsObject = new JsonObject
+        {
+            { "function_declarations", FunctionSerializer.Serialize(Functions) }
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request);
+        var toolsArray = new JsonArray
+        {
+            functionsObject
+        };
+
+        var requestObject = new JsonObject
+        {
+            { "contents", contentsArray },
+            { "tools", toolsArray }
+        };
+
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync();
         var document = await JsonDocument.ParseAsync(content);
-        var newMessage = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
+        var parts = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
 
-        conversation.FromAssistant(newMessage);
-        return newMessage;
+        string text = null!;
+        foreach (var part in parts.EnumerateArray())
+        {
+            if (part.TryGetProperty("functionCall", out var functionCall))
+            {
+                var functionName = functionCall.GetProperty("name").GetString()!;
+                var arguments = functionCall.GetProperty("args");
+
+                conversation.FromAssistant(new FunctionCall(functionName, arguments));
+
+                var simplifiedName = functionName.Replace("_", "");
+                var function = Functions.FirstOrDefault(f => f.Method.Name.Equals(simplifiedName, StringComparison.InvariantCultureIgnoreCase));
+
+                if (function != null)
+                {
+                    var result = await FunctionInvoker.InvokeAsync(function, arguments);
+                    conversation.FromFunction(new FunctionResult(functionName, result));
+
+                    return await CompleteAsync(conversation);
+                }
+                else
+                {
+                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{simplifiedName}' not found."));
+                }
+            }
+
+            text = part.GetProperty("text").GetString()!;
+            conversation.FromAssistant(text);
+
+        }
+
+        return text;
+    }
+
+    private static string GetRoleName(ChatRole role)
+    {
+        return role switch
+        {
+            ChatRole.Assistant => "model",
+            ChatRole.Function => "function",
+            _ => "user"
+        };
     }
 }
 
