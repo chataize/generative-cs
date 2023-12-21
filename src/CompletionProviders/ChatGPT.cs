@@ -30,15 +30,15 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
 
     public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
 
-    public async Task<string> CompleteAsync(string prompt)
+    public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var conversation = new TConversation();
         conversation.FromSystem(prompt);
 
-        return await CompleteAsync(conversation);
+        return await CompleteAsync(conversation, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation)
+    public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = new
         {
@@ -46,10 +46,11 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
             Messages = conversation.Messages.Select(m => new { m.Role, m.Author, m.Content }).ToList()
         };
 
-        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request);
+        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var message = document.RootElement.GetProperty("choices")[0].GetProperty("text").GetString()!;
 
         conversation.FromAssistant(message);

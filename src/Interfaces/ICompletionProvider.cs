@@ -4,9 +4,9 @@ public interface ICompletionProvider<TConversation, TMessage> where TConversatio
 {
     ICollection<Delegate> Functions { get; }
 
-    Task<string> CompleteAsync(string prompt);
+    Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default);
 
-    Task<string> CompleteAsync(TConversation conversation);
+    Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default);
 
     void AddFunction(Delegate function) 
     {

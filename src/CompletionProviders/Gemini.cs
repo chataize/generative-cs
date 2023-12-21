@@ -29,7 +29,7 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
 
-    public async Task<string> CompleteAsync(string prompt)
+    public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var partObject = new JsonObject
         {
@@ -67,17 +67,17 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
             { "tools", toolsArray }
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync();
-        var document = await JsonDocument.ParseAsync(content);
+        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var message = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
 
         return message;
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation)
+    public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
 
         var contentsArray = new JsonArray();
@@ -145,11 +145,11 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
             { "tools", toolsArray }
         };
 
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync();
-        var document = await JsonDocument.ParseAsync(content);
+        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var parts = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
 
         string text = null!;
@@ -167,10 +167,10 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
                 if (function != null)
                 {
-                    var result = await FunctionInvoker.InvokeAsync(function, arguments);
+                    var result = await FunctionInvoker.InvokeAsync(function, arguments, cancellationToken);
                     conversation.FromFunction(new FunctionResult(functionName, result));
 
-                    return await CompleteAsync(conversation);
+                    return await CompleteAsync(conversation, cancellationToken);
                 }
                 else
                 {
@@ -180,7 +180,6 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
             text = part.GetProperty("text").GetString()!;
             conversation.FromAssistant(text);
-
         }
 
         return text;
