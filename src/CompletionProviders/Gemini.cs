@@ -48,23 +48,12 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
         var contentsArray = new JsonArray
         {
-           contentObject
-        };
-
-        var functionsObject = new JsonObject
-        {
-            { "function_declarations", FunctionSerializer.Serialize(Functions) }
-        };
-
-        var toolsArray = new JsonArray
-        {
-            functionsObject
+            contentObject
         };
 
         var requestObject = new JsonObject
         {
-            { "contents", contentsArray },
-            { "tools", toolsArray }
+            { "contents", contentsArray }
         };
 
         var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject, cancellationToken);
