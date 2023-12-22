@@ -165,37 +165,37 @@ internal static class FunctionSerializer
 
         if (type == typeof(sbyte))
         {
-            return ("int", "8-bit signed integer from -128 to 127");
+            return ("integer", "8-bit signed integer from -128 to 127");
         }
 
         if (type == typeof(byte))
         {
-            return ("int", "8-bit unsigned integer from 0 to 255");
+            return ("integer", "8-bit unsigned integer from 0 to 255");
         }
 
         if (type == typeof(short))
         {
-            return ("int", "16-bit signed integer from -32,768 to 32,767");
+            return ("integer", "16-bit signed integer from -32,768 to 32,767");
         }
 
         if (type == typeof(ushort))
         {
-            return ("int", "16-bit unsigned integer from 0 to 65,535");
+            return ("integer", "16-bit unsigned integer from 0 to 65,535");
         }
 
         if (type == typeof(int) || type == typeof(long) || type == typeof(nint))
         {
-            return ("int", "signed integer");
+            return ("integer", "signed integer");
         }
 
         if (type == typeof(uint) || type == typeof(ulong) || type == typeof(nuint))
         {
-            return ("int", "unsigned integer, greater than or equal to 0");
+            return ("integer", "unsigned integer, greater than or equal to 0");
         }
 
         if (type == typeof(float) || type == typeof(double) || type == typeof(decimal))
         {
-            return ("number", "floating point number");
+            return ("integer", "floating point number");
         }
 
         if (type == typeof(char))
