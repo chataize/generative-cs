@@ -3,12 +3,13 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
+using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Utilities;
 
 internal static class FunctionSerializer
 {
-    internal static JsonArray Serialize(IEnumerable<Delegate> functions)
+    internal static JsonArray Serialize<T>(IEnumerable<T> functions) where T : IChatFunction
     {
         var functionsArray = new JsonArray();
         foreach (var function in functions)
@@ -20,12 +21,12 @@ internal static class FunctionSerializer
         return functionsArray;
     }
 
-    private static JsonObject Serialize(Delegate function)
+    private static JsonObject Serialize<T>(T function) where T : IChatFunction
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
 
-        foreach (var parameter in function.Method.GetParameters())
+        foreach (var parameter in function.Function!.Method.GetParameters())
         {
             if (parameter.ParameterType == typeof(CancellationToken))
             {
@@ -56,7 +57,7 @@ internal static class FunctionSerializer
 
         var functionObject = new JsonObject
         {
-            { "name", function.Method.Name }
+            { "name", function.Name }
         };
 
         if (propertiesObject.Count > 0)
@@ -64,7 +65,7 @@ internal static class FunctionSerializer
             functionObject.Add("parameters", parametersObject);
         }
 
-        var description = GetDescription(function.Method);
+        var description = function.Description ?? GetDescription(function.Function.Method);
         if (!string.IsNullOrEmpty(description))
         {
             functionObject.Add("description", description);

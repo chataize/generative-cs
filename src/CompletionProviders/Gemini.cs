@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
-using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
@@ -10,7 +9,10 @@ using GenerativeCS.Utilities;
 
 namespace GenerativeCS.CompletionProviders;
 
-public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation, TMessage> where TConversation : IChatConversation<TMessage>, new() where TMessage : IChatMessage, new()
+public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>
+    where TConversation : IChatConversation<TMessage, TFunction>, new()
+    where TMessage : IChatMessage, new()
+    where TFunction : IChatFunction, new()
 {
     private readonly HttpClient _client = new();
 
@@ -27,7 +29,7 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
     public string Model { get; set; } = "gemini-pro";
 
-    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
@@ -151,10 +153,10 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
 
                 conversation.FromAssistant(new FunctionCall(functionName, arguments));
 
-                var function = Functions.FirstOrDefault(f => f.Method.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
+                var function = Functions.FirstOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
-                    var result = await FunctionInvoker.InvokeAsync(function, arguments, cancellationToken);
+                    var result = await FunctionInvoker.InvokeAsync(function.Function!, arguments, cancellationToken);
                     conversation.FromFunction(new FunctionResult(functionName, result));
 
                     return await CompleteAsync(conversation, cancellationToken);
@@ -179,6 +181,55 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
         return text;
     }
 
+    public void AddFunction(TFunction function)
+    {
+        Functions.Add(function);
+    }
+
+   public void AddFunction(Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = function.Method.Name,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, string? description, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Description = description,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void RemoveFunction(TFunction function)
+    {
+        Functions.Remove(function);
+    }
+
+    public void ClearFunctions() 
+    {
+        Functions.Clear();
+    }
+
     private static string GetRoleName(ChatRole role)
     {
         return role switch
@@ -190,7 +241,7 @@ public class Gemini<TConversation, TMessage> : ICompletionProvider<TConversation
     }
 }
 
-public class Gemini : Gemini<ChatConversation, ChatMessage>
+public class Gemini : Gemini<ChatConversation, ChatMessage, ChatFunction>
 {
     public Gemini() { }
 

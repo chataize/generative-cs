@@ -3,7 +3,7 @@ using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
 
-public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMessage : IChatMessage, new()
+public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage, TFunction> where TMessage : IChatMessage, new() where TFunction : IChatFunction, new()
 {
     public ChatConversation() { }
 
@@ -16,7 +16,7 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
 
     public ICollection<TMessage> Messages { get; set; } = new List<TMessage>();
 
-    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
@@ -69,7 +69,7 @@ public record ChatConversation<TMessage> : IChatConversation<TMessage> where TMe
     }
 }
 
-public record ChatConversation : ChatConversation<ChatMessage>
+public record ChatConversation : ChatConversation<ChatMessage, ChatFunction>
 {
     public ChatConversation() { }
 

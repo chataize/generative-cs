@@ -7,7 +7,10 @@ using GenerativeCS.Models;
 
 namespace GenerativeCS.CompletionProviders;
 
-public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversation, TMessage> where TConversation : IChatConversation<TMessage>, new() where TMessage : IChatMessage, new()
+public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>
+    where TConversation : IChatConversation<TMessage, TFunction>, new()
+    where TMessage : IChatMessage, new()
+    where TFunction : IChatFunction, new()
 {
     private readonly HttpClient _client = new();
 
@@ -28,7 +31,7 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
 
     public string Model { get; set; } = "gpt-3.5-turbo";
 
-    public ICollection<Delegate> Functions { get; set; } = new List<Delegate>();
+    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
@@ -58,7 +61,7 @@ public class ChatGPT<TConversation, TMessage> : ICompletionProvider<TConversatio
     }
 }
 
-public class ChatGPT : ChatGPT<ChatConversation, ChatMessage>
+public class ChatGPT : ChatGPT<ChatConversation, ChatMessage, ChatFunction>
 {
     public ChatGPT() { }
 
