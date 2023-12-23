@@ -33,6 +33,11 @@ public interface IChatConversation<TMessage, TFunction> where TMessage : IChatMe
         Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
     }
 
+    void FromAssistant(ICollection<IFunctionCall> functionCalls)
+    {
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCalls));
+    }
+
     void FromFunction(IFunctionResult functionResult)
     {
         Messages.Add(IChatMessage.FromFunction<TMessage>(functionResult));
