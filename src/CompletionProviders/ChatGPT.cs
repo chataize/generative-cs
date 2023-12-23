@@ -34,6 +34,10 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public string Model { get; set; } = "gpt-3.5-turbo";
 
+    public int? MessageLimit { get; set; }
+
+    public int? CharacterLimit { get; set; }
+
     public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
@@ -46,8 +50,11 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
+        var allMessages = new List<TMessage>(conversation.Messages);
+        TokenLimiter.LimitTokens(allMessages, MessageLimit, CharacterLimit);
+
         var messagesArray = new JsonArray();
-        foreach (var conversationMessage in conversation.Messages)
+        foreach (var conversationMessage in allMessages)
         {
             var messageObject = new JsonObject
             {

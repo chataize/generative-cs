@@ -29,6 +29,10 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public string Model { get; set; } = "gemini-pro";
 
+     public int? MessageLimit { get; set; }
+
+    public int? CharacterLimit { get; set; }
+
     public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
@@ -70,9 +74,11 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
+        var allMessages = new List<TMessage>(conversation.Messages);
+        TokenLimiter.LimitTokens(allMessages, MessageLimit, CharacterLimit);
 
         var contentsArray = new JsonArray();
-        foreach (var message in conversation.Messages)
+        foreach (var message in allMessages)
         {
             var partObject = new JsonObject();
             var functionCall = message.FunctionCalls.FirstOrDefault();
