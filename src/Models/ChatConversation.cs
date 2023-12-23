@@ -67,6 +67,55 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
+
+    public void AddFunction(TFunction function)
+    {
+        Functions.Add(function);
+    }
+
+   public void AddFunction(Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = function.Method.Name,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, string? description, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Description = description,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void RemoveFunction(TFunction function)
+    {
+        Functions.Remove(function);
+    }
+
+    public void ClearFunctions()
+    {
+        Functions.Clear();
+    }
 }
 
 public record ChatConversation : ChatConversation<ChatMessage, ChatFunction>
