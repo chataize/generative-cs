@@ -122,7 +122,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             contentsArray.Add(contentObject);
         }
 
-        var allFunctions = Functions.Concat(conversation.Functions);
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         var functionsObject = new JsonObject
         {
             { "function_declarations", FunctionSerializer.Serialize(allFunctions) }

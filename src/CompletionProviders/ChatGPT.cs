@@ -103,7 +103,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
             { "messages", messagesArray }
         };
 
-        var allFunctions = Functions.Concat(conversation.Functions).ToList();
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         if (allFunctions.Count > 0)
         {
             var toolsArray = new JsonArray();
