@@ -9,11 +9,14 @@ public record FunctionCall : IFunctionCall
     public FunctionCall() { }
 
     [SetsRequiredMembers]
-    public FunctionCall(string name, JsonElement arguments)
+    public FunctionCall(string id, string name, JsonElement arguments)
     {
+        Id = id;
         Name = name;
         Arguments = arguments;
     }
+
+    public required string Id { get; set; }
 
     public required string Name { get; set; }
 

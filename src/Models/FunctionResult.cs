@@ -8,11 +8,14 @@ namespace GenerativeCS.Models
         public FunctionResult() { }
 
         [SetsRequiredMembers]
-        public FunctionResult(string name, object? result)
+        public FunctionResult(string id, string name, object? result)
         {
+            Id = id;
             Name = name;
             Result = result;
         }
+
+        public required string Id { get; set; }
 
         public required string Name { get; set; }
 
