@@ -123,9 +123,16 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         }
 
         var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        var functionsArray = new JsonArray();
+
+        foreach (var function in allFunctions)
+        {
+            functionsArray.Add(FunctionSerializer.Serialize(function));
+        }
+
         var functionsObject = new JsonObject
         {
-            { "function_declarations", FunctionSerializer.Serialize(allFunctions) }
+            { "function_declarations", functionsArray }
         };
 
         var toolsArray = new JsonArray
