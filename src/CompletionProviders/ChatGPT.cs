@@ -151,10 +151,17 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
                     argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
                     conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
 
-                    var function = allFunctions.Last(f => f.Name == functionName);
-                    var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
+                    var function = allFunctions.LastOrDefault(f => f.Name == functionName);
+                    if (function != null)
+                    {
+                        var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
+                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                    }
+                    else
+                    {
+                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' not found."));
+                    }
 
-                    conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
                     anyFunctionCalled = true;
                 }
             }
