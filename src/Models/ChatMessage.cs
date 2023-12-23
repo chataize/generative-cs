@@ -23,7 +23,13 @@ public record ChatMessage : IChatMessage
     public ChatMessage(IFunctionCall functionCall)
     {
         Role = ChatRole.Assistant;
-        FunctionCall = functionCall;
+        FunctionCalls = new List<IFunctionCall> { functionCall };
+    }
+
+    public ChatMessage(ICollection<IFunctionCall> functionCalls)
+    {
+        Role = ChatRole.Assistant;
+        FunctionCalls = functionCalls;
     }
 
     public ChatMessage(IFunctionResult functionResult)
@@ -38,7 +44,7 @@ public record ChatMessage : IChatMessage
 
     public string? Content { get; set; }
 
-    public IFunctionCall? FunctionCall { get; set; }
+    public ICollection<IFunctionCall> FunctionCalls { get; set; } = new List<IFunctionCall>();
 
     public IFunctionResult? FunctionResult { get; set; }
 
@@ -67,6 +73,11 @@ public record ChatMessage : IChatMessage
     public static ChatMessage FromAssistant(IFunctionCall functionCall)
     {
         return new ChatMessage(functionCall);
+    }
+
+    public static ChatMessage FromAssistant(ICollection<IFunctionCall> functionCalls)
+    {
+        return new ChatMessage(functionCalls);
     }
 
     public static ChatMessage FromFunction(IFunctionResult functionResult)

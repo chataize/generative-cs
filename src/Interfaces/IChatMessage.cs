@@ -10,7 +10,7 @@ public interface IChatMessage
 
     string? Content { get; set; }
 
-    IFunctionCall? FunctionCall { get; set; }
+    ICollection<IFunctionCall> FunctionCalls { get; set; }
 
     IFunctionResult? FunctionResult { get; set; }
 
@@ -56,7 +56,16 @@ public interface IChatMessage
         return new T
         {
             Role = ChatRole.Assistant,
-            FunctionCall = functionCall
+            FunctionCalls = new List<IFunctionCall> { functionCall }
+        };
+    }
+
+    static T FromAssistant<T>(ICollection<IFunctionCall> functionCalls) where T : IChatMessage, new()
+    {
+        return new T
+        {
+            Role = ChatRole.Assistant,
+            FunctionCalls = functionCalls
         };
     }
 
