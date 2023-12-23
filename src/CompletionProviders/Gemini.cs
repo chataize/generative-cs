@@ -75,12 +75,14 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         foreach (var message in conversation.Messages)
         {
             var partObject = new JsonObject();
-            if (message.FunctionCall != null)
+            var functionCall = message.FunctionCalls.FirstOrDefault();
+
+            if (functionCall!= null)
             {
                 var functionCallObject = new JsonObject
                 {
-                    { "name", message.FunctionCall.Name },
-                    { "args", JsonObject.Create(message.FunctionCall.Arguments) }
+                    { "name", functionCall.Name },
+                    { "args", JsonObject.Create(functionCall.Arguments) }
                 };
 
                 partObject.Add("functionCall", functionCallObject);
@@ -151,19 +153,19 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
                 var functionName = functionNameProperty.GetString()!;
                 var arguments = functionCall.GetProperty("args");
 
-                conversation.FromAssistant(new FunctionCall(functionName, arguments));
+                conversation.FromAssistant(new FunctionCall(null, functionName, arguments));
 
                 var function = Functions.FirstOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     var result = await FunctionInvoker.InvokeAsync(function.Function!, arguments, cancellationToken);
-                    conversation.FromFunction(new FunctionResult(functionName, result));
+                    conversation.FromFunction(new FunctionResult(null, functionName, result));
 
                     return await CompleteAsync(conversation, cancellationToken);
                 }
                 else
                 {
-                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
+                    conversation.FromFunction(new FunctionResult(null, functionName, $"Function '{functionName}' not found."));
                 }
             }
             else if (part.TryGetProperty("text", out var textProperty))
@@ -173,7 +175,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             }
             else
             {
-                conversation.FromFunction(new FunctionResult("Error", "Either call a valid function or reply with text."));
+                conversation.FromFunction(new FunctionResult(null, "Error", "Either call a valid function or reply with text."));
                 return await CompleteAsync(conversation, cancellationToken);
             }
         }
