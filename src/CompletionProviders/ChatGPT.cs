@@ -50,102 +50,18 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
-        var allMessages = new List<TMessage>(conversation.Messages);
-        TokenLimiter.LimitTokens(allMessages, MessageLimit, CharacterLimit);
+        var request = CreateChatCompletionRequest(conversation);
+        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken);
 
-        var messagesArray = new JsonArray();
-        foreach (var conversationMessage in allMessages)
-        {
-            var messageObject = new JsonObject
-            {
-                { "role", GetRoleName(conversationMessage.Role) }
-            };
-
-            if (conversationMessage.Author != null)
-            {
-                messageObject.Add("name", conversationMessage.Author);
-            }
-
-            if (conversationMessage.Content != null)
-            {
-                messageObject.Add("content", conversationMessage.Content);
-            }
-
-            var toolCallsArray = new JsonArray();
-            foreach (var functionCall in conversationMessage.FunctionCalls)
-            {
-                var functionObject = new JsonObject
-                {
-                    { "name", functionCall.Name },
-                    { "arguments", JsonSerializer.Serialize(functionCall.Arguments) }
-                };
-
-                var toolCallObject = new JsonObject
-                {
-                    { "id", functionCall.Id },
-                    { "type", "function" },
-                    { "function", functionObject }
-                };
-
-                toolCallsArray.Add(toolCallObject);
-            }
-
-            if (toolCallsArray.Count > 0)
-            {
-                messageObject.Add("tool_calls", toolCallsArray);
-            }
-
-            if (conversationMessage.FunctionResult != null)
-            {
-                messageObject.Add("tool_call_id", conversationMessage.FunctionResult.Id);
-                messageObject.Add("content", JsonSerializer.Serialize(conversationMessage.FunctionResult.Result));
-            }
-
-            messagesArray.Add(messageObject);
-        }
-
-        var requestObject = new JsonObject
-        {
-            { "model", Model },
-            { "messages", messagesArray }
-        };
-
-        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
-        if (allFunctions.Count > 0)
-        {
-            var toolsArray = new JsonArray();
-            foreach (var function in allFunctions)
-            {
-                var functionObject = FunctionSerializer.SerializeFunction(function);
-                var toolObject = new JsonObject
-                {
-                    { "type", "function" },
-                    { "function", functionObject }
-                };
-
-                toolsArray.Add(toolObject);
-            }
-
-            requestObject.Add("tools", toolsArray);
-        }
-
-        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestObject, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken);
         var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var message = document.RootElement.GetProperty("choices")[0].GetProperty("message");
 
-        string? lastText = null;
-        if (message.TryGetProperty("content", out var contentElement) && contentElement.ValueKind == JsonValueKind.String)
-        {
-            lastText = contentElement.GetString()!;
-            conversation.FromAssistant(lastText);
-        }
-
         if (message.TryGetProperty("tool_calls", out var toolCallsElement))
         {
-            var anyFunctionCalled = false;
+            var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
             {
                 if (toolCallElement.GetProperty("type").GetString() == "function")
@@ -166,20 +82,18 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
                     }
                     else
                     {
-                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' not found."));
+                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
                     }
-
-                    anyFunctionCalled = true;
                 }
             }
 
-            if (anyFunctionCalled)
-            {
-                return await CompleteAsync(conversation, cancellationToken);
-            }
+            return await CompleteAsync(conversation, cancellationToken);
         }
 
-        return lastText!;
+        var text = message.GetProperty("content").GetString()!;
+        conversation.FromAssistant(text);
+
+        return text!;
     }
 
     public void AddFunction(TFunction function)
@@ -259,6 +173,90 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
         };
+    }
+
+    private JsonObject CreateChatCompletionRequest(TConversation conversation)
+    {
+        var messages = new List<TMessage>(conversation.Messages);
+        TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
+
+        var messagesArray = new JsonArray();
+        foreach (var message in messages)
+        {
+            var messageObject = new JsonObject
+            {
+                { "role", GetRoleName(message.Role) }
+            };
+
+            if (message.Author != null)
+            {
+                messageObject.Add("name", message.Author);
+            }
+
+            if (message.Content != null)
+            {
+                messageObject.Add("content", message.Content);
+            }
+
+            var toolCallsArray = new JsonArray();
+            foreach (var functionCall in message.FunctionCalls)
+            {
+                var functionObject = new JsonObject
+                {
+                    { "name", functionCall.Name },
+                    { "arguments", JsonSerializer.Serialize(functionCall.Arguments) }
+                };
+
+                var toolCallObject = new JsonObject
+                {
+                    { "id", functionCall.Id },
+                    { "type", "function" },
+                    { "function", functionObject }
+                };
+
+                toolCallsArray.Add(toolCallObject);
+            }
+
+            if (toolCallsArray.Count > 0)
+            {
+                messageObject.Add("tool_calls", toolCallsArray);
+            }
+
+            if (message.FunctionResult != null)
+            {
+                messageObject.Add("tool_call_id", message.FunctionResult.Id);
+                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Result));
+            }
+
+            messagesArray.Add(messageObject);
+        }
+
+        var requestObject = new JsonObject
+        {
+            { "model", Model },
+            { "messages", messagesArray }
+        };
+
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        if (allFunctions.Count > 0)
+        {
+            var toolsArray = new JsonArray();
+            foreach (var function in allFunctions)
+            {
+                var functionObject = FunctionSerializer.SerializeFunction(function);
+                var toolObject = new JsonObject
+                {
+                    { "type", "function" },
+                    { "function", functionObject }
+                };
+
+                toolsArray.Add(toolObject);
+            }
+
+            requestObject.Add("tools", toolsArray);
+        }
+
+        return requestObject;
     }
 }
 

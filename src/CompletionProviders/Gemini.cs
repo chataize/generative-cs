@@ -29,7 +29,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public string Model { get; set; } = "gemini-pro";
 
-     public int? MessageLimit { get; set; }
+    public int? MessageLimit { get; set; }
 
     public int? CharacterLimit { get; set; }
 
@@ -37,32 +37,9 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
-        var partObject = new JsonObject
-        {
-            { "text", prompt }
-        };
+        var request = CreateCompletionRequest(prompt);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
 
-        var partsArray = new JsonArray
-        {
-            partObject
-        };
-
-        var contentObject = new JsonObject
-        {
-            { "parts", partsArray}
-        };
-
-        var contentsArray = new JsonArray
-        {
-            contentObject
-        };
-
-        var requestObject = new JsonObject
-        {
-            { "contents", contentsArray }
-        };
-
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -74,90 +51,15 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
-        var allMessages = new List<TMessage>(conversation.Messages);
-        TokenLimiter.LimitTokens(allMessages, MessageLimit, CharacterLimit);
+        var request = CreateChatCompletionRequest(conversation);
+        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
 
-        var contentsArray = new JsonArray();
-        foreach (var message in allMessages)
-        {
-            var partObject = new JsonObject();
-            var functionCall = message.FunctionCalls.FirstOrDefault();
-
-            if (functionCall != null)
-            {
-                var functionCallObject = new JsonObject
-                {
-                    { "name", functionCall.Name },
-                    { "args", JsonObject.Create(functionCall.Arguments) }
-                };
-
-                partObject.Add("functionCall", functionCallObject);
-            }
-            else if (message.FunctionResult != null)
-            {
-                var responseObject = new JsonObject
-                {
-                    { "name", message.FunctionResult.Name },
-                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Result) }
-                };
-
-                var functionResponseObject = new JsonObject
-                {
-                    { "name", message.FunctionResult.Name },
-                    { "response", responseObject }
-                };
-
-                partObject.Add("functionResponse", functionResponseObject);
-            }
-            else
-            {
-                partObject.Add("text", message.Content);
-            }
-
-            var partsArray = new JsonArray
-            {
-                partObject
-            };
-
-            var contentObject = new JsonObject
-            {
-                { "role", GetRoleName(message.Role) },
-                { "parts", partsArray }
-            };
-
-            contentsArray.Add(contentObject);
-        }
-
-        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
-        var functionsArray = new JsonArray();
-
-        foreach (var function in allFunctions)
-        {
-            functionsArray.Add(FunctionSerializer.SerializeFunction(function));
-        }
-
-        var functionsObject = new JsonObject
-        {
-            { "function_declarations", functionsArray }
-        };
-
-        var toolsArray = new JsonArray
-        {
-            functionsObject
-        };
-
-        var requestObject = new JsonObject
-        {
-            { "contents", contentsArray },
-            { "tools", toolsArray }
-        };
-
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", requestObject, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken);
         var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var parts = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
 
         string text = null!;
         foreach (var part in parts.EnumerateArray())
@@ -189,7 +91,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             }
             else
             {
-                conversation.FromFunction(new FunctionResult("Error", "Either call a valid function or reply with text."));
+                conversation.FromFunction(new FunctionResult("Error", "Either call a function or respond with text."));
                 return await CompleteAsync(conversation, cancellationToken);
             }
         }
@@ -272,6 +174,119 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             ChatRole.Function => "function",
             _ => "user"
         };
+    }
+
+    private static JsonObject CreateCompletionRequest(string prompt)
+    {
+        var partObject = new JsonObject
+        {
+            { "text", prompt }
+        };
+
+        var partsArray = new JsonArray
+        {
+            partObject
+        };
+
+        var contentObject = new JsonObject
+        {
+            { "parts", partsArray}
+        };
+
+        var contentsArray = new JsonArray
+        {
+            contentObject
+        };
+
+        var requestObject = new JsonObject
+        {
+            { "contents", contentsArray }
+        };
+
+        return requestObject;
+    }
+
+    private JsonObject CreateChatCompletionRequest(TConversation conversation)
+    {
+        var messages = new List<TMessage>(conversation.Messages);
+        TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
+
+        var contentsArray = new JsonArray();
+        foreach (var message in messages)
+        {
+            var partObject = new JsonObject();
+            var functionCall = message.FunctionCalls.FirstOrDefault();
+
+            if (functionCall != null)
+            {
+                var functionCallObject = new JsonObject
+                {
+                    { "name", functionCall.Name },
+                    { "args", JsonObject.Create(functionCall.Arguments) }
+                };
+
+                partObject.Add("functionCall", functionCallObject);
+            }
+            else if (message.FunctionResult != null)
+            {
+                var responseObject = new JsonObject
+                {
+                    { "name", message.FunctionResult.Name },
+                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Result) }
+                };
+
+                var functionResponseObject = new JsonObject
+                {
+                    { "name", message.FunctionResult.Name },
+                    { "response", responseObject }
+                };
+
+                partObject.Add("functionResponse", functionResponseObject);
+            }
+            else
+            {
+                partObject.Add("text", message.Content);
+            }
+
+            var partsArray = new JsonArray
+            {
+                partObject
+            };
+
+            var contentObject = new JsonObject
+            {
+                { "role", GetRoleName(message.Role) },
+                { "parts", partsArray }
+            };
+
+            contentsArray.Add(contentObject);
+        }
+
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        var functionsArray = new JsonArray();
+
+        foreach (var function in allFunctions)
+        {
+            functionsArray.Add(FunctionSerializer.SerializeFunction(function));
+        }
+
+        var functionsObject = new JsonObject
+        {
+            { "function_declarations", functionsArray }
+        };
+
+        var toolsArray = new JsonArray
+        {
+            functionsObject
+        };
+
+        var requestObject = new JsonObject
+        {
+            { "contents", contentsArray },
+            { "tools", toolsArray }
+        };
+
+        return requestObject;
     }
 }
 
