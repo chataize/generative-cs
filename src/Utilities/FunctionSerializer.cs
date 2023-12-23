@@ -21,7 +21,7 @@ internal static class FunctionSerializer
         return functionsArray;
     }
 
-    private static JsonObject Serialize<T>(T function) where T : IChatFunction
+    internal static JsonObject Serialize<T>(T function) where T : IChatFunction
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
