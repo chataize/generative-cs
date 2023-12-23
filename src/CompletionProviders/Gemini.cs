@@ -127,7 +127,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
         foreach (var function in allFunctions)
         {
-            functionsArray.Add(FunctionSerializer.Serialize(function));
+            functionsArray.Add(FunctionSerializer.SerializeFunction(function));
         }
 
         var functionsObject = new JsonObject

@@ -9,7 +9,7 @@ namespace GenerativeCS.Utilities;
 
 internal static class FunctionSerializer
 {
-    internal static JsonObject Serialize<T>(T function) where T : IChatFunction
+    internal static JsonObject SerializeFunction<T>(T function) where T : IChatFunction
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();

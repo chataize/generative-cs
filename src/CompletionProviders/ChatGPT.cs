@@ -109,7 +109,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
             var toolsArray = new JsonArray();
             foreach (var function in allFunctions)
             {
-                var functionObject = FunctionSerializer.Serialize(function);
+                var functionObject = FunctionSerializer.SerializeFunction(function);
                 var toolObject = new JsonObject
                 {
                     { "type", "function" },
