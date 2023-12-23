@@ -122,9 +122,10 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             contentsArray.Add(contentObject);
         }
 
+        var allFunctions = Functions.Concat(conversation.Functions);
         var functionsObject = new JsonObject
         {
-            { "function_declarations", FunctionSerializer.Serialize(Functions) }
+            { "function_declarations", FunctionSerializer.Serialize(allFunctions) }
         };
 
         var toolsArray = new JsonArray
@@ -155,7 +156,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
                 conversation.FromAssistant(new FunctionCall(functionName, arguments));
 
-                var function = Functions.FirstOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
+                var function = allFunctions.LastOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     var result = await FunctionInvoker.InvokeAsync(function.Function!, arguments, cancellationToken);

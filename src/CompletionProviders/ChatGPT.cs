@@ -103,10 +103,11 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
             { "messages", messagesArray }
         };
 
-        if (Functions.Count > 0)
+        var allFunctions = Functions.Concat(conversation.Functions).ToList();
+        if (allFunctions.Count > 0)
         {
             var toolsArray = new JsonArray();
-            foreach (var function in Functions)
+            foreach (var function in allFunctions)
             {
                 var functionObject = FunctionSerializer.Serialize(function);
                 var toolObject = new JsonObject
@@ -146,11 +147,11 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
                     var functionElement = toolCallElement.GetProperty("function");
                     var functionName = functionElement.GetProperty("name").GetString()!;
                     var argumentsElement = functionElement.GetProperty("arguments");
-                    argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
 
+                    argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
                     conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
 
-                    var function = Functions.First(f => f.Name == functionName);
+                    var function = allFunctions.Last(f => f.Name == functionName);
                     var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
 
                     conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
