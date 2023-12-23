@@ -125,7 +125,6 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var content2 = await response.Content.ReadAsStringAsync(cancellationToken);
         var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
         var message = document.RootElement.GetProperty("choices")[0].GetProperty("message");
 
