@@ -77,7 +77,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             var partObject = new JsonObject();
             var functionCall = message.FunctionCalls.FirstOrDefault();
 
-            if (functionCall!= null)
+            if (functionCall != null)
             {
                 var functionCallObject = new JsonObject
                 {
@@ -153,19 +153,19 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
                 var functionName = functionNameProperty.GetString()!;
                 var arguments = functionCall.GetProperty("args");
 
-                conversation.FromAssistant(new FunctionCall(null, functionName, arguments));
+                conversation.FromAssistant(new FunctionCall(functionName, arguments));
 
                 var function = Functions.FirstOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     var result = await FunctionInvoker.InvokeAsync(function.Function!, arguments, cancellationToken);
-                    conversation.FromFunction(new FunctionResult(null, functionName, result));
+                    conversation.FromFunction(new FunctionResult(functionName, result));
 
                     return await CompleteAsync(conversation, cancellationToken);
                 }
                 else
                 {
-                    conversation.FromFunction(new FunctionResult(null, functionName, $"Function '{functionName}' not found."));
+                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
                 }
             }
             else if (part.TryGetProperty("text", out var textProperty))
@@ -175,7 +175,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             }
             else
             {
-                conversation.FromFunction(new FunctionResult(null, "Error", "Either call a valid function or reply with text."));
+                conversation.FromFunction(new FunctionResult("Error", "Either call a valid function or reply with text."));
                 return await CompleteAsync(conversation, cancellationToken);
             }
         }
@@ -188,7 +188,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         Functions.Add(function);
     }
 
-   public void AddFunction(Delegate function)
+    public void AddFunction(Delegate function)
     {
         var chatFunction = new TFunction
         {
@@ -227,7 +227,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         Functions.Remove(function);
     }
 
-    public void ClearFunctions() 
+    public void ClearFunctions()
     {
         Functions.Clear();
     }
