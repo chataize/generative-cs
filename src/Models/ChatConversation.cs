@@ -73,7 +73,7 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
         Functions.Add(function);
     }
 
-   public void AddFunction(Delegate function)
+    public void AddFunction(Delegate function)
     {
         var chatFunction = new TFunction
         {
@@ -110,6 +110,24 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
     public void RemoveFunction(TFunction function)
     {
         Functions.Remove(function);
+    }
+
+    public void RemoveFunction(string name)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Name == name);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
+    public void RemoveFunction(Delegate function)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
     }
 
     public void ClearFunctions()

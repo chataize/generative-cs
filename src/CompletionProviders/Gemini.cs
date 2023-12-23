@@ -228,6 +228,24 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         Functions.Remove(function);
     }
 
+    public void RemoveFunction(string name)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Name == name);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
+    public void RemoveFunction(Delegate function)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
     public void ClearFunctions()
     {
         Functions.Clear();

@@ -87,6 +87,24 @@ public interface IChatConversation<TMessage, TFunction> where TMessage : IChatMe
         Functions.Remove(function);
     }
 
+    void RemoveFunction(string name)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Name == name);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
+    void RemoveFunction(Delegate function)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
     void ClearFunctions()
     {
         Functions.Clear();

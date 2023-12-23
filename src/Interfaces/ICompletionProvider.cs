@@ -1,7 +1,7 @@
 ﻿namespace GenerativeCS.Interfaces;
 
-public interface ICompletionProvider<TConversation, TMessage, TFunction> 
-    where TConversation : IChatConversation<TMessage, TFunction> 
+public interface ICompletionProvider<TConversation, TMessage, TFunction>
+    where TConversation : IChatConversation<TMessage, TFunction>
     where TMessage : IChatMessage, new()
     where TFunction : IChatFunction, new()
 {
@@ -55,7 +55,25 @@ public interface ICompletionProvider<TConversation, TMessage, TFunction>
         Functions.Remove(function);
     }
 
-    void ClearFunctions() 
+    void RemoveFunction(string name)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Name == name);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
+    void RemoveFunction(Delegate function)
+    {
+        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        if (functionToRemove != null)
+        {
+            Functions.Remove(functionToRemove);
+        }
+    }
+
+    void ClearFunctions()
     {
         Functions.Clear();
     }
