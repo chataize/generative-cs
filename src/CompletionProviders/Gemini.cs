@@ -213,10 +213,10 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
         {
-            TimeAwareness.AddCurrentTimeInfo(messages);
+            MessageTools.AddTimeInformation(messages);
         }
 
-        messages = TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
+        messages = MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
 
         var contentsArray = new JsonArray();       
         foreach (var message in messages)

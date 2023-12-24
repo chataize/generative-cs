@@ -2,8 +2,27 @@ using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Utilities
 {
-    internal static class TokenLimiter
+    internal static class MessageTools
     {
+        internal static void AddTimeInformation<T>(IList<T> messages) where T : IChatMessage, new()
+        {
+            var firstMessage = messages.FirstOrDefault();
+            if (firstMessage == null || firstMessage.Role != Enums.ChatRole.System)
+            {
+                firstMessage = new T
+                {
+                    Role = Enums.ChatRole.System,
+                    Content = $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}"
+                };
+
+                messages.Insert(0, firstMessage);
+            }
+            else
+            {
+                firstMessage.Content += $"\n\nCurrent time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}";
+            }
+        }
+
         internal static List<T> LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage
         {
             var sortedMessages = new List<T>(messages.Where(m => m.PinLocation == PinLocation.Begin));
