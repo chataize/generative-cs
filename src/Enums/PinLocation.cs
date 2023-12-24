@@ -1,6 +1,6 @@
 namespace GenerativeCS;
 
-public enum MessagePin
+public enum PinLocation
 {
     None,
     Automatic,
