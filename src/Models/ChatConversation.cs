@@ -9,7 +9,7 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
 
     public ChatConversation(string systemMessage)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(systemMessage));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(systemMessage, PinLocation.Begin));
     }
 
     public event EventHandler<MessageAddedEventArgs<TMessage>>? MessageAdded;
