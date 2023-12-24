@@ -23,18 +23,21 @@ namespace GenerativeCS.Utilities
             }
         }
 
-        internal static List<T> LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage
+        internal static void LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage
         {
             var sortedMessages = new List<T>(messages.Where(m => m.PinLocation == PinLocation.Begin));
 
             sortedMessages.AddRange(messages.Where(m => m.PinLocation == PinLocation.None || m.PinLocation == PinLocation.Automatic));
             sortedMessages.AddRange(messages.Where(m => m.PinLocation == PinLocation.End));
 
-            var excessiveMessages = messageLimit.HasValue ? sortedMessages.Count - messageLimit : 0;
-            var excessiveCharacters = characterLimit.HasValue ? sortedMessages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
+            messages.Clear();
+            messages.AddRange(sortedMessages);
+
+            var excessiveMessages = messageLimit.HasValue ? messages.Count - messageLimit : 0;
+            var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
 
             var messagesToRemove = new List<T>();
-            foreach (var message in sortedMessages)
+            foreach (var message in messages)
             {
                 if (excessiveMessages <= 0 && excessiveCharacters <= 0)
                 {
@@ -50,8 +53,7 @@ namespace GenerativeCS.Utilities
                 }
             }
 
-            sortedMessages.RemoveAll(messagesToRemove.Contains);
-            return sortedMessages;
+            messages.RemoveAll(messagesToRemove.Contains);
         }
     }
 }

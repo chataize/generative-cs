@@ -216,7 +216,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             MessageTools.AddTimeInformation(messages);
         }
 
-        messages = MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
+        MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
 
         var contentsArray = new JsonArray();       
         foreach (var message in messages)

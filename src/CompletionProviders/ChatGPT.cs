@@ -185,7 +185,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
             MessageTools.AddTimeInformation(messages);
         }
 
-        messages = MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
+        MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
         
         var messagesArray = new JsonArray();
         foreach (var message in messages)
