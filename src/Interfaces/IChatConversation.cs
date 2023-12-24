@@ -8,39 +8,39 @@ public interface IChatConversation<TMessage, TFunction> where TMessage : IChatMe
 
     ICollection<TFunction> Functions { get; }
 
-    void FromSystem(string message)
+    void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(message));
+        Messages.Add(IChatMessage.FromSystem<TMessage>(message, pinLocation));
     }
 
-    void FromUser(string message)
+    void FromUser(string message, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromUser<TMessage>(message));
+        Messages.Add(IChatMessage.FromUser<TMessage>(message, pinLocation));
     }
 
-    void FromUser(string name, string message)
+    void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromUser<TMessage>(name, message));
+        Messages.Add(IChatMessage.FromUser<TMessage>(name, message, pinLocation));
     }
 
-    void FromAssistant(string message)
+    void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(message));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(message, pinLocation));
     }
 
-    void FromAssistant(IFunctionCall functionCall)
+    void FromAssistant(IFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCall, pinLocation));
     }
 
-    void FromAssistant(ICollection<IFunctionCall> functionCalls)
+    void FromAssistant(ICollection<IFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCalls));
+        Messages.Add(IChatMessage.FromAssistant<TMessage>(functionCalls, pinLocation));
     }
 
-    void FromFunction(IFunctionResult functionResult)
+    void FromFunction(IFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
-        Messages.Add(IChatMessage.FromFunction<TMessage>(functionResult));
+        Messages.Add(IChatMessage.FromFunction<TMessage>(functionResult, pinLocation));
     }
 
     void AddFunction(TFunction function)

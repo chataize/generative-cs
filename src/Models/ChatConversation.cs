@@ -20,49 +20,57 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
-    public void FromSystem(string message)
+    public void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromSystem<TMessage>(message);
+        var chatMessage = IChatMessage.FromSystem<TMessage>(message, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromUser(string message)
+    public void FromUser(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromUser<TMessage>(message);
+        var chatMessage = IChatMessage.FromUser<TMessage>(message, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromUser(string name, string message)
+    public void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromUser<TMessage>(name, message);
+        var chatMessage = IChatMessage.FromUser<TMessage>(name, message, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromAssistant(string message)
+    public void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromAssistant<TMessage>(message);
+        var chatMessage = IChatMessage.FromAssistant<TMessage>(message, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromAssistant(IFunctionCall functionCall)
+    public void FromAssistant(IFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCall);
+        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCall, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
     }
 
-    public void FromFunction(IFunctionResult functionResult)
+    public void FromAssistant(ICollection<IFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromFunction<TMessage>(functionResult);
+        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCalls, pinLocation);
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+    }
+
+    public void FromFunction(IFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    {
+        var chatMessage = IChatMessage.FromFunction<TMessage>(functionResult, pinLocation);
 
         Messages.Add(chatMessage);
         MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
