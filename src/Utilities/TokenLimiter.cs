@@ -22,7 +22,7 @@ namespace GenerativeCS.Utilities
                     break;
                 }
 
-                if (excessiveMessages >= 0 || excessiveCharacters >= 0 && message.PinLocation == PinLocation.None)
+                if ((excessiveMessages >= 0 || excessiveCharacters >= 0) && message.PinLocation == PinLocation.None)
                 {
                     messagesToRemove.Add(message);
 
