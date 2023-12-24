@@ -33,6 +33,8 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public int? CharacterLimit { get; set; }
 
+    public bool IsTimeAware { get; set; }
+
     public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
@@ -208,9 +210,15 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     private JsonObject CreateChatCompletionRequest(TConversation conversation)
     {
-        var messages = TokenLimiter.LimitTokens(conversation.Messages.ToList(), MessageLimit, CharacterLimit);
-        var contentsArray = new JsonArray();
-        
+        var messages = conversation.Messages.ToList();
+        if (IsTimeAware)
+        {
+            TimeAwareness.AddCurrentTimeInfo(messages);
+        }
+
+        messages = TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
+
+        var contentsArray = new JsonArray();       
         foreach (var message in messages)
         {
             var partObject = new JsonObject();

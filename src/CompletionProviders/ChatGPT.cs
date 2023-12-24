@@ -38,6 +38,8 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public int? CharacterLimit { get; set; }
 
+    public bool IsTimeAware { get; set; }
+
     public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
@@ -177,9 +179,15 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     private JsonObject CreateChatCompletionRequest(TConversation conversation)
     {
-        var messages = TokenLimiter.LimitTokens(conversation.Messages.ToList(), MessageLimit, CharacterLimit);
-        var messagesArray = new JsonArray();
+        var messages = conversation.Messages.ToList();
+        if (IsTimeAware)
+        {
+            TimeAwareness.AddCurrentTimeInfo(messages);
+        }
+
+        messages = TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
         
+        var messagesArray = new JsonArray();
         foreach (var message in messages)
         {
             var messageObject = new JsonObject
