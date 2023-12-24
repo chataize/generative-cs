@@ -14,6 +14,8 @@ public interface IChatMessage
 
     IFunctionResult? FunctionResult { get; set; }
 
+    MessagePin Pin { get; set; }
+
     static T FromSystem<T>(string content) where T : IChatMessage, new()
     {
         return new T
