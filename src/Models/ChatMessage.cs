@@ -48,7 +48,7 @@ public record ChatMessage : IChatMessage
 
     public IFunctionResult? FunctionResult { get; set; }
 
-    public MessagePin Pin { get; set; }
+    public PinLocation PinLocation { get; set; }
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
