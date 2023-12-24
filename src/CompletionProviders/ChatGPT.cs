@@ -177,10 +177,9 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     private JsonObject CreateChatCompletionRequest(TConversation conversation)
     {
-        var messages = new List<TMessage>(conversation.Messages);
-        TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
-
+        var messages = TokenLimiter.LimitTokens(conversation.Messages.ToList(), MessageLimit, CharacterLimit);
         var messagesArray = new JsonArray();
+        
         foreach (var message in messages)
         {
             var messageObject = new JsonObject

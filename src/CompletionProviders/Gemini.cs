@@ -208,10 +208,9 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     private JsonObject CreateChatCompletionRequest(TConversation conversation)
     {
-        var messages = new List<TMessage>(conversation.Messages);
-        TokenLimiter.LimitTokens(messages, MessageLimit, CharacterLimit);
-
+        var messages = TokenLimiter.LimitTokens(conversation.Messages.ToList(), MessageLimit, CharacterLimit);
         var contentsArray = new JsonArray();
+        
         foreach (var message in messages)
         {
             var partObject = new JsonObject();
