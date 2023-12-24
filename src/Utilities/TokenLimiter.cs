@@ -4,28 +4,35 @@ namespace GenerativeCS.Utilities
 {
     internal static class TokenLimiter
     {
-        internal static void LimitTokens<TMessage>(ICollection<TMessage> messages, int? messageLimit, int? characterLimit) where TMessage : IChatMessage
+        internal static List<T> LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage
         {
-            if (messageLimit.HasValue)
-            {
-                messages = messages.Take(messageLimit.Value).ToList();
-            }
+            var sortedMessages = new List<T>(messages.Where(m => m.PinLocation == PinLocation.Begin));
 
-            if (characterLimit.HasValue)
+            sortedMessages.AddRange(messages.Where(m => m.PinLocation == PinLocation.None || m.PinLocation == PinLocation.Automatic));
+            sortedMessages.AddRange(messages.Where(m => m.PinLocation == PinLocation.End));
+
+            var excessiveMessages = messageLimit.HasValue ? sortedMessages.Count - messageLimit : 0;
+            var excessiveCharacters = characterLimit.HasValue ? sortedMessages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
+
+            var messagesToRemove = new List<T>();
+            foreach (var message in sortedMessages)
             {
-                var currentCharacters = 0;
-                for (var i = messages.Count - 1; i >= 0; i--)
+                if (excessiveMessages <= 0 && excessiveCharacters <= 0)
                 {
-                    var currentMessage = messages.ElementAt(i);
-                    var messageLength = currentMessage.Content?.Length ?? 0;
+                    break;
+                }
 
-                    currentCharacters += messageLength;
-                    if (currentCharacters > characterLimit.Value)
-                    {
-                        messages.Remove(currentMessage);
-                    }
+                if (excessiveMessages >= 0 || excessiveCharacters >= 0 && message.PinLocation == PinLocation.None)
+                {
+                    messagesToRemove.Add(message);
+
+                    excessiveMessages--;
+                    excessiveCharacters -= message.Content?.Length ?? 0;
                 }
             }
+
+            sortedMessages.RemoveAll(messagesToRemove.Contains);
+            return sortedMessages;
         }
     }
 }
