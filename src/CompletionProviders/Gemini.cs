@@ -217,6 +217,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
+        MessageTools.MergeMessages(messages);
 
         var contentsArray = new JsonArray();       
         foreach (var message in messages)

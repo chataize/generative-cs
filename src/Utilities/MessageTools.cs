@@ -55,5 +55,20 @@ namespace GenerativeCS.Utilities
 
             messages.RemoveAll(messagesToRemove.Contains);
         }
+
+        internal static void MergeMessages<T>(List<T> messages) where T : IChatMessage
+        {
+            for (int i = messages.Count - 1; i >= 1; i--)
+            {
+                var previousMessage = messages[i - 1];
+                var currentMessage = messages[i];
+
+                if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
+                {
+                    previousMessage.Content += $"\n\n{currentMessage.Content}";
+                    messages.RemoveAt(i);
+                }
+            }
+        }
     }
 }
