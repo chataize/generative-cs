@@ -40,7 +40,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var request = CreateCompletionRequest(prompt);
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
+        var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
 
         response.EnsureSuccessStatusCode();
 
@@ -54,7 +54,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
-        var response = await _client.PostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
+        var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken);
 
         response.EnsureSuccessStatusCode();
 
