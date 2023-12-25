@@ -87,9 +87,13 @@ internal static class FunctionSerializer
         var (typeName, typeDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
         {
-            { "type", typeName },
-            { "description", typeDescription }
+            { "type", typeName }
         };
+
+        if (typeDescription != null)
+        {
+            propertyObject.Add("description", typeDescription);
+        }
 
         if (propertyType.IsEnum)
         {
