@@ -58,6 +58,17 @@ namespace GenerativeCS.Utilities
             messages.RemoveAll(messagesToRemove.Contains);
         }
 
+        internal static void ReplaceSystemRole<T>(List<T> messages) where T : IChatMessage
+        {
+           foreach (var message in messages)
+            {
+                if (message.Role == ChatRole.System)
+                {
+                  message.Role = ChatRole.User;
+                }
+            }
+        }
+
         internal static void MergeMessages<T>(List<T> messages) where T : IChatMessage
         {
             for (int i = messages.Count - 1; i >= 1; i--)

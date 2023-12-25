@@ -217,6 +217,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
+        MessageTools.ReplaceSystemRole(messages);
         MessageTools.MergeMessages(messages);
 
         var contentsArray = new JsonArray();
