@@ -5,7 +5,7 @@ namespace GenerativeCS.Utilities;
 
 internal static class RepeatingHttpClient
 {
-    private static TimeSpan[] Delays => [
+    private static readonly TimeSpan[] Delays = [
         TimeSpan.FromSeconds(1),
         TimeSpan.FromSeconds(3),
         TimeSpan.FromSeconds(5),
