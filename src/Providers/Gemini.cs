@@ -7,7 +7,7 @@ using GenerativeCS.Interfaces;
 using GenerativeCS.Models;
 using GenerativeCS.Utilities;
 
-namespace GenerativeCS.CompletionProviders;
+namespace GenerativeCS.Providers;
 
 public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>
     where TConversation : IChatConversation<TMessage, TFunction>, new()

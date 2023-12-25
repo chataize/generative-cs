@@ -8,7 +8,7 @@ using GenerativeCS.Interfaces;
 using GenerativeCS.Models;
 using GenerativeCS.Utilities;
 
-namespace GenerativeCS.CompletionProviders;
+namespace GenerativeCS.Providers;
 
 public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>, IEmbeddingProvider
     where TConversation : IChatConversation<TMessage, TFunction>, new()
