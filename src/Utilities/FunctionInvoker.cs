@@ -2,14 +2,14 @@ using System.Text.Json;
 
 namespace GenerativeCS.Utilities;
 
-internal static class FunctionInvoker
+public static class FunctionInvoker
 {
     private static JsonSerializerOptions JsonOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<object> InvokeAsync(Delegate function, JsonElement arguments, CancellationToken cancellationToken = default)
+    public static async Task<object> InvokeAsync(Delegate function, JsonElement arguments, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
         foreach (var parameter in function.Method.GetParameters())
@@ -24,8 +24,23 @@ internal static class FunctionInvoker
             {
                 try
                 {
-                    var argumentValue = JsonSerializer.Deserialize(argument.GetRawText(), parameter.ParameterType, JsonOptions);
-                    parsedArguments.Add(argumentValue);
+                    if (parameter.ParameterType.IsEnum)
+                    {
+                        var argumentValue = argument.GetString();
+                        if (Enum.TryParse(parameter.ParameterType, argumentValue, true, out var enumValue))
+                        {
+                            parsedArguments.Add(enumValue);
+                        }
+                        else
+                        {
+                            return new { Error = $"Value '{argumentValue ?? "(null)"}' is not a valid enum member for parameter '{parameter.Name}'." };
+                        }
+                    }
+                    else
+                    {
+                        var argumentValue = JsonSerializer.Deserialize(argument.GetRawText(), parameter.ParameterType, JsonOptions);
+                        parsedArguments.Add(argumentValue);
+                    }
                 }
                 catch
                 {
