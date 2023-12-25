@@ -10,7 +10,7 @@ using GenerativeCS.Utilities;
 
 namespace GenerativeCS.CompletionProviders;
 
-public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>
+public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>, IEmbeddingProvider
     where TConversation : IChatConversation<TMessage, TFunction>, new()
     where TMessage : IChatMessage, new()
     where TFunction : IChatFunction, new()
@@ -96,6 +96,29 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         conversation.FromAssistant(text);
 
         return text!;
+    }
+
+    public async Task<List<float>> GetEmbeddingAsync(string text, CancellationToken cancellationToken = default)
+    {
+        var requestObject = new JsonObject
+        {
+          { "input", text },
+          { "model", "text-embedding-ada-002" }
+        };
+
+        var response = await _client.PostAsJsonAsync("https://api.openai.com/v1/embeddings", requestObject, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
+        var embedding = new List<float>();
+
+        foreach (var element in document.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
+        {
+            embedding.Add(element.GetSingle());
+        }
+
+        return embedding;
     }
 
     public void AddFunction(TFunction function)
@@ -186,7 +209,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
-        
+
         var messagesArray = new JsonArray();
         foreach (var message in messages)
         {
