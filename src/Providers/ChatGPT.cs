@@ -34,6 +34,8 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public string Model { get; set; } = "gpt-3.5-turbo";
 
+    public int MaxAttempts { get; set; } = 5;
+
     public int? MessageLimit { get; set; }
 
     public int? CharacterLimit { get; set; }
@@ -53,7 +55,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
     public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
-        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken);
+        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
 
         response.EnsureSuccessStatusCode();
 
@@ -106,7 +108,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
           { "model", "text-embedding-ada-002" }
         };
 
-        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", requestObject, cancellationToken);
+        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", requestObject, cancellationToken, MaxAttempts);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken);
