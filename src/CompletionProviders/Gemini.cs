@@ -219,7 +219,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
         MessageTools.MergeMessages(messages);
 
-        var contentsArray = new JsonArray();       
+        var contentsArray = new JsonArray();
         foreach (var message in messages)
         {
             var partObject = new JsonObject();
@@ -270,29 +270,32 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             contentsArray.Add(contentObject);
         }
 
-        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
-        var functionsArray = new JsonArray();
-
-        foreach (var function in allFunctions)
-        {
-            functionsArray.Add(FunctionSerializer.SerializeFunction(function));
-        }
-
-        var functionsObject = new JsonObject
-        {
-            { "function_declarations", functionsArray }
-        };
-
-        var toolsArray = new JsonArray
-        {
-            functionsObject
-        };
-
         var requestObject = new JsonObject
         {
             { "contents", contentsArray },
-            { "tools", toolsArray }
         };
+
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        if (allFunctions.Count > 0)
+        {
+            var functionsArray = new JsonArray();
+            foreach (var function in allFunctions)
+            {
+                functionsArray.Add(FunctionSerializer.SerializeFunction(function));
+            }
+
+            var functionsObject = new JsonObject
+            {
+                { "function_declarations", functionsArray }
+            };
+
+            var toolsArray = new JsonArray
+            {
+                functionsObject
+            };
+
+            requestObject.Add("tools", toolsArray);
+        }
 
         return requestObject;
     }
