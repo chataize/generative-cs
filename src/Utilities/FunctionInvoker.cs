@@ -22,27 +22,29 @@ public static class FunctionInvoker
 
             if (arguments.TryGetProperty(parameter.Name!, out var argument) && argument.ValueKind != JsonValueKind.Null)
             {
-                var argumentValue = argument.GetRawText();
-                if (parameter.ParameterType.IsEnum)
-                {
-                    if (!Enum.TryParse(parameter.ParameterType, argumentValue, true, out var enumValue))
-                    {
-                        return new { Error = $"Value '{argumentValue}' is not a valid enum member for parameter '{parameter.Name}'." };
-                    }
+                var rawValue = argument.GetRawText();
+                var stringValue = argument.ValueKind == JsonValueKind.String ? argument.GetString() : rawValue;
 
-                    parsedArguments.Add(enumValue);
-                }
-                else
+                try
                 {
-                    try
+                    if (parameter.ParameterType.IsEnum)
                     {
-                        var paredValue = JsonSerializer.Deserialize(argumentValue, parameter.ParameterType, JsonOptions);
-                        parsedArguments.Add(argumentValue);
+                        if (!Enum.TryParse(parameter.ParameterType, stringValue, true, out var enumValue))
+                        {
+                            return new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." };
+                        }
+
+                        parsedArguments.Add(enumValue);
                     }
-                    catch
+                    else
                     {
-                        return new { Error = $"Value '{argumentValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'" };
+                        var paredValue = JsonSerializer.Deserialize(rawValue, parameter.ParameterType, JsonOptions);
+                        parsedArguments.Add(rawValue);
                     }
+                }
+                catch
+                {
+                    return new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'" };
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != null)
