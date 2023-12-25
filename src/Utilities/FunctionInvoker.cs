@@ -20,31 +20,29 @@ public static class FunctionInvoker
                 continue;
             }
 
-            if (arguments.TryGetProperty(parameter.Name!, out var argument))
+            if (arguments.TryGetProperty(parameter.Name!, out var argument) && argument.ValueKind != JsonValueKind.Null)
             {
-                try
+                var argumentValue = argument.GetRawText();
+                if (parameter.ParameterType.IsEnum)
                 {
-                    if (parameter.ParameterType.IsEnum)
+                    if (!Enum.TryParse(parameter.ParameterType, argumentValue, true, out var enumValue))
                     {
-                        var argumentValue = argument.GetString();
-                        if (Enum.TryParse(parameter.ParameterType, argumentValue, true, out var enumValue))
-                        {
-                            parsedArguments.Add(enumValue);
-                        }
-                        else
-                        {
-                            return new { Error = $"Value '{argumentValue ?? "(null)"}' is not a valid enum member for parameter '{parameter.Name}'." };
-                        }
+                        return new { Error = $"Value '{argumentValue}' is not a valid enum member for parameter '{parameter.Name}'." };
                     }
-                    else
+
+                    parsedArguments.Add(enumValue);
+                }
+                else
+                {
+                    try
                     {
-                        var argumentValue = JsonSerializer.Deserialize(argument.GetRawText(), parameter.ParameterType, JsonOptions);
+                        var paredValue = JsonSerializer.Deserialize(argumentValue, parameter.ParameterType, JsonOptions);
                         parsedArguments.Add(argumentValue);
                     }
-                }
-                catch
-                {
-                    return new { IsSuccess = false, Error = "Argument does not match parameter type.", Parameter = parameter.Name!, Type = parameter.ParameterType.Name };
+                    catch
+                    {
+                        return new { Error = $"Value '{argumentValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'" };
+                    }
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != null)
@@ -53,7 +51,7 @@ public static class FunctionInvoker
             }
             else
             {
-                return new { IsSuccess = false, Error = "Value is missing for required parameter.", Parameter = parameter.Name! };
+                return new { Error = $"You have not provided a value for the required parameter '{parameter.Name}'." };
             }
         }
 
