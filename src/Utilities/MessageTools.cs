@@ -1,3 +1,4 @@
+using GenerativeCS.Enums;
 using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Utilities
@@ -7,12 +8,13 @@ namespace GenerativeCS.Utilities
         internal static void AddTimeInformation<T>(IList<T> messages) where T : IChatMessage, new()
         {
             var firstMessage = messages.FirstOrDefault();
-            if (firstMessage == null || firstMessage.Role != Enums.ChatRole.System)
+            if (firstMessage == null || firstMessage.Role != ChatRole.System)
             {
                 firstMessage = new T
                 {
-                    Role = Enums.ChatRole.System,
-                    Content = $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}"
+                    Role = ChatRole.System,
+                    Content = $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}",
+                    PinLocation = PinLocation.Begin
                 };
 
                 messages.Insert(0, firstMessage);
