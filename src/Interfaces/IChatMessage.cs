@@ -86,4 +86,17 @@ public interface IChatMessage
             PinLocation = pinLocation
         };
     }
+
+    T Clone<T>() where T : IChatMessage, new()
+    {
+        return new T
+        {
+            Role = Role,
+            Author = Author,
+            Content = Content,
+            FunctionCalls = FunctionCalls,
+            FunctionResult = FunctionResult,
+            PinLocation = PinLocation
+        };
+    }
 }

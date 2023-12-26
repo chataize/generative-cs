@@ -57,15 +57,8 @@ namespace GenerativeCS.Utilities
                 var currentMessage = messages[i];
                 if (currentMessage.Role == ChatRole.System)
                 {
-                    var updatedMessage = new T
-                    {
-                        Role = ChatRole.User,
-                        Author = currentMessage.Author,
-                        Content = currentMessage.Content,
-                        FunctionCalls = currentMessage.FunctionCalls,
-                        FunctionResult = currentMessage.FunctionResult,
-                        PinLocation = currentMessage.PinLocation
-                    };
+                    var updatedMessage = currentMessage.Clone<T>();
+                    updatedMessage.Role = ChatRole.User;
 
                     messages.RemoveAt(i);
                     messages.Insert(i, updatedMessage);
@@ -82,15 +75,8 @@ namespace GenerativeCS.Utilities
 
                 if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
                 {
-                    var replacementMessage = new T
-                    {
-                        Role = previousMessage.Role,
-                        Author = previousMessage.Author,
-                        Content = previousMessage.Content + $"\n\n{currentMessage.Content}",
-                        FunctionCalls = previousMessage.FunctionCalls,
-                        FunctionResult = previousMessage.FunctionResult,
-                        PinLocation = previousMessage.PinLocation
-                    };
+                    var replacementMessage = previousMessage.Clone<T>();
+                    replacementMessage.Content += $"\n\n{currentMessage.Content}";
 
                     messages.RemoveAt(i - 1);
                     messages.Insert(i - 1, replacementMessage);
