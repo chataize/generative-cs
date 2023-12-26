@@ -7,22 +7,14 @@ namespace GenerativeCS.Utilities
     {
         internal static void AddTimeInformation<T>(IList<T> messages) where T : IChatMessage, new()
         {
-            var firstMessage = messages.FirstOrDefault();
-            if (firstMessage == null || firstMessage.Role != ChatRole.System)
+            var firstMessage = new T
             {
-                firstMessage = new T
-                {
-                    Role = ChatRole.System,
-                    Content = $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}",
-                    PinLocation = PinLocation.Begin
-                };
+                Role = ChatRole.System,
+                Content = $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}",
+                PinLocation = PinLocation.Begin
+            };
 
-                messages.Insert(0, firstMessage);
-            }
-            else
-            {
-                firstMessage.Content += $"\n\nCurrent time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}";
-            }
+            messages.Insert(0, firstMessage);
         }
 
         internal static void LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage
@@ -58,18 +50,30 @@ namespace GenerativeCS.Utilities
             messages.RemoveAll(messagesToRemove.Contains);
         }
 
-        internal static void ReplaceSystemRole<T>(List<T> messages) where T : IChatMessage
+        internal static void ReplaceSystemRole<T>(List<T> messages) where T : IChatMessage, new()
         {
-           foreach (var message in messages)
+            for (var i = messages.Count - 1; i >= 0; i--)
             {
-                if (message.Role == ChatRole.System)
+                var currentMessage = messages[i];
+                if (currentMessage.Role == ChatRole.System)
                 {
-                  message.Role = ChatRole.User;
+                    var updatedMessage = new T
+                    {
+                        Role = ChatRole.User,
+                        Author = currentMessage.Author,
+                        Content = currentMessage.Content,
+                        FunctionCalls = currentMessage.FunctionCalls,
+                        FunctionResult = currentMessage.FunctionResult,
+                        PinLocation = currentMessage.PinLocation
+                    };
+
+                    messages.RemoveAt(i);
+                    messages.Insert(i, updatedMessage);
                 }
             }
         }
 
-        internal static void MergeMessages<T>(List<T> messages) where T : IChatMessage
+        internal static void MergeMessages<T>(List<T> messages) where T : IChatMessage, new()
         {
             for (int i = messages.Count - 1; i >= 1; i--)
             {
@@ -78,7 +82,18 @@ namespace GenerativeCS.Utilities
 
                 if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
                 {
-                    previousMessage.Content += $"\n\n{currentMessage.Content}";
+                    var replacementMessage = new T
+                    {
+                        Role = previousMessage.Role,
+                        Author = previousMessage.Author,
+                        Content = previousMessage.Content + $"\n\n{currentMessage.Content}",
+                        FunctionCalls = previousMessage.FunctionCalls,
+                        FunctionResult = previousMessage.FunctionResult,
+                        PinLocation = previousMessage.PinLocation
+                    };
+
+                    messages.RemoveAt(i - 1);
+                    messages.Insert(i - 1, replacementMessage);
                     messages.RemoveAt(i);
                 }
             }
