@@ -38,8 +38,8 @@ public static class FunctionInvoker
                     }
                     else
                     {
-                        var paredValue = JsonSerializer.Deserialize(rawValue, parameter.ParameterType, JsonOptions);
-                        parsedArguments.Add(rawValue);
+                        var parsedValue = JsonSerializer.Deserialize(rawValue, parameter.ParameterType, JsonOptions);
+                        parsedArguments.Add(parsedValue);
                     }
                 }
                 catch
