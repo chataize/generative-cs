@@ -72,7 +72,7 @@ public class ChatGPT
                     argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
                     conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
 
-                    var function = allFunctions.LastOrDefault(f => f.Name == functionName);
+                    var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
