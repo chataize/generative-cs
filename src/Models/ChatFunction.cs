@@ -51,5 +51,5 @@ public record ChatFunction
 
     public bool RequiresConfirmation { get; set; }
 
-    public Delegate? Operation { get; set; }
+    public required Delegate Operation { get; set; }
 }
