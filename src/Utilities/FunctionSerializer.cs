@@ -151,7 +151,7 @@ internal static class FunctionSerializer
     {
         if (type == typeof(bool))
         {
-            return ("boolean", "true or false");
+            return ("boolean", null);
         }
 
         if (type == typeof(sbyte))
@@ -176,7 +176,7 @@ internal static class FunctionSerializer
 
         if (type == typeof(int) || type == typeof(long) || type == typeof(nint))
         {
-            return ("integer", "signed integer");
+            return ("integer", null);
         }
 
         if (type == typeof(uint) || type == typeof(ulong) || type == typeof(nuint))
