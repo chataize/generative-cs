@@ -5,9 +5,9 @@ namespace GenerativeCS.Utilities
 {
     internal static class MessageTools
     {
-        internal static void AddTimeInformation(List<ChatMessage> messages)
+        internal static void AddTimeInformation(List<ChatMessage> messages, DateTime currentTime)
         {
-            var firstMessage = new ChatMessage(ChatRole.System, $"Current time (C# DateTimeOffset UTC): {DateTimeOffset.UtcNow}", PinLocation.Begin);
+            var firstMessage = new ChatMessage(ChatRole.System, $"Current time: {currentTime}", PinLocation.Begin);
             messages.Insert(0, firstMessage);
         }
 

@@ -33,6 +33,8 @@ public class Gemini
 
     public bool IsTimeAware { get; set; }
 
+    public Func<DateTime> TimeDelegate { get; set; } = () => DateTime.Now;
+
     public List<ChatFunction> Functions { get; set; } = [];
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
@@ -213,7 +215,7 @@ public class Gemini
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages);
+            MessageTools.AddTimeInformation(messages, TimeDelegate());
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
