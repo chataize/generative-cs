@@ -98,7 +98,7 @@ public class ChatGPT
         var text = message.GetProperty("content").GetString()!;
         conversation.FromAssistant(text);
 
-        return text!;
+        return text;
     }
 
     public async Task<List<float>> GetEmbeddingAsync(string text, CancellationToken cancellationToken = default)
