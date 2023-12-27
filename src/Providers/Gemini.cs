@@ -74,7 +74,7 @@ public class Gemini
                 var function = allFunctions.LastOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
-                    if (function.RequireConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
+                    if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
                         conversation.FromFunction(new FunctionResult(functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
                     }
@@ -126,14 +126,14 @@ public class Gemini
         Functions.Add(new ChatFunction(name, description, function));
     }
 
-    public void AddFunction(string name, bool requireConfirmation, Delegate function)
+    public void AddFunction(string name, bool requiresConfirmation, Delegate function)
     {
-        Functions.Add(new ChatFunction(name, requireConfirmation, function));
+        Functions.Add(new ChatFunction(name, requiresConfirmation, function));
     }
 
-    public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
+    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate function)
     {
-        Functions.Add(new ChatFunction(name, description, requireConfirmation, function));
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, function));
     }
 
     public void RemoveFunction(ChatFunction function)

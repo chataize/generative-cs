@@ -98,15 +98,15 @@ public record ChatConversation
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, bool requireConfirmation, Delegate function)
+    public void AddFunction(string name, bool requiresConfirmation, Delegate function)
     {
-        var chatFunction = new ChatFunction(name, requireConfirmation, function);
+        var chatFunction = new ChatFunction(name, requiresConfirmation, function);
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
+    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate function)
     {
-        var chatFunction = new ChatFunction(name, description, requireConfirmation, function);
+        var chatFunction = new ChatFunction(name, description, requiresConfirmation, function);
         Functions.Add(chatFunction);
     }
 
