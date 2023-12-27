@@ -54,7 +54,7 @@ public record ChatMessage
 
     public PinLocation PinLocation { get; set; }
 
-    public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;
 
     public static ChatMessage FromSystem(string content, PinLocation pinLocation = PinLocation.None)
     {
