@@ -9,10 +9,10 @@ public static class FunctionInvoker
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public static async Task<object> InvokeAsync(Delegate function, JsonElement arguments, CancellationToken cancellationToken = default)
+    public static async Task<object> InvokeAsync(Delegate operation, JsonElement arguments, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
-        foreach (var parameter in function.Method.GetParameters())
+        foreach (var parameter in operation.Method.GetParameters())
         {
             if (parameter.ParameterType == typeof(CancellationToken))
             {
@@ -57,7 +57,7 @@ public static class FunctionInvoker
             }
         }
 
-        var invocationResult = function.DynamicInvoke([.. parsedArguments]);
+        var invocationResult = operation.DynamicInvoke([.. parsedArguments]);
         if (invocationResult is Task task)
         {
             await task.ConfigureAwait(false);

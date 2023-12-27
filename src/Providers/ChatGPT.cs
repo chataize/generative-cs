@@ -82,7 +82,7 @@ public class ChatGPT
                         }
                         else
                         {
-                            var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
+                            var functionResult = await FunctionInvoker.InvokeAsync(function.Operation!, argumentsElement, cancellationToken);
                             conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
                         }
                     }
@@ -130,29 +130,29 @@ public class ChatGPT
         Functions.Add(function);
     }
 
-    public void AddFunction(Delegate function)
+    public void AddFunction(Delegate operation)
     {
-        Functions.Add(new ChatFunction(function));
+        Functions.Add(new ChatFunction(operation));
     }
 
-    public void AddFunction(string name, Delegate function)
+    public void AddFunction(string name, Delegate operation)
     {
-        Functions.Add(new ChatFunction(name, function));
+        Functions.Add(new ChatFunction(name, operation));
     }
 
-    public void AddFunction(string name, string? description, Delegate function)
+    public void AddFunction(string name, string? description, Delegate operation)
     {
-        Functions.Add(new ChatFunction(name, description, function));
+        Functions.Add(new ChatFunction(name, description, operation));
     }
 
-    public void AddFunction(string name, bool requiresConfirmation, Delegate function)
+    public void AddFunction(string name, bool requiresConfirmation, Delegate operation)
     {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, function));
+        Functions.Add(new ChatFunction(name, requiresConfirmation, operation));
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate function)
+    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
     {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, function));
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, operation));
     }
 
     public void RemoveFunction(ChatFunction function)
@@ -169,9 +169,9 @@ public class ChatGPT
         }
     }
 
-    public void RemoveFunction(Delegate function)
+    public void RemoveFunction(Delegate operation)
     {
-        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        var functionToRemove = Functions.LastOrDefault(f => f.Operation == operation);
         if (functionToRemove != null)
         {
             Functions.Remove(functionToRemove);

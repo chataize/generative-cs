@@ -7,42 +7,42 @@ public record ChatFunction
     public ChatFunction() { }
 
     [SetsRequiredMembers]
-    public ChatFunction(Delegate function)
+    public ChatFunction(Delegate operation)
     {
-        Name = function.Method.Name;
-        Function = function;
+        Name = operation.Method.Name;
+        Operation = operation;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, Delegate function)
-    {
-        Name = name;
-        Function = function;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, Delegate function)
+    public ChatFunction(string name, Delegate operation)
     {
         Name = name;
-        Description = description;
-        Function = function;
+        Operation = operation;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation, Delegate function)
-    {
-        Name = name;
-        RequiresConfirmation = requiresConfirmation;
-        Function = function;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation, Delegate function)
+    public ChatFunction(string name, string? description, Delegate operation)
     {
         Name = name;
         Description = description;
+        Operation = operation;
+    }
+
+    [SetsRequiredMembers]
+    public ChatFunction(string name, bool requiresConfirmation, Delegate operation)
+    {
+        Name = name;
         RequiresConfirmation = requiresConfirmation;
-        Function = function;
+        Operation = operation;
+    }
+
+    [SetsRequiredMembers]
+    public ChatFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
+    {
+        Name = name;
+        Description = description;
+        RequiresConfirmation = requiresConfirmation;
+        Operation = operation;
     }
 
     public required string Name { get; set; }
@@ -51,5 +51,5 @@ public record ChatFunction
 
     public bool RequiresConfirmation { get; set; }
 
-    public Delegate? Function { get; set; }
+    public Delegate? Operation { get; set; }
 }

@@ -80,33 +80,33 @@ public record ChatConversation
         Functions.Add(function);
     }
 
-    public void AddFunction(Delegate function)
+    public void AddFunction(Delegate operation)
     {
-        var chatFunction = new ChatFunction(function);
+        var chatFunction = new ChatFunction(operation);
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, Delegate function)
+    public void AddFunction(string name, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, function);
+        var chatFunction = new ChatFunction(name, operation);
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, string? description, Delegate function)
+    public void AddFunction(string name, string? description, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, description, function);
+        var chatFunction = new ChatFunction(name, description, operation);
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, bool requiresConfirmation, Delegate function)
+    public void AddFunction(string name, bool requiresConfirmation, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, requiresConfirmation, function);
+        var chatFunction = new ChatFunction(name, requiresConfirmation, operation);
         Functions.Add(chatFunction);
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate function)
+    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, description, requiresConfirmation, function);
+        var chatFunction = new ChatFunction(name, description, requiresConfirmation, operation);
         Functions.Add(chatFunction);
     }
 
@@ -124,9 +124,9 @@ public record ChatConversation
         }
     }
 
-    public void RemoveFunction(Delegate function)
+    public void RemoveFunction(Delegate operation)
     {
-        var functionToRemove = Functions.LastOrDefault(f => f.Function == function);
+        var functionToRemove = Functions.LastOrDefault(f => f.Operation == operation);
         if (functionToRemove != null)
         {
             Functions.Remove(functionToRemove);

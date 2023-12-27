@@ -13,7 +13,7 @@ internal static class FunctionSerializer
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
 
-        foreach (var parameter in function.Function!.Method.GetParameters())
+        foreach (var parameter in function.Operation!.Method.GetParameters())
         {
             if (parameter.ParameterType == typeof(CancellationToken))
             {
@@ -52,7 +52,7 @@ internal static class FunctionSerializer
             functionObject.Add("parameters", parametersObject);
         }
 
-        var description = function.Description ?? GetDescription(function.Function.Method);
+        var description = function.Description ?? GetDescription(function.Operation.Method);
         if (!string.IsNullOrEmpty(description))
         {
             functionObject.Add("description", description);
