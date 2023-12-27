@@ -43,10 +43,7 @@ public class ChatGPT
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
-        var conversation = new ChatConversation();
-        conversation.FromSystem(prompt);
-
-        return await CompleteAsync(conversation, cancellationToken);
+        return await CompleteAsync(new ChatConversation(prompt), cancellationToken);
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
