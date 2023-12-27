@@ -71,22 +71,29 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
             if (part.TryGetProperty("functionCall", out var functionCall) && functionCall.TryGetProperty("name", out var functionNameProperty))
             {
                 var functionName = functionNameProperty.GetString()!;
-                var arguments = functionCall.GetProperty("args");
+                var argumentsElement = functionCall.GetProperty("args");
 
-                conversation.FromAssistant(new FunctionCall(functionName, arguments));
+                conversation.FromAssistant(new FunctionCall(functionName, argumentsElement));
 
                 var function = allFunctions.LastOrDefault(f => f.Name!.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
-                    var result = await FunctionInvoker.InvokeAsync(function.Function!, arguments, cancellationToken);
-                    conversation.FromFunction(new FunctionResult(functionName, result));
-
-                    return await CompleteAsync(conversation, cancellationToken);
+                    if (function.RequireConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
+                    {
+                        conversation.FromFunction(new FunctionResult(functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    }
+                    else
+                    {
+                        var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
+                        conversation.FromFunction(new FunctionResult(functionName, functionResult));
+                    }
                 }
                 else
                 {
                     conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
                 }
+
+                return await CompleteAsync(conversation, cancellationToken);
             }
             else if (part.TryGetProperty("text", out var textProperty))
             {
