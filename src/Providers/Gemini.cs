@@ -94,7 +94,7 @@ public class Gemini
                 }
                 else
                 {
-                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' not found."));
+                    conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' was not found."));
                 }
 
                 return await CompleteAsync(conversation, cancellationToken);
