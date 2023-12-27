@@ -39,6 +39,11 @@ public class Gemini
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
+        if (Functions.Count >= 1)
+        {
+            return await CompleteAsync(new ChatConversation(prompt), cancellationToken);
+        }
+
         var request = CreateCompletionRequest(prompt);
         var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
 
