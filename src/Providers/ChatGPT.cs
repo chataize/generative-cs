@@ -53,11 +53,11 @@ public class ChatGPT
 
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
-        var message = document.RootElement.GetProperty("choices")[0].GetProperty("message");
+        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
 
-        if (message.TryGetProperty("tool_calls", out var toolCallsElement))
+        if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
             var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
@@ -95,28 +95,28 @@ public class ChatGPT
             return await CompleteAsync(conversation, cancellationToken);
         }
 
-        var text = message.GetProperty("content").GetString()!;
-        conversation.FromAssistant(text);
+        var messageContent = generatedMessage.GetProperty("content").GetString()!;
+        conversation.FromAssistant(messageContent);
 
-        return text;
+        return messageContent;
     }
 
     public async Task<List<float>> GetEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        var requestObject = new JsonObject
+        var request = new JsonObject
         {
-          { "input", text },
-          { "model", "text-embedding-ada-002" }
+            { "input", text },
+            { "model", "text-embedding-ada-002" }
         };
 
-        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", requestObject, cancellationToken, MaxAttempts);
+        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
+        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
         var embedding = new List<float>();
 
-        foreach (var element in document.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
+        foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
         {
             embedding.Add(element.GetSingle());
         }
@@ -194,7 +194,7 @@ public class ChatGPT
             ChatRole.User => "user",
             ChatRole.Assistant => "assistant",
             ChatRole.Function => "tool",
-            _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
     }
 

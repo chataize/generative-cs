@@ -44,11 +44,12 @@ public class Gemini
 
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
-        var message = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
+        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        var generatedMessage = responseDocument.RootElement.GetProperty("candidates")[0];
+        var messageContent = generatedMessage.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
 
-        return message;
+        return messageContent;
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
@@ -58,18 +59,18 @@ public class Gemini
 
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
-        var parts = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
+        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        var responseParts = responseDocument.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
         var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
 
-        string text = null!;
-        foreach (var part in parts.EnumerateArray())
+        string messageContent = null!;
+        foreach (var part in responseParts.EnumerateArray())
         {
-            if (part.TryGetProperty("functionCall", out var functionCall) && functionCall.TryGetProperty("name", out var functionNameProperty))
+            if (part.TryGetProperty("functionCall", out var functionCallElement) && functionCallElement.TryGetProperty("name", out var functionNameElement))
             {
-                var functionName = functionNameProperty.GetString()!;
-                var argumentsElement = functionCall.GetProperty("args");
+                var functionName = functionNameElement.GetString()!;
+                var argumentsElement = functionCallElement.GetProperty("args");
 
                 conversation.FromAssistant(new FunctionCall(functionName, argumentsElement));
 
@@ -82,7 +83,7 @@ public class Gemini
                     }
                     else
                     {
-                        var functionResult = await FunctionInvoker.InvokeAsync(function.Operation!, argumentsElement, cancellationToken);
+                        var functionResult = await FunctionInvoker.InvokeAsync(function.Operation, argumentsElement, cancellationToken);
                         conversation.FromFunction(new FunctionResult(functionName, functionResult));
                     }
                 }
@@ -93,10 +94,10 @@ public class Gemini
 
                 return await CompleteAsync(conversation, cancellationToken);
             }
-            else if (part.TryGetProperty("text", out var textProperty))
+            else if (part.TryGetProperty("text", out var textElement))
             {
-                text = textProperty.GetString()!;
-                conversation.FromAssistant(text);
+                messageContent = textElement.GetString()!;
+                conversation.FromAssistant(messageContent);
             }
             else
             {
@@ -105,7 +106,7 @@ public class Gemini
             }
         }
 
-        return text;
+        return messageContent;
     }
 
     public void AddFunction(ChatFunction function)
@@ -174,9 +175,11 @@ public class Gemini
     {
         return role switch
         {
-            ChatRole.Assistant => "model",
-            ChatRole.Function => "function",
-            _ => "user"
+            ChatRole.System => "user",
+            ChatRole.User => "user",
+            ChatRole.Assistant => "assistant",
+            ChatRole.Function => "tool",
+            _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
     }
 
