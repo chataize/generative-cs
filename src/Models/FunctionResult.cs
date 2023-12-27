@@ -1,9 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models
 {
-    public record FunctionResult : IFunctionResult
+    public record FunctionResult
     {
         public FunctionResult() { }
 

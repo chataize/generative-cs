@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
 
-public record FunctionCall : IFunctionCall
+public record FunctionCall
 {
     public FunctionCall() { }
 

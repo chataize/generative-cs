@@ -3,13 +3,12 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using GenerativeCS.Interfaces;
-
+using GenerativeCS.Models;
 namespace GenerativeCS.Utilities;
 
 internal static class FunctionSerializer
 {
-    internal static JsonObject SerializeFunction<T>(T function) where T : IChatFunction
+    internal static JsonObject SerializeFunction(ChatFunction function)
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();

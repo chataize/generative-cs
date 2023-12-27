@@ -1,146 +1,116 @@
 ﻿using GenerativeCS.Events;
-using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
 
-public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage, TFunction> where TMessage : IChatMessage, new() where TFunction : IChatFunction, new()
+public record ChatConversation
 {
     public ChatConversation() { }
 
     public ChatConversation(string systemMessage)
     {
-        Messages.Add(IChatMessage.FromSystem<TMessage>(systemMessage, PinLocation.Begin));
+        FromSystem(systemMessage, PinLocation.Begin);
     }
 
-    public event EventHandler<MessageAddedEventArgs<TMessage>>? MessageAdded;
+    public event EventHandler<MessageAddedEventArgs>? MessageAdded;
 
-    public ICollection<TMessage> Messages { get; set; } = new List<TMessage>();
+    public List<ChatMessage> Messages { get; set; } = [];
 
-    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
+    public List<ChatFunction> Functions { get; set; } = [];
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
     public void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromSystem<TMessage>(message, pinLocation);
+        var chatMessage = ChatMessage.FromSystem(message, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
     public void FromUser(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromUser<TMessage>(message, pinLocation);
+        var chatMessage = ChatMessage.FromUser(message, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
     public void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromUser<TMessage>(name, message, pinLocation);
+        var chatMessage = ChatMessage.FromUser(name, message, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
     public void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromAssistant<TMessage>(message, pinLocation);
+        var chatMessage = ChatMessage.FromAssistant(message, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
-    public void FromAssistant(IFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public void FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCall, pinLocation);
+        var chatMessage = ChatMessage.FromAssistant(functionCall, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
-    public void FromAssistant(ICollection<IFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public void FromAssistant(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromAssistant<TMessage>(functionCalls, pinLocation);
+        var chatMessage = ChatMessage.FromAssistant(functionCalls, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
-    public void FromFunction(IFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = IChatMessage.FromFunction<TMessage>(functionResult, pinLocation);
+        var chatMessage = ChatMessage.FromFunction(functionResult, pinLocation);
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<TMessage>(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
-    public void AddFunction(TFunction function)
+    public void AddFunction(ChatFunction function)
     {
         Functions.Add(function);
     }
 
     public void AddFunction(Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = function.Method.Name,
-            Function = function
-        };
-
+        var chatFunction = new ChatFunction(function);
         Functions.Add(chatFunction);
     }
 
     public void AddFunction(string name, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Function = function
-        };
-
+        var chatFunction = new ChatFunction(name, function);
         Functions.Add(chatFunction);
     }
 
     public void AddFunction(string name, string? description, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            Function = function
-        };
-
+        var chatFunction = new ChatFunction(name, description, function);
         Functions.Add(chatFunction);
     }
 
     public void AddFunction(string name, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
+        var chatFunction = new ChatFunction(name, requireConfirmation, function);
         Functions.Add(chatFunction);
     }
 
     public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
+        var chatFunction = new ChatFunction(name, description, requireConfirmation, function);
         Functions.Add(chatFunction);
     }
 
-    public void RemoveFunction(TFunction function)
+    public void RemoveFunction(ChatFunction function)
     {
         Functions.Remove(function);
     }
@@ -167,11 +137,4 @@ public record ChatConversation<TMessage, TFunction> : IChatConversation<TMessage
     {
         Functions.Clear();
     }
-}
-
-public record ChatConversation : ChatConversation<ChatMessage, ChatFunction>
-{
-    public ChatConversation() { }
-
-    public ChatConversation(string systemMessage) : base(systemMessage) { }
 }

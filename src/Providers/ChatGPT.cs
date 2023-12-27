@@ -1,19 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
-using GenerativeCS.Interfaces;
 using GenerativeCS.Models;
 using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Providers;
 
-public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>, IEmbeddingProvider
-    where TConversation : IChatConversation<TMessage, TFunction>, new()
-    where TMessage : IChatMessage, new()
-    where TFunction : IChatFunction, new()
+public class ChatGPT
 {
     private readonly HttpClient _client = new();
 
@@ -42,17 +37,17 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
     public bool IsTimeAware { get; set; }
 
-    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
+    public List<ChatFunction> Functions { get; set; } = [];
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
-        var conversation = new TConversation();
+        var conversation = new ChatConversation();
         conversation.FromSystem(prompt);
 
         return await CompleteAsync(conversation, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
         var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
@@ -130,71 +125,37 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         return embedding;
     }
 
-    public void AddFunction(TFunction function)
+    public void AddFunction(ChatFunction function)
     {
         Functions.Add(function);
     }
 
     public void AddFunction(Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = function.Method.Name,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(function));
     }
 
     public void AddFunction(string name, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, function));
     }
 
     public void AddFunction(string name, string? description, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, function));
     }
 
     public void AddFunction(string name, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, requireConfirmation, function));
     }
 
     public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, requireConfirmation, function));
     }
 
-    public void RemoveFunction(TFunction function)
+    public void RemoveFunction(ChatFunction function)
     {
         Functions.Remove(function);
     }
@@ -234,7 +195,7 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         };
     }
 
-    private JsonObject CreateChatCompletionRequest(TConversation conversation)
+    private JsonObject CreateChatCompletionRequest(ChatConversation conversation)
     {
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
@@ -322,12 +283,4 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
 
         return requestObject;
     }
-}
-
-public class ChatGPT : ChatGPT<ChatConversation, ChatMessage, ChatFunction>
-{
-    public ChatGPT() { }
-
-    [SetsRequiredMembers]
-    public ChatGPT(string apiKey, string model = "gpt-3.5-turbo") : base(apiKey, model) { }
 }

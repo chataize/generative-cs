@@ -1,9 +1,8 @@
 ﻿using GenerativeCS.Enums;
-using GenerativeCS.Interfaces;
 
 namespace GenerativeCS.Models;
 
-public record ChatMessage : IChatMessage
+public record ChatMessage
 {
     public ChatMessage() { }
 
@@ -22,21 +21,21 @@ public record ChatMessage : IChatMessage
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(IFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Assistant;
-        FunctionCalls = new List<IFunctionCall> { functionCall };
+        FunctionCalls = [functionCall];
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(ICollection<IFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Assistant;
         FunctionCalls = functionCalls;
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(IFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Function;
         FunctionResult = functionResult;
@@ -49,9 +48,9 @@ public record ChatMessage : IChatMessage
 
     public string? Content { get; set; }
 
-    public ICollection<IFunctionCall> FunctionCalls { get; set; } = new List<IFunctionCall>();
+    public List<FunctionCall> FunctionCalls { get; set; } = [];
 
-    public IFunctionResult? FunctionResult { get; set; }
+    public FunctionResult? FunctionResult { get; set; }
 
     public PinLocation PinLocation { get; set; }
 
@@ -77,17 +76,17 @@ public record ChatMessage : IChatMessage
         return new ChatMessage(ChatRole.Assistant, content, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(IFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public static ChatMessage FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCall, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(ICollection<IFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public static ChatMessage FromAssistant(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCalls, pinLocation);
     }
 
-    public static ChatMessage FromFunction(IFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public static ChatMessage FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionResult, pinLocation);
     }

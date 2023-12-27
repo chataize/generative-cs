@@ -3,16 +3,12 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
-using GenerativeCS.Interfaces;
 using GenerativeCS.Models;
 using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Providers;
 
-public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TConversation, TMessage, TFunction>
-    where TConversation : IChatConversation<TMessage, TFunction>, new()
-    where TMessage : IChatMessage, new()
-    where TFunction : IChatFunction, new()
+public class Gemini
 {
     private readonly HttpClient _client = new();
 
@@ -37,7 +33,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
     public bool IsTimeAware { get; set; }
 
-    public ICollection<TFunction> Functions { get; set; } = new List<TFunction>();
+    public List<ChatFunction> Functions { get; set; } = [];
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
@@ -53,7 +49,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         return message;
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
         var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
@@ -110,71 +106,37 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         return text;
     }
 
-    public void AddFunction(TFunction function)
+    public void AddFunction(ChatFunction function)
     {
         Functions.Add(function);
     }
 
     public void AddFunction(Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = function.Method.Name,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(function));
     }
 
     public void AddFunction(string name, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, function));
     }
 
     public void AddFunction(string name, string? description, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, function));
     }
 
     public void AddFunction(string name, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, requireConfirmation, function));
     }
 
     public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
     {
-        var chatFunction = new TFunction
-        {
-            Name = name,
-            Description = description,
-            RequireConfirmation = requireConfirmation,
-            Function = function
-        };
-
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, requireConfirmation, function));
     }
 
-    public void RemoveFunction(TFunction function)
+    public void RemoveFunction(ChatFunction function)
     {
         Functions.Remove(function);
     }
@@ -242,7 +204,7 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         return requestObject;
     }
 
-    private JsonObject CreateChatCompletionRequest(TConversation conversation)
+    private JsonObject CreateChatCompletionRequest(ChatConversation conversation)
     {
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
@@ -334,12 +296,4 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
 
         return requestObject;
     }
-}
-
-public class Gemini : Gemini<ChatConversation, ChatMessage, ChatFunction>
-{
-    public Gemini() { }
-
-    [SetsRequiredMembers]
-    public Gemini(string apiKey, string model = "gemini-pro") : base(apiKey, model) { }
 }
