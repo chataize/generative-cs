@@ -110,27 +110,31 @@ public record ChatConversation
         Functions.Add(chatFunction);
     }
 
-    public void RemoveFunction(ChatFunction function)
+    public bool RemoveFunction(ChatFunction function)
     {
-        Functions.Remove(function);
+        return Functions.Remove(function);
     }
 
-    public void RemoveFunction(string name)
+    public bool RemoveFunction(string name)
     {
-        var functionToRemove = Functions.LastOrDefault(f => f.Name == name);
-        if (functionToRemove != null)
+        var function = Functions.LastOrDefault(f => f.Name == name);
+        if (function == null)
         {
-            Functions.Remove(functionToRemove);
+            return false;
         }
+
+        return Functions.Remove(function);
     }
 
-    public void RemoveFunction(Delegate operation)
+    public bool RemoveFunction(Delegate operation)
     {
-        var functionToRemove = Functions.LastOrDefault(f => f.Operation == operation);
-        if (functionToRemove != null)
+        var function = Functions.LastOrDefault(f => f.Operation == operation);
+        if (function == null)
         {
-            Functions.Remove(functionToRemove);
+            return false;
         }
+
+        return Functions.Remove(function);
     }
 
     public void ClearFunctions()
