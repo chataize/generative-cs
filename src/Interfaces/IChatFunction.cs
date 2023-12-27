@@ -6,5 +6,7 @@ public interface IChatFunction
 
     string? Description { get; set; }
 
+    bool RequireConfirmation { get; set; }
+
     Delegate? Function { get; set; }
 }

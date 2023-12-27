@@ -142,6 +142,31 @@ public class Gemini<TConversation, TMessage, TFunction> : ICompletionProvider<TC
         Functions.Add(chatFunction);
     }
 
+    public void AddFunction(string name, bool requireConfirmation, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            RequireConfirmation = requireConfirmation,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Description = description,
+            RequireConfirmation = requireConfirmation,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
     public void RemoveFunction(TFunction function)
     {
         Functions.Remove(function);

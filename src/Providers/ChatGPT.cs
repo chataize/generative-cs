@@ -81,8 +81,15 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
                     var function = allFunctions.LastOrDefault(f => f.Name == functionName);
                     if (function != null)
                     {
-                        var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
-                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                        if (function.RequireConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
+                        {
+                            conversation.FromFunction(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                        }
+                        else
+                        {
+                            var functionResult = await FunctionInvoker.InvokeAsync(function.Function!, argumentsElement, cancellationToken);
+                            conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                        }
                     }
                     else
                     {
@@ -156,6 +163,31 @@ public class ChatGPT<TConversation, TMessage, TFunction> : ICompletionProvider<T
         {
             Name = name,
             Description = description,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, bool requireConfirmation, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            RequireConfirmation = requireConfirmation,
+            Function = function
+        };
+
+        Functions.Add(chatFunction);
+    }
+
+    public void AddFunction(string name, string? description, bool requireConfirmation, Delegate function)
+    {
+        var chatFunction = new TFunction
+        {
+            Name = name,
+            Description = description,
+            RequireConfirmation = requireConfirmation,
             Function = function
         };
 

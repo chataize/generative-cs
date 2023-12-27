@@ -5,7 +5,7 @@ namespace GenerativeCS.Models;
 
 public record ChatFunction : IChatFunction
 {
-    public ChatFunction() {}
+    public ChatFunction() { }
 
     public ChatFunction(Delegate function)
     {
@@ -26,9 +26,26 @@ public record ChatFunction : IChatFunction
         Function = function;
     }
 
+    public ChatFunction(string name, bool requireConfirmation, Delegate function)
+    {
+        Name = name;
+        RequireConfirmation = requireConfirmation;
+        Function = function;
+    }
+
+    public ChatFunction(string name, string? description, bool requireConfirmation, Delegate function)
+    {
+        Name = name;
+        Description = description;
+        RequireConfirmation = requireConfirmation;
+        Function = function;
+    }
+
     public string? Name { get; set; }
 
     public string? Description { get; set; }
+
+    public bool RequireConfirmation { get; set; }
 
     public Delegate? Function { get; set; }
 }
