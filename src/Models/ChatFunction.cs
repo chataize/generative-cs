@@ -24,17 +24,17 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(Delegate operation)
+    public ChatFunction(Delegate callback)
     {
-        Name = operation.Method.Name;
-        Operation = operation;
+        Name = callback.Method.Name;
+        Callback = callback;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, Delegate operation)
+    public ChatFunction(string name, Delegate callback)
     {
         Name = name;
-        Operation = operation;
+        Callback = callback;
     }
 
     [SetsRequiredMembers]
@@ -52,11 +52,11 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, Delegate operation)
+    public ChatFunction(string name, string? description, Delegate callback)
     {
         Name = name;
         Description = description;
-        Operation = operation;
+        Callback = callback;
     }
 
     [SetsRequiredMembers]
@@ -76,11 +76,11 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation, Delegate operation)
+    public ChatFunction(string name, bool requiresConfirmation, Delegate callback)
     {
         Name = name;
         RequiresConfirmation = requiresConfirmation;
-        Operation = operation;
+        Callback = callback;
     }
 
     [SetsRequiredMembers]
@@ -100,12 +100,12 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
+    public ChatFunction(string name, string? description, bool requiresConfirmation, Delegate callback)
     {
         Name = name;
         Description = description;
         RequiresConfirmation = requiresConfirmation;
-        Operation = operation;
+        Callback = callback;
     }
 
 
@@ -135,5 +135,5 @@ public record ChatFunction
 
     public IEnumerable<FunctionParameter>? Parameters { get; set; }
 
-    public Delegate? Operation { get; set; }
+    public Delegate? Callback { get; set; }
 }

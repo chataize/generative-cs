@@ -33,7 +33,7 @@ internal static class FunctionSerializer
         }
         else
         {
-            foreach (var parameter in function.Operation!.Method.GetParameters())
+            foreach (var parameter in function.Callback!.Method.GetParameters())
             {
                 if (parameter.ParameterType == typeof(CancellationToken))
                 {
@@ -75,9 +75,9 @@ internal static class FunctionSerializer
 
         var description = function.Description;
 
-        if (description == null && function.Operation != null)
+        if (description == null && function.Callback != null)
         {
-            description = GetDescription(function.Operation.Method);
+            description = GetDescription(function.Callback.Method);
         }
 
         if (!string.IsNullOrEmpty(description))
