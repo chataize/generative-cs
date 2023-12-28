@@ -34,7 +34,7 @@ public class Gemini
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
-    public Func<FunctionCall, Task<object?>> FunctionCallback { get; set; } = _ => throw new NotImplementedException("Function callback has not been implemented.");
+    public Func<string, JsonElement, Task<object?>> FunctionCallback { get; set; } = (_, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
     public List<ChatFunction> Functions { get; set; } = [];
 
@@ -77,9 +77,8 @@ public class Gemini
             {
                 var functionName = functionNameElement.GetString()!;
                 var argumentsElement = functionCallElement.GetProperty("args");
-                var functionCall = new FunctionCall(functionName, argumentsElement);
 
-                conversation.FromAssistant(functionCall);
+                conversation.FromAssistant(new FunctionCall(functionName, argumentsElement));
 
                 var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
@@ -97,7 +96,7 @@ public class Gemini
                         }
                         else
                         {
-                            var functionResult = await FunctionCallback(functionCall);
+                            var functionResult = await FunctionCallback(functionName, argumentsElement);
                             conversation.FromFunction(new FunctionResult(functionName, functionResult));
                         }
                     }

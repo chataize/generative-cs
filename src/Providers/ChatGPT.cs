@@ -39,7 +39,7 @@ public class ChatGPT
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
-    public Func<FunctionCall, Task<object?>> FunctionCallback { get; set; } = _ => throw new NotImplementedException("Function callback has not been implemented.");
+    public Func<string, JsonElement, Task<object?>> FunctionCallback { get; set; } = (_, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
     public List<ChatFunction> Functions { get; set; } = [];
 
@@ -72,9 +72,7 @@ public class ChatGPT
                     var argumentsElement = functionElement.GetProperty("arguments");
 
                     argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
-
-                    var functionCall = new FunctionCall(toolCallId, functionName, argumentsElement);
-                    conversation.FromAssistant(functionCall);
+                    conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
@@ -92,7 +90,7 @@ public class ChatGPT
                             }
                             else
                             {
-                                var functionResult = await FunctionCallback(functionCall);
+                                var functionResult = await FunctionCallback(functionName, argumentsElement);
                                 conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
                             }
                         }
