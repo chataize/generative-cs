@@ -11,6 +11,11 @@ public record ChatConversation
         FromSystem(systemMessage, PinLocation.Begin);
     }
 
+    public ChatConversation(IEnumerable<ChatMessage> messages)
+    {
+        Messages = messages.ToList();
+    }
+
     public event EventHandler<MessageAddedEventArgs>? MessageAdded;
 
     public List<ChatMessage> Messages { get; set; } = [];
