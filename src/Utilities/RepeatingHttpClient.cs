@@ -25,6 +25,10 @@ internal static class RepeatingHttpClient
 
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception)
             {
                 if (++attempts >= maxAttempts)
