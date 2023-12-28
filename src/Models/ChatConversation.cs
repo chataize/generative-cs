@@ -80,34 +80,79 @@ public record ChatConversation
         Functions.Add(function);
     }
 
+    public void AddFunction(string name, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
+    }
+
     public void AddFunction(Delegate operation)
     {
-        var chatFunction = new ChatFunction(operation);
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(operation));
     }
 
     public void AddFunction(string name, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, operation);
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, operation));
+    }
+
+    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
+    }
+
+    public void AddFunction(string name, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
     }
 
     public void AddFunction(string name, string? description, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, description, operation);
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, operation));
+    }
+
+    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
+    }
+
+    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
     }
 
     public void AddFunction(string name, bool requiresConfirmation, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, requiresConfirmation, operation);
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, requiresConfirmation, operation));
+    }
+
+    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
     }
 
     public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
     {
-        var chatFunction = new ChatFunction(name, description, requiresConfirmation, operation);
-        Functions.Add(chatFunction);
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, operation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
     }
 
     public bool RemoveFunction(ChatFunction function)

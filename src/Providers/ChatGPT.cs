@@ -37,7 +37,9 @@ public class ChatGPT
 
     public bool IsTimeAware { get; set; }
 
-    public Func<DateTime> TimeDelegate { get; set; } = () => DateTime.Now;
+    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
+
+    public Func<FunctionCall, Task<object?>> FunctionCallback { get; set; } = _ => throw new NotImplementedException("Function callback has not been implemented.");
 
     public List<ChatFunction> Functions { get; set; } = [];
 
@@ -70,7 +72,9 @@ public class ChatGPT
                     var argumentsElement = functionElement.GetProperty("arguments");
 
                     argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
-                    conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
+
+                    var functionCall = new FunctionCall(toolCallId, functionName, argumentsElement);
+                    conversation.FromAssistant(functionCall);
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
@@ -81,8 +85,16 @@ public class ChatGPT
                         }
                         else
                         {
-                            var functionResult = await FunctionInvoker.InvokeAsync(function.Operation!, argumentsElement, cancellationToken);
-                            conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                            if (function.Operation != null)
+                            {
+                                var functionResult = await FunctionInvoker.InvokeAsync(function.Operation, argumentsElement, cancellationToken);
+                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                            }
+                            else
+                            {
+                                var functionResult = await FunctionCallback(functionCall);
+                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                            }
                         }
                     }
                     else
@@ -129,6 +141,16 @@ public class ChatGPT
         Functions.Add(function);
     }
 
+    public void AddFunction(string name, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
+    }
+
     public void AddFunction(Delegate operation)
     {
         Functions.Add(new ChatFunction(operation));
@@ -139,9 +161,29 @@ public class ChatGPT
         Functions.Add(new ChatFunction(name, operation));
     }
 
+    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
+    }
+
+    public void AddFunction(string name, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
+    }
+
     public void AddFunction(string name, string? description, Delegate operation)
     {
         Functions.Add(new ChatFunction(name, description, operation));
+    }
+
+    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
+    }
+
+    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
     }
 
     public void AddFunction(string name, bool requiresConfirmation, Delegate operation)
@@ -149,9 +191,29 @@ public class ChatGPT
         Functions.Add(new ChatFunction(name, requiresConfirmation, operation));
     }
 
+    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+    }
+
     public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
     {
         Functions.Add(new ChatFunction(name, description, requiresConfirmation, operation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
     }
 
     public bool RemoveFunction(ChatFunction function)
@@ -203,7 +265,7 @@ public class ChatGPT
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages, TimeDelegate());
+            MessageTools.AddTimeInformation(messages, TimeCallback());
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);

@@ -13,21 +13,42 @@ internal static class FunctionSerializer
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
 
-        foreach (var parameter in function.Operation!.Method.GetParameters())
+        if (function.Parameters != null)
         {
-            if (parameter.ParameterType == typeof(CancellationToken))
+            foreach (var parameter in function.Parameters)
             {
-                continue;
+                var propertyObject = SerializeProperty(parameter.Type);
+                if (parameter.Description != null)
+                {
+                    propertyObject.Add("description", parameter.Description);
+                }
+
+                propertiesObject.Add(parameter.Name, propertyObject);
+
+                if (!parameter.IsOptional)
+                {
+                    requiredArray.Add(parameter.Name);
+                }
             }
-
-            var parameterName = parameter.Name!;
-            var propertyObject = SerializeParameter(parameter);
-
-            propertiesObject.Add(parameterName, propertyObject);
-
-            if (!parameter.IsOptional || IsRequired(parameter))
+        }
+        else
+        {
+            foreach (var parameter in function.Operation!.Method.GetParameters())
             {
-                requiredArray.Add(parameterName);
+                if (parameter.ParameterType == typeof(CancellationToken))
+                {
+                    continue;
+                }
+
+                var parameterName = parameter.Name!;
+                var propertyObject = SerializeParameter(parameter);
+
+                propertiesObject.Add(parameterName, propertyObject);
+
+                if (!parameter.IsOptional || IsRequired(parameter))
+                {
+                    requiredArray.Add(parameterName);
+                }
             }
         }
 
@@ -52,7 +73,13 @@ internal static class FunctionSerializer
             functionObject.Add("parameters", parametersObject);
         }
 
-        var description = function.Description ?? GetDescription(function.Operation.Method);
+        var description = function.Description;
+
+        if (description == null && function.Operation != null)
+        {
+            description = GetDescription(function.Operation.Method);
+        }
+
         if (!string.IsNullOrEmpty(description))
         {
             functionObject.Add("description", description);
@@ -67,7 +94,7 @@ internal static class FunctionSerializer
         var propertyObject = SerializeProperty(parameterType);
         var description = GetDescription(parameter);
 
-        if (!string.IsNullOrEmpty(description))
+        if (description != null)
         {
             propertyObject.Add("description", description);
         }

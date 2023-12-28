@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
@@ -33,7 +32,9 @@ public class Gemini
 
     public bool IsTimeAware { get; set; }
 
-    public Func<DateTime> TimeDelegate { get; set; } = () => DateTime.Now;
+    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
+
+    public Func<FunctionCall, Task<object?>> FunctionCallback { get; set; } = _ => throw new NotImplementedException("Function callback has not been implemented.");
 
     public List<ChatFunction> Functions { get; set; } = [];
 
@@ -76,8 +77,9 @@ public class Gemini
             {
                 var functionName = functionNameElement.GetString()!;
                 var argumentsElement = functionCallElement.GetProperty("args");
+                var functionCall = new FunctionCall(functionName, argumentsElement);
 
-                conversation.FromAssistant(new FunctionCall(functionName, argumentsElement));
+                conversation.FromAssistant(functionCall);
 
                 var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
@@ -88,8 +90,16 @@ public class Gemini
                     }
                     else
                     {
-                        var functionResult = await FunctionInvoker.InvokeAsync(function.Operation, argumentsElement, cancellationToken);
-                        conversation.FromFunction(new FunctionResult(functionName, functionResult));
+                        if (function.Operation != null)
+                        {
+                            var functionResult = await FunctionInvoker.InvokeAsync(function.Operation, argumentsElement, cancellationToken);
+                            conversation.FromFunction(new FunctionResult(functionName, functionResult));
+                        }
+                        else
+                        {
+                            var functionResult = await FunctionCallback(functionCall);
+                            conversation.FromFunction(new FunctionResult(functionName, functionResult));
+                        }
                     }
                 }
                 else
@@ -119,6 +129,16 @@ public class Gemini
         Functions.Add(function);
     }
 
+    public void AddFunction(string name, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
+    }
+
     public void AddFunction(Delegate operation)
     {
         Functions.Add(new ChatFunction(operation));
@@ -129,9 +149,29 @@ public class Gemini
         Functions.Add(new ChatFunction(name, operation));
     }
 
+    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
+    }
+
+    public void AddFunction(string name, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, parameters));
+    }
+
     public void AddFunction(string name, string? description, Delegate operation)
     {
         Functions.Add(new ChatFunction(name, description, operation));
+    }
+
+    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
+    }
+
+    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, parameters));
     }
 
     public void AddFunction(string name, bool requiresConfirmation, Delegate operation)
@@ -139,9 +179,29 @@ public class Gemini
         Functions.Add(new ChatFunction(name, requiresConfirmation, operation));
     }
 
+    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+    }
+
     public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate operation)
     {
         Functions.Add(new ChatFunction(name, description, requiresConfirmation, operation));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
+    }
+
+    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
+    {
+        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
     }
 
     public bool RemoveFunction(ChatFunction function)
@@ -223,7 +283,7 @@ public class Gemini
         var messages = conversation.Messages.ToList();
         if (IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages, TimeDelegate());
+            MessageTools.AddTimeInformation(messages, TimeCallback());
         }
 
         MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
