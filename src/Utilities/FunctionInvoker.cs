@@ -2,14 +2,14 @@ using System.Text.Json;
 
 namespace GenerativeCS.Utilities;
 
-public static class FunctionInvoker
+internal static class FunctionInvoker
 {
     private static JsonSerializerOptions JsonOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public static async Task<object> InvokeAsync(Delegate callback, JsonElement arguments, CancellationToken cancellationToken = default)
+    internal static async Task<object> InvokeAsync(Delegate callback, JsonElement arguments, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
         foreach (var parameter in callback.Method.GetParameters())
