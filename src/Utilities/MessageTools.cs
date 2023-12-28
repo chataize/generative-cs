@@ -67,7 +67,7 @@ namespace GenerativeCS.Utilities
                 var previousMessage = messages[i - 1];
                 var currentMessage = messages[i];
 
-                if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
+                if (previousMessage.Role == currentMessage.Role && previousMessage.Name == currentMessage.Name)
                 {
                     var replacementMessage = previousMessage with { };
                     replacementMessage.Content += $"\n\n{currentMessage.Content}";

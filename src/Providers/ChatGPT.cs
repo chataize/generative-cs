@@ -276,9 +276,9 @@ public class ChatGPT
                 { "role", GetRoleName(message.Role) }
             };
 
-            if (message.Author != null)
+            if (message.Name != null)
             {
-                messageObject.Add("name", message.Author);
+                messageObject.Add("name", message.Name);
             }
 
             if (message.Content != null)

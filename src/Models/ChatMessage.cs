@@ -16,7 +16,7 @@ public record ChatMessage
     public ChatMessage(ChatRole role, string name, string content, PinLocation pinLocation = PinLocation.None)
     {
         Role = role;
-        Author = name;
+        Name = name;
         Content = content;
         PinLocation = pinLocation;
     }
@@ -44,7 +44,7 @@ public record ChatMessage
 
     public ChatRole Role { get; set; }
 
-    public string? Author { get; set; }
+    public string? Name { get; set; }
 
     public string? Content { get; set; }
 
