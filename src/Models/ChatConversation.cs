@@ -59,7 +59,7 @@ public record ChatConversation
         MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
     }
 
-    public void FromAssistant(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public void FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = ChatMessage.FromAssistant(functionCalls, pinLocation);
 

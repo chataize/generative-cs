@@ -28,7 +28,7 @@ public record ChatMessage
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Assistant;
         FunctionCalls = functionCalls;
@@ -48,7 +48,7 @@ public record ChatMessage
 
     public string? Content { get; set; }
 
-    public List<FunctionCall> FunctionCalls { get; set; } = [];
+    public IEnumerable<FunctionCall> FunctionCalls { get; set; } = [];
 
     public FunctionResult? FunctionResult { get; set; }
 
@@ -81,7 +81,7 @@ public record ChatMessage
         return new ChatMessage(functionCall, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(List<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public static ChatMessage FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCalls, pinLocation);
     }
