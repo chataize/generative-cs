@@ -62,7 +62,7 @@ namespace GenerativeCS.Utilities
 
         internal static void MergeMessages(List<ChatMessage> messages)
         {
-            for (int i = messages.Count - 1; i >= 1; i--)
+            for (var i = messages.Count - 1; i >= 1; i--)
             {
                 var previousMessage = messages[i - 1];
                 var currentMessage = messages[i];
