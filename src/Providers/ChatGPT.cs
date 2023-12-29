@@ -53,7 +53,7 @@ public class ChatGPT
 
     public bool IsTimeAware { get; set; }
 
-    public List<string> Stop { get; set; } = [];
+    public List<string> StopWords { get; set; } = [];
 
     public List<ChatFunction> Functions { get; set; } = [];
 
@@ -388,10 +388,10 @@ public class ChatGPT
             requestObject.Add("response_format", responseFormatObject);
         }
 
-        if (Stop != null && Stop.Count > 0)
+        if (StopWords != null && StopWords.Count > 0)
         {
             var stopArray = new JsonArray();
-            foreach (var stop in Stop)
+            foreach (var stop in StopWords)
             {
                 stopArray.Add(stop);
             }
