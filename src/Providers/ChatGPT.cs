@@ -29,6 +29,8 @@ public class ChatGPT
 
     public string Model { get; set; } = "gpt-3.5-turbo";
 
+    public string? User { get; set; }
+
     public int MaxAttempts { get; set; } = 5;
 
     public int? MaxOutputTokens { get; set; }
@@ -340,6 +342,11 @@ public class ChatGPT
             { "model", Model },
             { "messages", messagesArray }
         };
+
+        if (User != null)
+        {
+            requestObject.Add("user", User);
+        }
 
         if (MaxOutputTokens.HasValue)
         {
