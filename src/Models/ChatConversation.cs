@@ -19,6 +19,8 @@ public record ChatConversation
 
     public event EventHandler<MessageAddedEventArgs>? MessageAdded;
 
+    public string? User { get; set; }
+
     public List<ChatMessage> Messages { get; set; } = [];
 
     public List<ChatFunction> Functions { get; set; } = [];

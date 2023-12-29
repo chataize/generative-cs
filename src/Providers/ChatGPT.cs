@@ -343,7 +343,11 @@ public class ChatGPT
             { "messages", messagesArray }
         };
 
-        if (User != null)
+        if (conversation.User != null)
+        {
+            requestObject.Add("user", conversation.User);
+        }
+        else if (User != null)
         {
             requestObject.Add("user", User);
         }
