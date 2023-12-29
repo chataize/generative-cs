@@ -49,7 +49,7 @@ public class ChatGPT
 
     public double? PresencePenalty { get; set; }
 
-    public bool IsInJsonMode { get; set; }
+    public bool IsJsonMode { get; set; }
 
     public bool IsTimeAware { get; set; }
 
@@ -378,7 +378,7 @@ public class ChatGPT
             requestObject.Add("presence_penalty", PresencePenalty.Value);
         }
 
-        if (IsInJsonMode)
+        if (IsJsonMode)
         {
             var responseFormatObject = new JsonObject
             {
