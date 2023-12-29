@@ -107,7 +107,6 @@ internal static class FunctionSerializer
         return propertyObject;
     }
 
-
     private static JsonObject SerializeProperty(Type propertyType)
     {
         var (typeName, typeDescription) = GetTypeInfo(propertyType);

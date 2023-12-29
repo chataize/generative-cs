@@ -108,7 +108,6 @@ public record ChatFunction
         Callback = callback;
     }
 
-
     [SetsRequiredMembers]
     public ChatFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
     {

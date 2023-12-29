@@ -48,7 +48,7 @@ public class Gemini
         var request = CreateCompletionRequest(prompt);
         var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
@@ -63,7 +63,7 @@ public class Gemini
         var request = CreateChatCompletionRequest(conversation);
         var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);

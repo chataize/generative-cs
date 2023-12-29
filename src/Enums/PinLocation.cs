@@ -1,4 +1,4 @@
-namespace GenerativeCS;
+namespace GenerativeCS.Enums;
 
 public enum PinLocation
 {

@@ -53,7 +53,7 @@ public class ChatGPT
         var request = CreateChatCompletionRequest(conversation);
         var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
@@ -120,7 +120,7 @@ public class ChatGPT
         };
 
         var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);

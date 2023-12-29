@@ -1,4 +1,5 @@
-﻿using GenerativeCS.Events;
+﻿using GenerativeCS.Enums;
+using GenerativeCS.Events;
 
 namespace GenerativeCS.Models;
 

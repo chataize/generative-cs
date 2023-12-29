@@ -21,7 +21,7 @@ internal static class RepeatingHttpClient
             try
             {
                 var result = await client.PostAsJsonAsync(requestUri, value, cancellationToke);
-                result.EnsureSuccessStatusCode();
+                _ = result.EnsureSuccessStatusCode();
 
                 return result;
             }
