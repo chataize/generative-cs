@@ -31,17 +31,33 @@ public class ChatGPT
 
     public int MaxAttempts { get; set; } = 5;
 
+    public int? MaxOutputTokens { get; set; }
+
     public int? MessageLimit { get; set; }
 
     public int? CharacterLimit { get; set; }
 
+    public int? Seed { get; set; }
+
+    public double? Temperature { get; set; }
+
+    public double? TopP { get; set; }
+
+    public double? FrequencyPenalty { get; set; }
+
+    public double? PresencePenalty { get; set; }
+
+    public bool IsInJsonMode { get; set; }
+
     public bool IsTimeAware { get; set; }
 
-    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
+    public List<string> Stop { get; set; } = [];
+
+    public List<ChatFunction> Functions { get; set; } = [];
 
     public Func<string, JsonElement, CancellationToken, Task<object?>> FunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
-    public List<ChatFunction> Functions { get; set; } = [];
+    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
     public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
     {
@@ -118,6 +134,57 @@ public class ChatGPT
             { "input", text },
             { "model", "text-embedding-ada-002" }
         };
+
+        if (MaxOutputTokens.HasValue)
+        {
+            request.Add("max_tokens", MaxOutputTokens.Value);
+        }
+
+        if (Seed.HasValue)
+        {
+            request.Add("seed", Seed.Value);
+        }
+
+        if (Temperature.HasValue)
+        {
+            request.Add("temperature", Temperature.Value);
+        }
+
+        if (TopP.HasValue)
+        {
+            request.Add("top_p", TopP.Value);
+        }
+
+        if (FrequencyPenalty.HasValue)
+        {
+            request.Add("frequency_penalty", FrequencyPenalty.Value);
+        }
+
+        if (PresencePenalty.HasValue)
+        {
+            request.Add("presence_penalty", PresencePenalty.Value);
+        }
+
+        if (IsInJsonMode)
+        {
+            var responseFormatObject = new JsonObject
+            {
+               { "type", "json_object" }
+            };
+
+            request.Add("response_format", responseFormatObject);
+        }
+
+        if (Stop.Count > 0)
+        {
+            var stopArray = new JsonArray();
+            foreach (var stop in Stop)
+            {
+                stopArray.Add(stop);
+            }
+
+            request.Add("stop", stopArray);
+        }
 
         var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
         _ = response.EnsureSuccessStatusCode();
