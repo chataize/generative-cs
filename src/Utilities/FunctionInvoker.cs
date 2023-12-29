@@ -47,7 +47,7 @@ internal static class FunctionInvoker
                     return new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'" };
                 }
             }
-            else if (parameter.IsOptional && parameter.DefaultValue != null)
+            else if (parameter.IsOptional && parameter.DefaultValue != DBNull.Value)
             {
                 parsedArguments.Add(parameter.DefaultValue);
             }
