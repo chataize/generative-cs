@@ -44,7 +44,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'" };
+                    return new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." };
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != DBNull.Value)
@@ -53,7 +53,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return new { Error = $"You have not provided a value for the required parameter '{parameter.Name}'." };
+                return new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." };
             }
         }
 
