@@ -175,7 +175,7 @@ public class ChatGPT
             request.Add("response_format", responseFormatObject);
         }
 
-        if (Stop.Count > 0)
+        if (Stop != null && Stop.Count > 0)
         {
             var stopArray = new JsonArray();
             foreach (var stop in Stop)
