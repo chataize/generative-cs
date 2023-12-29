@@ -135,57 +135,6 @@ public class ChatGPT
             { "model", "text-embedding-ada-002" }
         };
 
-        if (MaxOutputTokens.HasValue)
-        {
-            request.Add("max_tokens", MaxOutputTokens.Value);
-        }
-
-        if (Seed.HasValue)
-        {
-            request.Add("seed", Seed.Value);
-        }
-
-        if (Temperature.HasValue)
-        {
-            request.Add("temperature", Temperature.Value);
-        }
-
-        if (TopP.HasValue)
-        {
-            request.Add("top_p", TopP.Value);
-        }
-
-        if (FrequencyPenalty.HasValue)
-        {
-            request.Add("frequency_penalty", FrequencyPenalty.Value);
-        }
-
-        if (PresencePenalty.HasValue)
-        {
-            request.Add("presence_penalty", PresencePenalty.Value);
-        }
-
-        if (IsInJsonMode)
-        {
-            var responseFormatObject = new JsonObject
-            {
-               { "type", "json_object" }
-            };
-
-            request.Add("response_format", responseFormatObject);
-        }
-
-        if (Stop != null && Stop.Count > 0)
-        {
-            var stopArray = new JsonArray();
-            foreach (var stop in Stop)
-            {
-                stopArray.Add(stop);
-            }
-
-            request.Add("stop", stopArray);
-        }
-
         var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
         _ = response.EnsureSuccessStatusCode();
 
@@ -391,6 +340,58 @@ public class ChatGPT
             { "model", Model },
             { "messages", messagesArray }
         };
+
+        if (MaxOutputTokens.HasValue)
+        {
+            requestObject.Add("max_tokens", MaxOutputTokens.Value);
+        }
+
+        if (Seed.HasValue)
+        {
+            requestObject.Add("seed", Seed.Value);
+        }
+
+        if (Temperature.HasValue)
+        {
+            requestObject.Add("temperature", Temperature.Value);
+        }
+
+        if (TopP.HasValue)
+        {
+            requestObject.Add("top_p", TopP.Value);
+        }
+
+        if (FrequencyPenalty.HasValue)
+        {
+            requestObject.Add("frequency_penalty", FrequencyPenalty.Value);
+        }
+
+        if (PresencePenalty.HasValue)
+        {
+            requestObject.Add("presence_penalty", PresencePenalty.Value);
+        }
+
+        if (IsInJsonMode)
+        {
+            var responseFormatObject = new JsonObject
+            {
+               { "type", "json_object" }
+            };
+
+            requestObject.Add("response_format", responseFormatObject);
+        }
+
+        if (Stop != null && Stop.Count > 0)
+        {
+            var stopArray = new JsonArray();
+            foreach (var stop in Stop)
+            {
+                stopArray.Add(stop);
+            }
+
+            requestObject.Add("stop", stopArray);
+        }
+
 
         var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         if (allFunctions.Count > 0)
