@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Models;
 
@@ -26,7 +27,7 @@ public record ChatFunction
     [SetsRequiredMembers]
     public ChatFunction(Delegate callback)
     {
-        Name = callback.Method.Name;
+        Name = MethodNameNormalizer.NormalizeMethodName(callback.Method.Name);
         Callback = callback;
     }
 
