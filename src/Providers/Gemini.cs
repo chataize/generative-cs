@@ -241,7 +241,7 @@ public class Gemini
         {
             ChatRole.System => "user",
             ChatRole.User => "user",
-            ChatRole.Assistant => "assistant",
+            ChatRole.Assistant => "model",
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
