@@ -129,6 +129,41 @@ public class ChatGPT
         return messageContent;
     }
 
+    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
+    {
+        var request = CreateChatCompletionRequest(conversation);
+        request.Add("stream", true);
+
+        using var response = await _client.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
+        using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var responseReader = new StreamReader(responseContent);
+
+        while (!responseReader.EndOfStream)
+        {
+            var chunk = await responseReader.ReadLineAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(chunk))
+            {
+                continue;
+            }
+
+            var chunkData = chunk.Split("data: ")[1];
+            using var chunkDocument = JsonDocument.Parse(chunkData);
+
+            var choice = chunkDocument.RootElement.GetProperty("choices")[0];
+            if (choice.TryGetProperty("finish_reason", out var finishReasonProperty) && finishReasonProperty.ValueKind != JsonValueKind.Null)
+            {
+                yield break;
+            }
+
+            var delta = choice.GetProperty("delta");
+            if (delta.TryGetProperty("content", out var contentElement) && contentElement.ValueKind != JsonValueKind.Null)
+            {
+                var content = contentElement.GetString()!;
+                yield return content;
+            }
+        }
+    }
+
     public async Task<List<float>> GetEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         var request = new JsonObject
