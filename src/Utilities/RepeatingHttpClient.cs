@@ -58,7 +58,10 @@ internal static class RepeatingHttpClient
                     Content = new StringContent(requestContent, Encoding.UTF8, "application/json")
                 };
 
-                return await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                var result = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                result.EnsureSuccessStatusCode();
+
+                return result;
             }
             catch (OperationCanceledException)
             {

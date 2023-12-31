@@ -139,6 +139,12 @@ public class ChatGPT
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 
+        var functionCalls = new List<FunctionCall>();
+        var currentToolCallId = string.Empty;
+        var currentFunctionName = string.Empty;
+        var currentFunctionArguments = string.Empty;
+        var entireContent = string.Empty;
+
         while (!responseReader.EndOfStream)
         {
             var chunk = await responseReader.ReadLineAsync(cancellationToken);
@@ -147,20 +153,113 @@ public class ChatGPT
                 continue;
             }
 
-            var chunkData = chunk.Split("data: ")[1];
+            var chunkParts = chunk.Split("data: ");
+            if (chunkParts.Length == 1)
+            {
+                continue;
+            }
+
+            var chunkData = chunkParts[1];
+            if (chunkData == "[DONE]")
+            {
+                break;
+            }
+
             using var chunkDocument = JsonDocument.Parse(chunkData);
 
             var choice = chunkDocument.RootElement.GetProperty("choices")[0];
             if (choice.TryGetProperty("finish_reason", out var finishReasonProperty) && finishReasonProperty.ValueKind != JsonValueKind.Null)
             {
-                yield break;
+                break;
             }
 
             var delta = choice.GetProperty("delta");
-            if (delta.TryGetProperty("content", out var contentElement) && contentElement.ValueKind != JsonValueKind.Null)
+
+            if (delta.TryGetProperty("content", out var contentProperty) && contentProperty.ValueKind != JsonValueKind.Null)
             {
-                var content = contentElement.GetString()!;
+                var content = contentProperty.GetString()!;
+                entireContent += content;
+
                 yield return content;
+            }
+
+            if (delta.TryGetProperty("tool_calls", out var toolCallsProperty))
+            {
+                var toolCallProperty = toolCallsProperty[0];
+                if (toolCallProperty.TryGetProperty("function", out var functionProperty))
+                {
+                    if (functionProperty.TryGetProperty("name", out var functionNameProperty))
+                    {
+                        currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
+
+                        if (!string.IsNullOrWhiteSpace(currentFunctionName))
+                        {
+                            var functionCall = new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement);
+
+                            functionCalls.Add(functionCall);
+                            conversation.FromAssistant(functionCall);
+                        }
+
+                        currentFunctionName = functionNameProperty.GetString()!;
+                        currentFunctionArguments = string.Empty;
+                    }
+
+                    if (functionProperty.TryGetProperty("arguments", out var functionArgumentsProperty))
+                    {
+                        currentFunctionArguments += functionArgumentsProperty.GetString()!;
+                    }
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentFunctionName))
+        {
+            var functionCall = new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement);
+
+            functionCalls.Add(functionCall);
+            conversation.FromAssistant(functionCall);
+        }
+
+        if (!string.IsNullOrWhiteSpace(entireContent))
+        {
+            conversation.FromAssistant(entireContent);
+        }
+
+        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        foreach (var functionCall in functionCalls)
+        {
+            var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionCall.Name, StringComparison.InvariantCultureIgnoreCase));
+            if (function != null)
+            {
+                if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
+                {
+                    conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                }
+                else
+                {
+                    if (function.Callback != null)
+                    {
+                        var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
+                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                    }
+                    else
+                    {
+                        var functionResult = await DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
+                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                    }
+                }
+            }
+            else
+            {
+                conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+            }
+        }
+
+        if (functionCalls.Count > 0)
+        {
+            await foreach (var chunk in StreamCompletionAsync(conversation, cancellationToken))
+            {
+                yield return chunk;
             }
         }
     }
