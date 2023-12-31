@@ -130,7 +130,7 @@ public class ChatGPT
         return messageContent;
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
         request.Add("stream", true);
@@ -255,7 +255,7 @@ public class ChatGPT
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in StreamCompletionAsync(conversation, cancellationToken))
+            await foreach (var chunk in CompleteAsStreamAsync(conversation, cancellationToken))
             {
                 yield return chunk;
             }
