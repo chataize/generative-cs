@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
@@ -129,7 +130,7 @@ public class ChatGPT
         return messageContent;
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
         request.Add("stream", true);
