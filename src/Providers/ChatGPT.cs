@@ -190,16 +190,12 @@ public class ChatGPT
                 {
                     if (functionProperty.TryGetProperty("name", out var functionNameProperty))
                     {
-                        currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
-
                         if (!string.IsNullOrWhiteSpace(currentFunctionName))
                         {
-                            var functionCall = new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement);
-
-                            functionCalls.Add(functionCall);
-                            conversation.FromAssistant(functionCall);
+                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement));
                         }
 
+                        currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
                         currentFunctionName = functionNameProperty.GetString()!;
                         currentFunctionArguments = string.Empty;
                     }
@@ -214,15 +210,12 @@ public class ChatGPT
 
         if (!string.IsNullOrWhiteSpace(currentFunctionName))
         {
-            var functionCall = new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement);
-
-            functionCalls.Add(functionCall);
-            conversation.FromAssistant(functionCall);
+            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement));
         }
 
-        if (!string.IsNullOrWhiteSpace(entireContent))
+        if (functionCalls.Count > 0)
         {
-            conversation.FromAssistant(entireContent);
+            conversation.FromAssistant(functionCalls);
         }
 
         var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
@@ -253,6 +246,11 @@ public class ChatGPT
             {
                 conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(entireContent))
+        {
+            conversation.FromAssistant(entireContent);
         }
 
         if (functionCalls.Count > 0)
