@@ -46,12 +46,11 @@ public class Gemini
         }
 
         var request = CreateCompletionRequest(prompt);
-        var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
 
-        _ = response.EnsureSuccessStatusCode();
+        using var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
+        using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
         var generatedMessage = responseDocument.RootElement.GetProperty("candidates")[0];
         var messageContent = generatedMessage.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
 
@@ -61,12 +60,11 @@ public class Gemini
     public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
-        var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
 
-        _ = response.EnsureSuccessStatusCode();
-
-        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var response = await _client.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={ApiKey}", request, cancellationToken, MaxAttempts);
+        using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+
         var responseParts = responseDocument.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
         var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
 

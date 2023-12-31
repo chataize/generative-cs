@@ -70,14 +70,12 @@ public class ChatGPT
     public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
-        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
-
-        _ = response.EnsureSuccessStatusCode();
-
-        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
-        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
-
+        
+        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
+        using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        
+        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");   
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
             var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
@@ -88,9 +86,10 @@ public class ChatGPT
                     var toolCallId = toolCallElement.GetProperty("id").GetString()!;
                     var functionElement = toolCallElement.GetProperty("function");
                     var functionName = functionElement.GetProperty("name").GetString()!;
-                    var argumentsElement = functionElement.GetProperty("arguments");
+                    var rawArgumentsElement = functionElement.GetProperty("arguments");
+                    var argumentsDocument = JsonDocument.Parse(rawArgumentsElement.GetString()!);
+                    var argumentsElement = argumentsDocument.RootElement;
 
-                    argumentsElement = JsonDocument.Parse(argumentsElement.GetString()!).RootElement;
                     conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
@@ -192,7 +191,8 @@ public class ChatGPT
                     {
                         if (!string.IsNullOrWhiteSpace(currentFunctionName))
                         {
-                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement));
+                            var argumentsDocument = JsonDocument.Parse(currentFunctionArguments);
+                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, argumentsDocument.RootElement));
                         }
 
                         currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
@@ -210,7 +210,8 @@ public class ChatGPT
 
         if (!string.IsNullOrWhiteSpace(currentFunctionName))
         {
-            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, JsonDocument.Parse(currentFunctionArguments).RootElement));
+            var argumentsDocument = JsonDocument.Parse(currentFunctionArguments);
+            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, argumentsDocument.RootElement));
         }
 
         if (functionCalls.Count > 0)
@@ -270,11 +271,11 @@ public class ChatGPT
             { "model", "text-embedding-ada-002" }
         };
 
-        var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
+        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
         _ = response.EnsureSuccessStatusCode();
 
-        var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
         var embedding = new List<float>();
 
         foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())

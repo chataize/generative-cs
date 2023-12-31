@@ -51,7 +51,7 @@ internal static class RepeatingHttpClient
             try
             {
                 var requestContent = JsonSerializer.Serialize(value);
-                var request = new HttpRequestMessage
+                using var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
                     RequestUri = new Uri(requestUri),
