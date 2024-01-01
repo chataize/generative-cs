@@ -28,6 +28,11 @@ public class GeminiClient
 
     public required string ApiKey { get; set; }
 
+    public static GeminiClient CreateInstance(string apiKey)
+    {
+        return new GeminiClient(apiKey);
+    }
+
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletion.CompleteAsync(prompt, ApiKey, _client, options, cancellationToken);

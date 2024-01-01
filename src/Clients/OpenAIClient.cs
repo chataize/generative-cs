@@ -34,6 +34,11 @@ public class OpenAIClient
         set => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
     }
 
+    public static OpenAIClient CreateInstance(string apiKey)
+    {
+        return new OpenAIClient(apiKey);
+    }
+
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await CompleteAsync(new ChatConversation(prompt), options, cancellationToken);
