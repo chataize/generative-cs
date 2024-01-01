@@ -5,6 +5,11 @@ namespace GenerativeCS.Options.Gemini;
 
 public record ChatCompletionOptions
 {
+    public ChatCompletionOptions(string model = "gemini-pro")
+    {
+        Model = model;
+    }
+
     public string Model { get; set; } = "gemini-pro";
 
     public int MaxAttempts { get; set; } = 5;

@@ -5,6 +5,11 @@ namespace GenerativeCS.Options.OpenAI;
 
 public record ChatCompletionOptions
 {
+    public ChatCompletionOptions(string model = "gemini-pro")
+    {
+        Model = model;
+    }
+
     public string Model { get; set; } = "gpt-3.5-turbo";
 
     public string? User { get; set; }
