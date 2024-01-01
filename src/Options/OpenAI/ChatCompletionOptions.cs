@@ -1,16 +1,19 @@
 using System.Text.Json;
+using GenerativeCS.Constants;
 using GenerativeCS.Models;
 
 namespace GenerativeCS.Options.OpenAI;
 
 public record ChatCompletionOptions
 {
-    public ChatCompletionOptions(string model = "gpt-3.5-turbo")
+    private const string DefaultModel = ChatCompletionModels.GPT_3_5_TURBO_1106;
+
+    public ChatCompletionOptions(string model = DefaultModel)
     {
         Model = model;
     }
 
-    public string Model { get; set; } = "gpt-3.5-turbo";
+    public string Model { get; set; } = DefaultModel;
 
     public string? User { get; set; }
 

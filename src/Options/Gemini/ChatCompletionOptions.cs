@@ -1,16 +1,19 @@
 using System.Text.Json;
+using GenerativeCS.Constants;
 using GenerativeCS.Models;
 
 namespace GenerativeCS.Options.Gemini;
 
 public record ChatCompletionOptions
 {
-    public ChatCompletionOptions(string model = "gemini-pro")
+    private const string DefaultModel = ChatCompletionModels.GEMINI_PRO;
+
+    public ChatCompletionOptions(string model = DefaultModel)
     {
         Model = model;
     }
 
-    public string Model { get; set; } = "gemini-pro";
+    public string Model { get; set; } = DefaultModel;
 
     public int MaxAttempts { get; set; } = 5;
 
