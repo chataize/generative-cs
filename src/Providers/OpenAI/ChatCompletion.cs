@@ -10,7 +10,7 @@ namespace GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new();
         options ??= new();
@@ -66,7 +66,7 @@ internal static class ChatCompletion
                 }
             }
 
-            return await CompleteAsync(conversation, apiKey, httpClient, options, cancellationToken);
+            return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
@@ -75,7 +75,7 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         httpClient ??= new();
         options ??= new();
@@ -205,7 +205,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in CompleteAsStreamAsync(conversation, apiKey, httpClient, options, cancellationToken))
+            await foreach (var chunk in CompleteAsStreamAsync(conversation, apiKey, options, httpClient, cancellationToken))
             {
                 yield return chunk;
             }

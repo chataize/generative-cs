@@ -54,12 +54,12 @@ public class OpenAIClient
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken))
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
@@ -67,7 +67,7 @@ public class OpenAIClient
 
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken))
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
@@ -75,7 +75,7 @@ public class OpenAIClient
 
     public async Task<List<float>> GetEmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Embeddings.GetEmbeddingAsync(text, ApiKey, _httpClient, options ?? DefaultEmbeddingOptions, cancellationToken);
+        return await Embeddings.GetEmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, _httpClient, cancellationToken);
     }
 
     public async Task<byte[]> SynthesizeSpeechAsync(string text, TextToSpeechOptions? options = null, CancellationToken cancellationToken = default)

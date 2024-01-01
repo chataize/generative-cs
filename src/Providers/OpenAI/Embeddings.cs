@@ -7,7 +7,7 @@ namespace GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {
-    internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, HttpClient? httpClient = null, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new();
         options ??= new();

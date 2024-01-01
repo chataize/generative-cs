@@ -9,14 +9,14 @@ namespace GenerativeCS.Providers.Gemini;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync(string prompt, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync(string prompt, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new();
         options ??= new();
 
         if (options.Functions.Count >= 1)
         {
-            return await CompleteAsync(new ChatConversation(prompt), apiKey, httpClient, options, cancellationToken);
+            return await CompleteAsync(new ChatConversation(prompt), apiKey, options, httpClient, cancellationToken);
         }
 
         var request = CreateCompletionRequest(prompt);
@@ -31,7 +31,7 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new();
         options ??= new();
@@ -81,7 +81,7 @@ internal static class ChatCompletion
                     conversation.FromFunction(new FunctionResult(functionName, $"Function '{functionName}' was not found."));
                 }
 
-                return await CompleteAsync(conversation, apiKey, httpClient, options, cancellationToken);
+                return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
             }
             else if (part.TryGetProperty("text", out var textElement))
             {
@@ -91,7 +91,7 @@ internal static class ChatCompletion
             else
             {
                 conversation.FromFunction(new FunctionResult("Error", "Either call a function or respond with text."));
-                return await CompleteAsync(conversation, apiKey, httpClient, options, cancellationToken);
+                return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
             }
         }
 
