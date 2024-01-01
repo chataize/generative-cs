@@ -7,9 +7,7 @@ public record TextToSpeechOptions
 {
     private const string DefaultModel = TextToSpeechModels.TTS_1;
 
-    private const string DefaultVoice = TextToSpeechVoices.ALLOY;
-
-    public TextToSpeechOptions(string model = DefaultModel, string voice = DefaultVoice)
+    public TextToSpeechOptions(string model = DefaultModel, TextToSpeechVoice voice = TextToSpeechVoice.Alloy)
     {
         Model = model;
         Voice = voice;
@@ -17,7 +15,7 @@ public record TextToSpeechOptions
 
     public string Model { get; set; } = DefaultModel;
 
-    public string Voice { get; set; } = DefaultVoice;
+    public TextToSpeechVoice Voice { get; set; }
 
     public double Speed { get; set; } = 1.0;
 

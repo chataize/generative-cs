@@ -22,7 +22,7 @@ internal static class TextToSpeech
         var requestObject = new JsonObject
         {
             { "model", options.Model },
-            { "voice", options.Voice },
+            { "voice", options.Voice.ToString().ToLowerInvariant() },
             { "input", text }
         };
 
