@@ -1,43 +1,25 @@
 using System.Text.Json;
 using GenerativeCS.Models;
 
-namespace GenerativeCS.Options;
+namespace GenerativeCS.Options.Gemini;
 
-public record ChatGPTCompletionOptions
+public record ChatCompletionOptions
 {
-    public string Model { get; set; } = "gpt-3.5-turbo";
-
-    public string? User { get; set; }
+    public string Model { get; set; } = "gemini-pro";
 
     public int MaxAttempts { get; set; } = 5;
-
-    public int? MaxOutputTokens { get; set; }
 
     public int? MessageLimit { get; set; }
 
     public int? CharacterLimit { get; set; }
 
-    public int? Seed { get; set; }
-
-    public double? Temperature { get; set; }
-
-    public double? TopP { get; set; }
-
-    public double? FrequencyPenalty { get; set; }
-
-    public double? PresencePenalty { get; set; }
-
-    public bool IsJsonMode { get; set; }
-
     public bool IsTimeAware { get; set; }
 
-    public List<string> StopWords { get; set; } = [];
-
-    public List<ChatFunction> Functions { get; set; } = [];
+    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
     public Func<string, JsonElement, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
-    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
+    public List<ChatFunction> Functions { get; set; } = [];
 
     public void AddFunction(ChatFunction function)
     {

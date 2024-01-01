@@ -3,17 +3,17 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
 using GenerativeCS.Models;
-using GenerativeCS.Options;
+using GenerativeCS.Options.OpenAI;
 using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Services.OpenAI;
 
 internal static class ChatCompletions
 {
-    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient = null, ChatGPTCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new HttpClient();
-        options ??= new ChatGPTCompletionOptions();
+        options ??= new ChatCompletionOptions();
 
         var request = CreateChatCompletionRequest(conversation, options);
 
@@ -75,10 +75,10 @@ internal static class ChatCompletions
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient, ChatGPTCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         httpClient ??= new HttpClient();
-        options ??= new ChatGPTCompletionOptions();
+        options ??= new ChatCompletionOptions();
 
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
@@ -212,7 +212,7 @@ internal static class ChatCompletions
         }
     }
 
-    private static JsonObject CreateChatCompletionRequest(ChatConversation conversation, ChatGPTCompletionOptions options)
+    private static JsonObject CreateChatCompletionRequest(ChatConversation conversation, ChatCompletionOptions options)
     {
         var messages = conversation.Messages.ToList();
         if (options.IsTimeAware)

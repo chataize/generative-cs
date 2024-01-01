@@ -1,16 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using GenerativeCS.Options;
+using GenerativeCS.Options.OpenAI;
 using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Services.OpenAI;
 
 internal static class Embeddings
 {
-    internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, HttpClient? httpClient = null, ChatGPTEmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, HttpClient? httpClient = null, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
         httpClient ??= new HttpClient();
-        options ??= new ChatGPTEmbeddingOptions();
+        options ??= new EmbeddingOptions();
 
         var request = new JsonObject
         {

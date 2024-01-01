@@ -1,16 +1,19 @@
-using GenerativeCS.Options;
 using GenerativeCS.Clients;
+using GenerativeCS.Options.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GenerativeCS.Extensions;
 
 public static class ChatGPTExtension
 {
-    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<ChatGPTOptions> configure)
+    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<OpenAIClientOptions>? options = null)
     {
-        services.Configure(configure);
-        services.AddSingleton<OpenAIClient>();
+        if (options != null)
+        {
+            services.Configure(options);
+        }
 
+        services.AddSingleton<OpenAIClient>();
         return services;
     }
 }

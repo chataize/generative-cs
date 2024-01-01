@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using GenerativeCS.Models;
-using GenerativeCS.Options;
+using GenerativeCS.Options.OpenAI;
 using GenerativeCS.Services.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -23,7 +23,7 @@ public class OpenAIClient
 
     [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
-    public OpenAIClient(IOptions<ChatGPTOptions> options)
+    public OpenAIClient(IOptions<OpenAIClientOptions> options)
     {
         ApiKey = options.Value.ApiKey;
     }
@@ -34,17 +34,17 @@ public class OpenAIClient
         set => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
     }
 
-    public async Task<string> CompleteAsync(string prompt, ChatGPTCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await CompleteAsync(new ChatConversation(prompt), options, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(ChatConversation conversation, ChatGPTCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletions.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
     }
 
-    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatGPTCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var chunk in ChatCompletions.CompleteAsStreamAsync(conversation, ApiKey, _client, options, cancellationToken))
         {
@@ -52,7 +52,7 @@ public class OpenAIClient
         }
     }
 
-    public async Task<List<float>> GetEmbeddingAsync(string text, ChatGPTEmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<List<float>> GetEmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await Embeddings.GetEmbeddingAsync(text, ApiKey, _client, options, cancellationToken);
     }
