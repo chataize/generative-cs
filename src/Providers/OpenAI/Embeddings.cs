@@ -9,8 +9,8 @@ internal static class Embeddings
 {
     internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, HttpClient? httpClient = null, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
-        httpClient ??= new HttpClient();
-        options ??= new EmbeddingOptions();
+        httpClient ??= new();
+        options ??= new();
 
         var request = new JsonObject
         {
