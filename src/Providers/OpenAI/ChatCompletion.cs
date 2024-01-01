@@ -17,7 +17,7 @@ internal static class ChatCompletion
 
         var request = CreateChatCompletionRequest(conversation, options);
 
-        using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, options.MaxAttempts);
+        using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
@@ -83,7 +83,7 @@ internal static class ChatCompletion
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
 
-        using var response = await httpClient.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, options.MaxAttempts);
+        using var response = await httpClient.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 

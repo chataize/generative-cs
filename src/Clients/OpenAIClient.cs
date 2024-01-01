@@ -28,11 +28,7 @@ public class OpenAIClient
         ApiKey = options.Value.ApiKey;
     }
 
-    public required string ApiKey
-    {
-        get => _client.DefaultRequestHeaders.Authorization?.Parameter!;
-        set => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
-    }
+    public required string ApiKey { get; set; }
 
     public static OpenAIClient CreateInstance(string apiKey)
     {

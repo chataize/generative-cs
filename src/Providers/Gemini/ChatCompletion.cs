@@ -21,7 +21,7 @@ internal static class ChatCompletion
 
         var request = CreateCompletionRequest(prompt);
 
-        using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, cancellationToken, options.MaxAttempts);
+        using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
@@ -38,7 +38,7 @@ internal static class ChatCompletion
 
         var request = CreateChatCompletionRequest(conversation, options);
 
-        using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, cancellationToken, options.MaxAttempts);
+        using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
 
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);

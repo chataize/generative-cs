@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -15,15 +16,28 @@ internal static class RepeatingHttpClient
         TimeSpan.FromSeconds(10)
     ];
 
-    internal static async Task<HttpResponseMessage> RepeatPostAsJsonAsync<TValue>(this HttpClient client, [StringSyntax("Uri")] string requestUri, TValue value, CancellationToken cancellationToken, int maxAttempts = 5)
+    internal static async Task<HttpResponseMessage> RepeatPostAsJsonAsync<TValue>(this HttpClient client, [StringSyntax("Uri")] string requestUri, TValue value, string? apiKey = null, int maxAttempts = 5, CancellationToken cancellationToken = default)
     {
         var attempts = 0;
         while (true)
         {
             try
             {
-                var result = await client.PostAsJsonAsync(requestUri, value, cancellationToken);
-                _ = result.EnsureSuccessStatusCode();
+                var requestContent = JsonSerializer.Serialize(value);
+                using var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(requestUri),
+                    Content = new StringContent(requestContent, Encoding.UTF8, "application/json")
+                };
+
+                if (apiKey != null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                }
+
+                var result = await client.SendAsync(request, cancellationToken);
+                result.EnsureSuccessStatusCode();
 
                 return result;
             }
@@ -38,12 +52,12 @@ internal static class RepeatingHttpClient
                     throw;
                 }
 
-                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1]);
+                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1], cancellationToken);
             }
         }
     }
 
-    internal static async Task<HttpResponseMessage> RepeatPostAsJsonForStreamAsync<TValue>(this HttpClient client, [StringSyntax("Uri")] string requestUri, TValue value, CancellationToken cancellationToken, int maxAttempts = 5)
+    internal static async Task<HttpResponseMessage> RepeatPostAsJsonForStreamAsync<TValue>(this HttpClient client, [StringSyntax("Uri")] string requestUri, TValue value, string? apiKey = null, int maxAttempts = 5, CancellationToken cancellationToken = default)
     {
         var attempts = 0;
         while (true)
@@ -57,6 +71,11 @@ internal static class RepeatingHttpClient
                     RequestUri = new Uri(requestUri),
                     Content = new StringContent(requestContent, Encoding.UTF8, "application/json")
                 };
+
+                if (apiKey != null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                }
 
                 var result = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 result.EnsureSuccessStatusCode();
@@ -74,7 +93,7 @@ internal static class RepeatingHttpClient
                     throw;
                 }
 
-                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1]);
+                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1], cancellationToken);
             }
         }
     }
