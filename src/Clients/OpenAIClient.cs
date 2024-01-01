@@ -42,9 +42,9 @@ public class OpenAIClient
 
     public EmbeddingOptions? DefaultEmbeddingOptions { get; set; } = new();
 
-    public static OpenAIClient CreateInstance(string apiKey)
+    public static OpenAIClient CreateInstance(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {
-        return new OpenAIClient(apiKey);
+        return new OpenAIClient(apiKey, defaultCompletionOptions);
     }
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
