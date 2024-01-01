@@ -13,7 +13,9 @@ public static class ChatGPTExtension
             services.Configure(options);
         }
 
+        services.AddHttpClient<OpenAIClient>();
         services.AddSingleton<OpenAIClient>();
+
         return services;
     }
 }

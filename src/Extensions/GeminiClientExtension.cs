@@ -12,8 +12,10 @@ public static class GeminiClientExtension
         {
             services.Configure(options);
         }
-
+        
+        services.AddHttpClient<GeminiClient>();
         services.AddSingleton<GeminiClient>();
+        
         return services;
     }
 }

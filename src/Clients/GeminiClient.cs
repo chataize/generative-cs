@@ -9,7 +9,7 @@ namespace GenerativeCS.Clients;
 
 public class GeminiClient
 {
-    private readonly HttpClient _client = new();
+    private readonly HttpClient _httpClient = new();
 
     public GeminiClient() { }
 
@@ -21,8 +21,9 @@ public class GeminiClient
 
     [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
-    public GeminiClient(IOptions<GeminiClientOptions> options)
+    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options)
     {
+        _httpClient = httpClient;
         ApiKey = options.Value.ApiKey;
     }
 
@@ -35,11 +36,11 @@ public class GeminiClient
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(prompt, ApiKey, _client, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(prompt, ApiKey, _httpClient, options, cancellationToken);
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options, cancellationToken);
     }
 }
