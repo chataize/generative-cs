@@ -5,7 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
 using GenerativeCS.Models;
+using GenerativeCS.Options;
 using GenerativeCS.Utilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GenerativeCS.Providers;
 
@@ -20,6 +23,14 @@ public class ChatGPT
     {
         ApiKey = apiKey;
         Model = model;
+    }
+
+    [SetsRequiredMembers]
+    [ActivatorUtilitiesConstructor]
+    public ChatGPT(IOptions<ChatGPTOptions> options)
+    {
+        ApiKey = options.Value.ApiKey;
+        Model = options.Value.Model;
     }
 
     public required string ApiKey
@@ -70,12 +81,12 @@ public class ChatGPT
     public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
     {
         var request = CreateChatCompletionRequest(conversation);
-        
+
         using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
-        
-        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");   
+
+        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
             var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
