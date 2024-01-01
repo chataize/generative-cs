@@ -45,6 +45,14 @@ public class OpenAIClient
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options, cancellationToken);
     }
 
+    public async IAsyncEnumerable<string> CompleteAsStreamAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, _httpClient, options, cancellationToken))
+        {
+            yield return chunk;
+        }
+    }
+
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, _httpClient, options, cancellationToken))
