@@ -19,10 +19,9 @@ public class ChatGPT
     public ChatGPT() { }
 
     [SetsRequiredMembers]
-    public ChatGPT(string apiKey, string model = "gpt-3.5-turbo")
+    public ChatGPT(string apiKey)
     {
         ApiKey = apiKey;
-        Model = model;
     }
 
     [SetsRequiredMembers]
@@ -30,7 +29,6 @@ public class ChatGPT
     public ChatGPT(IOptions<ChatGPTOptions> options)
     {
         ApiKey = options.Value.ApiKey;
-        Model = options.Value.Model;
     }
 
     public required string ApiKey
@@ -39,57 +37,25 @@ public class ChatGPT
         set => _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
     }
 
-    public string Model { get; set; } = "gpt-3.5-turbo";
-
-    public string? User { get; set; }
-
-    public int MaxAttempts { get; set; } = 5;
-
-    public int? MaxOutputTokens { get; set; }
-
-    public int? MessageLimit { get; set; }
-
-    public int? CharacterLimit { get; set; }
-
-    public int? Seed { get; set; }
-
-    public double? Temperature { get; set; }
-
-    public double? TopP { get; set; }
-
-    public double? FrequencyPenalty { get; set; }
-
-    public double? PresencePenalty { get; set; }
-
-    public bool IsJsonMode { get; set; }
-
-    public bool IsTimeAware { get; set; }
-
-    public List<string> StopWords { get; set; } = [];
-
-    public List<ChatFunction> Functions { get; set; } = [];
-
-    public Func<string, JsonElement, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
-
-    public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
-
-    public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(string prompt, ChatGPTCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await CompleteAsync(new ChatConversation(prompt), cancellationToken);
+        return await CompleteAsync(new ChatConversation(prompt), options, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(ChatConversation conversation, ChatGPTCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var request = CreateChatCompletionRequest(conversation);
+        options ??= new ChatGPTCompletionOptions();
 
-        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
+        var request = CreateChatCompletionRequest(conversation, options);
+
+        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, options.MaxAttempts);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
         var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
-            var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+            var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
             {
                 if (toolCallElement.GetProperty("type").GetString() == "function")
@@ -119,7 +85,7 @@ public class ChatGPT
                             }
                             else
                             {
-                                var functionResult = await DefaultFunctionCallback(functionName, argumentsElement, cancellationToken);
+                                var functionResult = await options.DefaultFunctionCallback(functionName, argumentsElement, cancellationToken);
                                 conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
                             }
                         }
@@ -131,7 +97,7 @@ public class ChatGPT
                 }
             }
 
-            return await CompleteAsync(conversation, cancellationToken);
+            return await CompleteAsync(conversation, options, cancellationToken);
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
@@ -140,12 +106,14 @@ public class ChatGPT
         return messageContent;
     }
 
-    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatGPTCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var request = CreateChatCompletionRequest(conversation);
+        options ??= new ChatGPTCompletionOptions();
+
+        var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
 
-        using var response = await _client.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, MaxAttempts);
+        using var response = await _client.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, cancellationToken, options.MaxAttempts);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 
@@ -230,7 +198,7 @@ public class ChatGPT
             conversation.FromAssistant(functionCalls);
         }
 
-        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         foreach (var functionCall in functionCalls)
         {
             var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionCall.Name, StringComparison.InvariantCultureIgnoreCase));
@@ -249,7 +217,7 @@ public class ChatGPT
                     }
                     else
                     {
-                        var functionResult = await DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
+                        var functionResult = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
                         conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
                     }
                 }
@@ -267,22 +235,24 @@ public class ChatGPT
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in CompleteAsStreamAsync(conversation, cancellationToken))
+            await foreach (var chunk in CompleteAsStreamAsync(conversation, options, cancellationToken))
             {
                 yield return chunk;
             }
         }
     }
 
-    public async Task<List<float>> GetEmbeddingAsync(string text, CancellationToken cancellationToken = default)
+    public async Task<List<float>> GetEmbeddingAsync(string text, ChatGPTEmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
+        options ??= new ChatGPTEmbeddingOptions();
+
         var request = new JsonObject
         {
             { "input", text },
             { "model", "text-embedding-ada-002" }
         };
 
-        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, MaxAttempts);
+        using var response = await _client.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, cancellationToken, options.MaxAttempts);
         _ = response.EnsureSuccessStatusCode();
 
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -297,118 +267,6 @@ public class ChatGPT
         return embedding;
     }
 
-    public void AddFunction(ChatFunction function)
-    {
-        Functions.Add(function);
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation = false)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
-    }
-
-    public void AddFunction(Delegate callback)
-    {
-        Functions.Add(new ChatFunction(callback));
-    }
-
-    public void AddFunction(string name, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, callback));
-    }
-
-    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, parameters));
-    }
-
-    public void AddFunction(string name, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, parameters));
-    }
-
-    public void AddFunction(string name, string? description, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, description, callback));
-    }
-
-    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, parameters));
-    }
-
-    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, parameters));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, callback));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, callback));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
-    }
-
-    public bool RemoveFunction(ChatFunction function)
-    {
-        return Functions.Remove(function);
-    }
-
-    public bool RemoveFunction(string name)
-    {
-        var function = Functions.LastOrDefault(f => f.Name == name);
-        if (function == null)
-        {
-            return false;
-        }
-
-        return Functions.Remove(function);
-    }
-
-    public bool RemoveFunction(Delegate callback)
-    {
-        var function = Functions.LastOrDefault(f => f.Callback == callback);
-        if (function == null)
-        {
-            return false;
-        }
-
-        return Functions.Remove(function);
-    }
-
-    public void ClearFunctions()
-    {
-        Functions.Clear();
-    }
-
     private static string GetRoleName(ChatRole role)
     {
         return role switch
@@ -421,15 +279,15 @@ public class ChatGPT
         };
     }
 
-    private JsonObject CreateChatCompletionRequest(ChatConversation conversation)
+    private JsonObject CreateChatCompletionRequest(ChatConversation conversation, ChatGPTCompletionOptions options)
     {
         var messages = conversation.Messages.ToList();
-        if (IsTimeAware)
+        if (options.IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages, TimeCallback());
+            MessageTools.AddTimeInformation(messages, options.TimeCallback());
         }
 
-        MessageTools.LimitTokens(messages, MessageLimit, CharacterLimit);
+        MessageTools.LimitTokens(messages, options.MessageLimit, options.CharacterLimit);
 
         var messagesArray = new JsonArray();
         foreach (var message in messages)
@@ -484,7 +342,7 @@ public class ChatGPT
 
         var requestObject = new JsonObject
         {
-            { "model", Model },
+            { "model", options.Model },
             { "messages", messagesArray }
         };
 
@@ -492,42 +350,42 @@ public class ChatGPT
         {
             requestObject.Add("user", conversation.User);
         }
-        else if (User != null)
+        else if (options.User != null)
         {
-            requestObject.Add("user", User);
+            requestObject.Add("user", options.User);
         }
 
-        if (MaxOutputTokens.HasValue)
+        if (options.MaxOutputTokens.HasValue)
         {
-            requestObject.Add("max_tokens", MaxOutputTokens.Value);
+            requestObject.Add("max_tokens", options.MaxOutputTokens.Value);
         }
 
-        if (Seed.HasValue)
+        if (options.Seed.HasValue)
         {
-            requestObject.Add("seed", Seed.Value);
+            requestObject.Add("seed", options.Seed.Value);
         }
 
-        if (Temperature.HasValue)
+        if (options.Temperature.HasValue)
         {
-            requestObject.Add("temperature", Temperature.Value);
+            requestObject.Add("temperature", options.Temperature.Value);
         }
 
-        if (TopP.HasValue)
+        if (options.TopP.HasValue)
         {
-            requestObject.Add("top_p", TopP.Value);
+            requestObject.Add("top_p", options.TopP.Value);
         }
 
-        if (FrequencyPenalty.HasValue)
+        if (options.FrequencyPenalty.HasValue)
         {
-            requestObject.Add("frequency_penalty", FrequencyPenalty.Value);
+            requestObject.Add("frequency_penalty", options.FrequencyPenalty.Value);
         }
 
-        if (PresencePenalty.HasValue)
+        if (options.PresencePenalty.HasValue)
         {
-            requestObject.Add("presence_penalty", PresencePenalty.Value);
+            requestObject.Add("presence_penalty", options.PresencePenalty.Value);
         }
 
-        if (IsJsonMode)
+        if (options.IsJsonMode)
         {
             var responseFormatObject = new JsonObject
             {
@@ -537,10 +395,10 @@ public class ChatGPT
             requestObject.Add("response_format", responseFormatObject);
         }
 
-        if (StopWords != null && StopWords.Count > 0)
+        if (options.StopWords != null && options.StopWords.Count > 0)
         {
             var stopArray = new JsonArray();
-            foreach (var stop in StopWords)
+            foreach (var stop in options.StopWords)
             {
                 stopArray.Add(stop);
             }
@@ -549,7 +407,7 @@ public class ChatGPT
         }
 
 
-        var allFunctions = Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
+        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         if (allFunctions.Count > 0)
         {
             var toolsArray = new JsonArray();
