@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using GenerativeCS.Models;
 using GenerativeCS.Options.OpenAI;
-using GenerativeCS.Services.OpenAI;
+using GenerativeCS.Providers.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 

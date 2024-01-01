@@ -5,7 +5,7 @@ using GenerativeCS.Models;
 using GenerativeCS.Options.Gemini;
 using GenerativeCS.Utilities;
 
-namespace GenerativeCS.Services.Gemini;
+namespace GenerativeCS.Providers.Gemini;
 
 internal static class ChatCompletions
 {

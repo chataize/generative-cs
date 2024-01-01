@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using GenerativeCS.Options.OpenAI;
 using GenerativeCS.Utilities;
 
-namespace GenerativeCS.Services.OpenAI;
+namespace GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {

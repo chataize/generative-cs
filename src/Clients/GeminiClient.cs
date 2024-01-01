@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using GenerativeCS.Models;
 using GenerativeCS.Options.Gemini;
-using GenerativeCS.Services.Gemini;
+using GenerativeCS.Providers.Gemini;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
