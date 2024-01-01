@@ -7,23 +7,23 @@ using GenerativeCS.Services.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace GenerativeCS.Providers;
+namespace GenerativeCS.Clients;
 
-public class ChatGPT
+public class OpenAIClient
 {
     private readonly HttpClient _client = new();
 
-    public ChatGPT() { }
+    public OpenAIClient() { }
 
     [SetsRequiredMembers]
-    public ChatGPT(string apiKey)
+    public OpenAIClient(string apiKey)
     {
         ApiKey = apiKey;
     }
 
     [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
-    public ChatGPT(IOptions<ChatGPTOptions> options)
+    public OpenAIClient(IOptions<ChatGPTOptions> options)
     {
         ApiKey = options.Value.ApiKey;
     }

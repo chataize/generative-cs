@@ -1,15 +1,15 @@
 using GenerativeCS.Options;
-using GenerativeCS.Providers;
+using GenerativeCS.Clients;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GenerativeCS.Extensions;
 
 public static class ChatGPTExtension
 {
-    public static IServiceCollection AddChatGPT(this IServiceCollection services, Action<ChatGPTOptions> configure)
+    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<ChatGPTOptions> configure)
     {
         services.Configure(configure);
-        services.AddSingleton<ChatGPT>();
+        services.AddSingleton<OpenAIClient>();
 
         return services;
     }

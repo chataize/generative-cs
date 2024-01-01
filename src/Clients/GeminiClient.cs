@@ -5,16 +5,16 @@ using GenerativeCS.Enums;
 using GenerativeCS.Models;
 using GenerativeCS.Utilities;
 
-namespace GenerativeCS.Providers;
+namespace GenerativeCS.Clients;
 
-public class Gemini
+public class GeminiClient
 {
     private readonly HttpClient _client = new();
 
-    public Gemini() { }
+    public GeminiClient() { }
 
     [SetsRequiredMembers]
-    public Gemini(string apiKey, string model = "gemini-pro")
+    public GeminiClient(string apiKey, string model = "gemini-pro")
     {
         ApiKey = apiKey;
         Model = model;
