@@ -18,4 +18,9 @@ public static class ChatGPTExtension
 
         return services;
     }
+
+    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey)
+    {
+        return services.AddOpenAIClient(o => o.ApiKey = apiKey);
+    }
 }
