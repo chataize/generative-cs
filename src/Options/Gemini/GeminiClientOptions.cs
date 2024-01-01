@@ -1,5 +1,3 @@
-using GenerativeCS.Options.OpenAI;
-
 namespace GenerativeCS.Options.Gemini;
 
 public record GeminiClientOptions

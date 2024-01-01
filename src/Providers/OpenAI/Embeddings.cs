@@ -15,7 +15,7 @@ internal static class Embeddings
         var request = new JsonObject
         {
             { "input", text },
-            { "model", "text-embedding-ada-002" }
+            { "model", options.Model }
         };
 
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, apiKey, options.MaxAttempts, cancellationToken);
