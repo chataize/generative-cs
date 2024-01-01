@@ -7,7 +7,7 @@ using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Providers.Gemini;
 
-internal static class ChatCompletions
+internal static class ChatCompletion
 {
     internal static async Task<string> CompleteAsync(string prompt, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {

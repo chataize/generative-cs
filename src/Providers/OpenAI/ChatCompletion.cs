@@ -8,7 +8,7 @@ using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Providers.OpenAI;
 
-internal static class ChatCompletions
+internal static class ChatCompletion
 {
     internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, HttpClient? httpClient = null, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {

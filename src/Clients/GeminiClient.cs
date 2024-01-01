@@ -30,11 +30,11 @@ public class GeminiClient
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletions.CompleteAsync(prompt, ApiKey, _client, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(prompt, ApiKey, _client, options, cancellationToken);
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletions.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
     }
 }

@@ -41,12 +41,12 @@ public class OpenAIClient
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletions.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _client, options, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletions.CompleteAsStreamAsync(conversation, ApiKey, _client, options, cancellationToken))
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, _client, options, cancellationToken))
         {
             yield return chunk;
         }
