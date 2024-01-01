@@ -14,9 +14,14 @@ public class GeminiClient
     public GeminiClient() { }
 
     [SetsRequiredMembers]
-    public GeminiClient(string apiKey)
+    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {
         ApiKey = apiKey;
+
+        if (defaultCompletionOptions != null)
+        {
+            DefaultCompletionOptions = defaultCompletionOptions;
+        }
     }
 
     [SetsRequiredMembers]
@@ -24,10 +29,14 @@ public class GeminiClient
     public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options)
     {
         _httpClient = httpClient;
+
         ApiKey = options.Value.ApiKey;
+        DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
     }
 
     public required string ApiKey { get; set; }
+
+    public ChatCompletionOptions? DefaultCompletionOptions { get; set; } = new();
 
     public static GeminiClient CreateInstance(string apiKey)
     {
@@ -36,11 +45,11 @@ public class GeminiClient
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(prompt, ApiKey, _httpClient, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(prompt, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken);
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken);
     }
 }

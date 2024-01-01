@@ -15,9 +15,14 @@ public class OpenAIClient
     public OpenAIClient() { }
 
     [SetsRequiredMembers]
-    public OpenAIClient(string apiKey)
+    public OpenAIClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {
         ApiKey = apiKey;
+
+        if (defaultCompletionOptions != null)
+        {
+            DefaultCompletionOptions = defaultCompletionOptions;
+        }
     }
 
     [SetsRequiredMembers]
@@ -25,10 +30,17 @@ public class OpenAIClient
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options)
     {
         _httpClient = httpClient;
+
         ApiKey = options.Value.ApiKey;
+        DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
+        DefaultEmbeddingOptions = options.Value.DefaultEmbeddingOptions;
     }
 
     public required string ApiKey { get; set; }
+
+    public ChatCompletionOptions? DefaultCompletionOptions { get; set; } = new();
+
+    public EmbeddingOptions? DefaultEmbeddingOptions { get; set; } = new();
 
     public static OpenAIClient CreateInstance(string apiKey)
     {
@@ -37,17 +49,17 @@ public class OpenAIClient
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await CompleteAsync(new ChatConversation(prompt), options, cancellationToken);
+        return await CompleteAsync(new ChatConversation(prompt), options ?? DefaultCompletionOptions, cancellationToken);
     }
 
     public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, _httpClient, options, cancellationToken))
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken))
         {
             yield return chunk;
         }
@@ -55,7 +67,7 @@ public class OpenAIClient
 
     public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, _httpClient, options, cancellationToken))
+        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, _httpClient, options ?? DefaultCompletionOptions, cancellationToken))
         {
             yield return chunk;
         }
@@ -63,6 +75,6 @@ public class OpenAIClient
 
     public async Task<List<float>> GetEmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Embeddings.GetEmbeddingAsync(text, ApiKey, _httpClient, options, cancellationToken);
+        return await Embeddings.GetEmbeddingAsync(text, ApiKey, _httpClient, options ?? DefaultEmbeddingOptions, cancellationToken);
     }
 }

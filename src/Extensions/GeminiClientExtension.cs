@@ -19,8 +19,16 @@ public static class GeminiClientExtension
         return services;
     }
 
-    public static IServiceCollection AddGeminiClient(this IServiceCollection services, string apiKey)
+    public static IServiceCollection AddGeminiClient(this IServiceCollection services, string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {
-        return services.AddGeminiClient(o => o.ApiKey = apiKey);
+        return services.AddGeminiClient(o =>
+        {
+            o.ApiKey = apiKey;
+
+            if (defaultCompletionOptions != null)
+            {
+                o.DefaultCompletionOptions = defaultCompletionOptions;
+            }
+        });
     }
 }

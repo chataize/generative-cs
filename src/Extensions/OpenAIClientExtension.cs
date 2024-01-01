@@ -19,8 +19,16 @@ public static class ChatGPTExtension
         return services;
     }
 
-    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey)
+    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {
-        return services.AddOpenAIClient(o => o.ApiKey = apiKey);
+        return services.AddOpenAIClient(o =>
+        {
+            o.ApiKey = apiKey;
+
+            if (defaultCompletionOptions != null)
+            {
+                o.DefaultCompletionOptions = defaultCompletionOptions;
+            }
+        });
     }
 }
