@@ -160,17 +160,17 @@ public class OpenAIClient
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
-    public async IAsyncEnumerable<string> CompleteAsStreamAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(new ChatConversation(prompt), ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(new ChatConversation(prompt), ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
     }
 
-    public async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.CompleteAsStreamAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
             yield return chunk;
         }

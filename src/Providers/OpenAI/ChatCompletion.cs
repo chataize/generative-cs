@@ -75,7 +75,7 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
@@ -205,7 +205,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in CompleteAsStreamAsync(conversation, apiKey, options, httpClient, cancellationToken))
+            await foreach (var chunk in StreamCompletionAsync(conversation, apiKey, options, httpClient, cancellationToken))
             {
                 yield return chunk;
             }
