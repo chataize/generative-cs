@@ -12,8 +12,8 @@ internal static class ChatCompletion
 {
     internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
-        httpClient ??= new();
         options ??= new();
+        httpClient ??= new();
 
         var request = CreateChatCompletionRequest(conversation, options);
 
@@ -77,8 +77,8 @@ internal static class ChatCompletion
 
     internal static async IAsyncEnumerable<string> CompleteAsStreamAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        httpClient ??= new();
         options ??= new();
+        httpClient ??= new();
 
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
