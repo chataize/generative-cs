@@ -13,8 +13,8 @@ internal static class SpeechRecognition
         options ??= new();
         httpClient ??= new();
 
-        var requestContent = CreateTranscriptionRequest(audio, options);
-        var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", requestContent, apiKey, options.MaxAttempts, cancellationToken);
+        using var requestContent = CreateTranscriptionRequest(audio, options);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", requestContent, apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -24,8 +24,8 @@ internal static class SpeechRecognition
         options ??= new();
         httpClient ??= new();
 
-        var requestContent = CreateTranslationRequest(audio, options);
-        var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", requestContent, apiKey, options.MaxAttempts, cancellationToken);
+        using var requestContent = CreateTranslationRequest(audio, options);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", requestContent, apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }

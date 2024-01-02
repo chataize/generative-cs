@@ -13,7 +13,7 @@ internal static class TextToSpeech
         httpClient ??= new();
 
         var requestObject = CreateSpeechSynthesisRequest(text, options);
-        var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/audio/speech", requestObject, apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/audio/speech", requestObject, apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
