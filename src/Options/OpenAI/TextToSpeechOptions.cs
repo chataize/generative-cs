@@ -1,7 +1,7 @@
 using GenerativeCS.Constants;
 using GenerativeCS.Enums;
 
-namespace GenerativeCS.Providers.OpenAI;
+namespace GenerativeCS.Options.OpenAI;
 
 public record TextToSpeechOptions
 {

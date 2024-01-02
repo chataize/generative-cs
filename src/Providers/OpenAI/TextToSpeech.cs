@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using GenerativeCS.Enums;
+using GenerativeCS.Options.OpenAI;
 using GenerativeCS.Utilities;
 
 namespace GenerativeCS.Providers.OpenAI;
