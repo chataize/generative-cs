@@ -23,6 +23,10 @@ public class OpenAIClient
         ApiKey = options.Value.ApiKey;
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
         DefaultEmbeddingOptions = options.Value.DefaultEmbeddingOptions;
+        DefaultTextToSpeechOptions = options.Value.DefaultTextToSpeechOptions;
+        DefaultTranscriptionOptions = options.Value.DefaultTranscriptionOptions;
+        DefaultTranslationOptions = options.Value.DefaultTranslationOptions;
+        DefaultModerationOptions = options.Value.DefaultModerationOptions;
     }
 
     [SetsRequiredMembers]
@@ -86,6 +90,17 @@ public class OpenAIClient
         }
     }
 
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions)
+    {
+        ApiKey = apiKey;
+
+        if (defaultModerationOptions != null)
+        {
+            DefaultModerationOptions = defaultModerationOptions;
+        }
+    }
+
     public required string ApiKey { get; set; }
 
     public ChatCompletionOptions? DefaultCompletionOptions { get; set; } = new();
@@ -97,6 +112,8 @@ public class OpenAIClient
     public TranscriptionOptions? DefaultTranscriptionOptions { get; set; } = new();
 
     public TranslationOptions? DefaultTranslationOptions { get; set; } = new();
+
+    public ModerationOptions? DefaultModerationOptions { get; set; } = new();
 
     public static OpenAIClient CreateInstance(string apiKey)
     {
@@ -126,6 +143,11 @@ public class OpenAIClient
     public static OpenAIClient CreateInstance(string apiKey, TranslationOptions? defaultTranslationOptions)
     {
         return new OpenAIClient(apiKey, defaultTranslationOptions);
+    }
+
+    public static OpenAIClient CreateInstance(string apiKey, ModerationOptions? defaultModerationOptions)
+    {
+        return new OpenAIClient(apiKey, defaultModerationOptions);
     }
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
@@ -190,5 +212,10 @@ public class OpenAIClient
     {
         var audio = await File.ReadAllBytesAsync(audioFilePath, cancellationToken);
         return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, _httpClient, cancellationToken);
+    }
+
+    public async Task<ModerationResult> ModerateAsync(string text, ModerationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return await Moderation.ModerateAsync(text, ApiKey, options ?? DefaultModerationOptions, _httpClient, cancellationToken);
     }
 }

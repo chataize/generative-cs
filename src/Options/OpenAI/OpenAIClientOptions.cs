@@ -13,4 +13,6 @@ public record OpenAIClientOptions
     public TranscriptionOptions? DefaultTranscriptionOptions { get; set; } = new();
 
     public TranslationOptions? DefaultTranslationOptions { get; set; } = new();
+
+    public ModerationOptions? DefaultModerationOptions { get; set; } = new();
 }
