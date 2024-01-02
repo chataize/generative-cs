@@ -12,16 +12,7 @@ internal static class Embeddings
         options ??= new();
         httpClient ??= new();
 
-        var request = new JsonObject
-        {
-            { "input", text },
-            { "model", options.Model }
-        };
-
-        if (options.User != null)
-        {
-            request.Add("user", options.User);
-        }
+        var request = CreateEmbeddingRequest(text, options);
 
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -34,5 +25,21 @@ internal static class Embeddings
         }
 
         return embedding;
+    }
+
+    private static JsonObject CreateEmbeddingRequest(string text, EmbeddingOptions options)
+    {
+        var request = new JsonObject
+        {
+            { "input", text },
+            { "model", options.Model }
+        };
+
+        if (options.User != null)
+        {
+            request.Add("user", options.User);
+        }
+
+        return request;
     }
 }
