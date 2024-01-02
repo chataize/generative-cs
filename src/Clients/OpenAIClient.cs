@@ -87,4 +87,9 @@ public class OpenAIClient
     {
         return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options, _httpClient, cancellationToken);
     }
+
+     public async Task<string> TranslateAsync(byte[] audio, TranslationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options, _httpClient, cancellationToken);
+    }
 }
