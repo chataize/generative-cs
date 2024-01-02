@@ -97,4 +97,44 @@ internal static class RepeatingHttpClient
             }
         }
     }
+
+    internal static async Task<HttpResponseMessage> RepeatPostAsync(this HttpClient client, [StringSyntax("Uri")] string requestUri, HttpContent content, string? apiKey = null, int maxAttempts = 5, CancellationToken cancellationToken = default)
+    {
+        var attempts = 0;
+        while (true)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(requestUri),
+                    Content = content
+                };
+
+                if (apiKey != null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                }
+
+                var result = await client.SendAsync(request, cancellationToken);
+                result.EnsureSuccessStatusCode();
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                if (++attempts >= maxAttempts)
+                {
+                    throw;
+                }
+
+                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1], cancellationToken);
+            }
+        }
+    }
 }
