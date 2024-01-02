@@ -18,6 +18,11 @@ internal static class Embeddings
             { "model", options.Model }
         };
 
+        if (options.User != null)
+        {
+            request.Add("user", options.User);
+        }
+
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, apiKey, options.MaxAttempts, cancellationToken);
         _ = response.EnsureSuccessStatusCode();
 
