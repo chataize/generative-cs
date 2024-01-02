@@ -24,12 +24,10 @@ internal static class Embeddings
         }
 
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/embeddings", request, apiKey, options.MaxAttempts, cancellationToken);
-        _ = response.EnsureSuccessStatusCode();
-
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
-        var embedding = new List<float>();
 
+        var embedding = new List<float>();
         foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
         {
             embedding.Add(element.GetSingle());
