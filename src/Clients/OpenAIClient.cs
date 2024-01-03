@@ -181,6 +181,11 @@ public class OpenAIClient
         return await Embeddings.GetEmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, _httpClient, cancellationToken);
     }
 
+    public async Task<string> GetBase64EmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return await Embeddings.GetBase64EmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, _httpClient, cancellationToken);
+    }
+
     public async Task<byte[]> SynthesizeSpeechAsync(string text, TextToSpeechOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await TextToSpeech.SynthesizeSpeechAsync(text, ApiKey, options ?? DefaultTextToSpeechOptions, _httpClient, cancellationToken);
