@@ -7,7 +7,7 @@ namespace GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {
-    internal static async Task<List<float>> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<float[]> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
@@ -18,10 +18,12 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var embedding = new List<float>();
+        var i = 0;
+        var embedding = new float[1536];
+
         foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
         {
-            embedding.Add(element.GetSingle());
+            embedding[i++] = element.GetSingle();
         }
 
         return embedding;
