@@ -1,4 +1,4 @@
-namespace GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Models;
 
 public record ModerationResult
 {

@@ -1,8 +1,8 @@
 using System.Text.Json;
-using GenerativeCS.Constants;
-using GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Models;
 
-namespace GenerativeCS.Options.Gemini;
+namespace ChatAIze.GenerativeCS.Options.Gemini;
 
 public record ChatCompletionOptions
 {

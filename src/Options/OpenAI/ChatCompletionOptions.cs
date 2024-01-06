@@ -1,8 +1,8 @@
 using System.Text.Json;
-using GenerativeCS.Constants;
-using GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Models;
 
-namespace GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record ChatCompletionOptions
 {

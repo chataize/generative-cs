@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using GenerativeCS.Options.OpenAI;
-using GenerativeCS.Utilities;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+using ChatAIze.GenerativeCS.Utilities;
 
-namespace GenerativeCS.Providers.OpenAI;
+namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {

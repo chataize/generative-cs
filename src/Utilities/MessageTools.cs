@@ -1,7 +1,7 @@
-using GenerativeCS.Enums;
-using GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Models;
 
-namespace GenerativeCS.Utilities;
+namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class MessageTools
 {

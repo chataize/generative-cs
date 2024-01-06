@@ -1,8 +1,8 @@
-using GenerativeCS.Clients;
-using GenerativeCS.Options.Gemini;
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Options.Gemini;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GenerativeCS.Extensions;
+namespace ChatAIze.GenerativeCS.Extensions;
 
 public static class GeminiClientExtension
 {

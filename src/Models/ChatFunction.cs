@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using GenerativeCS.Utilities;
+using ChatAIze.GenerativeCS.Utilities;
 
-namespace GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Models;
 
 public record ChatFunction
 {

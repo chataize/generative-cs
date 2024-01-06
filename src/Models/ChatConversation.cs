@@ -1,7 +1,7 @@
-﻿using GenerativeCS.Enums;
-using GenerativeCS.Events;
+﻿using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Events;
 
-namespace GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Models;
 
 public record ChatConversation
 {

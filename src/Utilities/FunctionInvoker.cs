@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace GenerativeCS.Utilities;
+namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class FunctionInvoker
 {

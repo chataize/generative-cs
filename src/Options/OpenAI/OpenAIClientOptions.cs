@@ -1,4 +1,4 @@
-namespace GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record OpenAIClientOptions
 {

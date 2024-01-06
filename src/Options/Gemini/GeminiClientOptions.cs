@@ -1,4 +1,4 @@
-namespace GenerativeCS.Options.Gemini;
+namespace ChatAIze.GenerativeCS.Options.Gemini;
 
 public record GeminiClientOptions
 {

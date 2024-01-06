@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Models;
 
 public record FunctionCall
 {

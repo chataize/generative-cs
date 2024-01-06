@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
-using GenerativeCS.Enums;
-using GenerativeCS.Options.OpenAI;
-using GenerativeCS.Utilities;
+using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+using ChatAIze.GenerativeCS.Utilities;
 
-namespace GenerativeCS.Providers.OpenAI;
+namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class SpeechRecognition
 {

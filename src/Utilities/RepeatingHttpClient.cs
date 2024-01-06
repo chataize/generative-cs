@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
-namespace GenerativeCS.Utilities;
+namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class RepeatingHttpClient
 {

@@ -1,4 +1,4 @@
-namespace GenerativeCS.Enums;
+namespace ChatAIze.GenerativeCS.Enums;
 
 public enum TranscriptionResponseFormat
 {

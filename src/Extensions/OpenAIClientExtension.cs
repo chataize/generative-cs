@@ -1,8 +1,8 @@
-using GenerativeCS.Clients;
-using GenerativeCS.Options.OpenAI;
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Options.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GenerativeCS.Extensions;
+namespace ChatAIze.GenerativeCS.Extensions;
 
 public static class ChatGPTExtension
 {

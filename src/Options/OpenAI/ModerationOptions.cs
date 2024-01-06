@@ -1,6 +1,6 @@
-using GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Constants;
 
-namespace GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record ModerationOptions
 {

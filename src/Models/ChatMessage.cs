@@ -1,6 +1,6 @@
-﻿using GenerativeCS.Enums;
+﻿using ChatAIze.GenerativeCS.Enums;
 
-namespace GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Models;
 
 public record ChatMessage
 {

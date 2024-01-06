@@ -1,7 +1,7 @@
-using GenerativeCS.Constants;
-using GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Enums;
 
-namespace GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record TextToSpeechOptions
 {

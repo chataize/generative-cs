@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using GenerativeCS.Models;
-using GenerativeCS.Options.OpenAI;
-using GenerativeCS.Providers.OpenAI;
+using ChatAIze.GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+using ChatAIze.GenerativeCS.Providers.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace GenerativeCS.Clients;
+namespace ChatAIze.GenerativeCS.Clients;
 
 public class OpenAIClient
 {

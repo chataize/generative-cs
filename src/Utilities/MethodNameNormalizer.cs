@@ -1,4 +1,4 @@
-namespace GenerativeCS.Utilities;
+namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class MethodNameNormalizer
 {

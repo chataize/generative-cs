@@ -1,4 +1,4 @@
-namespace GenerativeCS.Constants;
+namespace ChatAIze.GenerativeCS.Constants;
 
 public static class TextToSpeechModels
 {

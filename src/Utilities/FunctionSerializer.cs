@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using GenerativeCS.Models;
-namespace GenerativeCS.Utilities;
+using ChatAIze.GenerativeCS.Models;
+namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class FunctionSerializer
 {

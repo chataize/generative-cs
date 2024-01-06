@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Models;
 
-namespace GenerativeCS.Events;
+namespace ChatAIze.GenerativeCS.Events;
 
 public class MessageAddedEventArgs : EventArgs
 {

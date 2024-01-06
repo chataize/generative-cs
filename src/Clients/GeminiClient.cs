@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using GenerativeCS.Models;
-using GenerativeCS.Options.Gemini;
-using GenerativeCS.Providers.Gemini;
+using ChatAIze.GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Options.Gemini;
+using ChatAIze.GenerativeCS.Providers.Gemini;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace GenerativeCS.Clients;
+namespace ChatAIze.GenerativeCS.Clients;
 
 public class GeminiClient
 {
