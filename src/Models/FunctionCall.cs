@@ -8,14 +8,14 @@ public record FunctionCall
     public FunctionCall() { }
 
     [SetsRequiredMembers]
-    public FunctionCall(string name, JsonElement arguments)
+    public FunctionCall(string name, string? arguments = null)
     {
         Name = name;
         Arguments = arguments;
     }
 
     [SetsRequiredMembers]
-    public FunctionCall(string id, string name, JsonElement arguments)
+    public FunctionCall(string id, string name, string? arguments = null)
     {
         Id = id;
         Name = name;
@@ -26,5 +26,5 @@ public record FunctionCall
 
     public required string Name { get; set; }
 
-    public required JsonElement Arguments { get; set; }
+    public string? Arguments { get; set; }
 }

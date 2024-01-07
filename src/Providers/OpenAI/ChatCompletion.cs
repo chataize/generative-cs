@@ -32,11 +32,9 @@ internal static class ChatCompletion
                     var toolCallId = toolCallElement.GetProperty("id").GetString()!;
                     var functionElement = toolCallElement.GetProperty("function");
                     var functionName = functionElement.GetProperty("name").GetString()!;
-                    var rawArgumentsElement = functionElement.GetProperty("arguments");
-                    var argumentsDocument = JsonDocument.Parse(rawArgumentsElement.GetString()!);
-                    var argumentsElement = argumentsDocument.RootElement;
+                    var functionArguments = functionElement.GetProperty("arguments").GetString()!;
 
-                    conversation.FromAssistant(new FunctionCall(toolCallId, functionName, argumentsElement));
+                    conversation.FromAssistant(new FunctionCall(toolCallId, functionName, functionArguments));
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
@@ -49,13 +47,13 @@ internal static class ChatCompletion
                         {
                             if (function.Callback != null)
                             {
-                                var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, argumentsElement, cancellationToken);
+                                var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
                                 conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
                             }
                             else
                             {
-                                var functionResult = await options.DefaultFunctionCallback(functionName, argumentsElement, cancellationToken);
-                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                                var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
+                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
                             }
                         }
                     }
@@ -140,8 +138,7 @@ internal static class ChatCompletion
                     {
                         if (!string.IsNullOrWhiteSpace(currentFunctionName))
                         {
-                            var argumentsDocument = JsonDocument.Parse(currentFunctionArguments);
-                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, argumentsDocument.RootElement));
+                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, currentFunctionArguments));
                         }
 
                         currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
@@ -159,8 +156,7 @@ internal static class ChatCompletion
 
         if (!string.IsNullOrWhiteSpace(currentFunctionName))
         {
-            var argumentsDocument = JsonDocument.Parse(currentFunctionArguments);
-            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, argumentsDocument.RootElement));
+            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, currentFunctionArguments));
         }
 
         if (functionCalls.Count > 0)
@@ -188,7 +184,7 @@ internal static class ChatCompletion
                     else
                     {
                         var functionResult = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
                     }
                 }
             }

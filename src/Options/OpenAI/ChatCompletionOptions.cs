@@ -43,7 +43,7 @@ public record ChatCompletionOptions
 
     public List<ChatFunction> Functions { get; set; } = [];
 
-    public Func<string, JsonElement, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
+    public Func<string, string?, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 

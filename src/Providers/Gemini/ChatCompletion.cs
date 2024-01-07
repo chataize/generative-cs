@@ -51,9 +51,9 @@ internal static class ChatCompletion
             if (part.TryGetProperty("functionCall", out var functionCallElement) && functionCallElement.TryGetProperty("name", out var functionNameElement))
             {
                 var functionName = functionNameElement.GetString()!;
-                var argumentsElement = functionCallElement.GetProperty("args");
+                var functionArguments = functionCallElement.GetProperty("args").GetString()!;
 
-                conversation.FromAssistant(new FunctionCall(functionName, argumentsElement));
+                conversation.FromAssistant(new FunctionCall(functionName, functionArguments));
 
                 var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
@@ -66,13 +66,13 @@ internal static class ChatCompletion
                     {
                         if (function.Callback != null)
                         {
-                            var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, argumentsElement, cancellationToken);
+                            var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
                             conversation.FromFunction(new FunctionResult(functionName, functionResult));
                         }
                         else
                         {
-                            var functionResult = await options.DefaultFunctionCallback(functionName, argumentsElement, cancellationToken);
-                            conversation.FromFunction(new FunctionResult(functionName, functionResult));
+                            var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
+                            conversation.FromFunction(new FunctionResult(functionName, JsonSerializer.Serialize(functionResult)));
                         }
                     }
                 }
@@ -151,7 +151,7 @@ internal static class ChatCompletion
                 var functionCallObject = new JsonObject
                 {
                     { "name", functionCall.Name },
-                    { "args", JsonObject.Create(functionCall.Arguments) }
+                    { "args", functionCall.Arguments }
                 };
 
                 partObject.Add("functionCall", functionCallObject);

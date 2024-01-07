@@ -9,9 +9,11 @@ internal static class FunctionInvoker
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<object> InvokeAsync(Delegate callback, JsonElement arguments, CancellationToken cancellationToken = default)
+    internal static async Task<string> InvokeAsync(Delegate callback, string? arguments, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
+        using var argumentsDocument = arguments != null ? JsonDocument.Parse(arguments) : JsonDocument.Parse("{}");
+
         foreach (var parameter in callback.Method.GetParameters())
         {
             if (parameter.ParameterType == typeof(CancellationToken))
@@ -20,7 +22,7 @@ internal static class FunctionInvoker
                 continue;
             }
 
-            if (arguments.TryGetProperty(parameter.Name!, out var argument) && argument.ValueKind != JsonValueKind.Null)
+            if (argumentsDocument.RootElement.TryGetProperty(parameter.Name!, out var argument) && argument.ValueKind != JsonValueKind.Null)
             {
                 var rawValue = argument.GetRawText();
                 var stringValue = argument.ValueKind == JsonValueKind.String ? argument.GetString() : rawValue;
@@ -31,7 +33,7 @@ internal static class FunctionInvoker
                     {
                         if (!Enum.TryParse(parameter.ParameterType, stringValue, true, out var enumValue))
                         {
-                            return new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." };
+                            return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." });
                         }
 
                         parsedArguments.Add(enumValue);
@@ -44,7 +46,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." };
+                    return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." });
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != DBNull.Value)
@@ -53,7 +55,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." };
+                return JsonSerializer.Serialize(new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." });
             }
         }
 
@@ -71,9 +73,9 @@ internal static class FunctionInvoker
 
         if (invocationResult == null)
         {
-            return new { IsSuccess = true };
+            return JsonSerializer.Serialize(new { IsSuccess = true });
         }
 
-        return invocationResult;
+        return JsonSerializer.Serialize(invocationResult);
     }
 }

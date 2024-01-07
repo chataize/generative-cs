@@ -7,14 +7,14 @@ public record FunctionResult
     public FunctionResult() { }
 
     [SetsRequiredMembers]
-    public FunctionResult(string name, object? result)
+    public FunctionResult(string name, string? result = null)
     {
         Name = name;
         Result = result;
     }
 
     [SetsRequiredMembers]
-    public FunctionResult(string id, string name, object? result)
+    public FunctionResult(string id, string name, string? result = null)
     {
         Id = id;
         Name = name;
@@ -25,5 +25,5 @@ public record FunctionResult
 
     public required string Name { get; set; }
 
-    public object? Result { get; set; }
+    public string? Result { get; set; }
 }
