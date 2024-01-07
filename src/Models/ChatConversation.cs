@@ -1,5 +1,4 @@
 ﻿using ChatAIze.GenerativeCS.Enums;
-using ChatAIze.GenerativeCS.Events;
 using ChatAIze.GenerativeCS.Interfaces;
 
 namespace ChatAIze.GenerativeCS.Models;
@@ -13,8 +12,6 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         Messages = messages.ToList();
     }
 
-    public event EventHandler<MessageAddedEventArgs<T>>? MessageAdded;
-
     public string? User { get; set; }
 
     public ICollection<T> Messages { get; set; } = [];
@@ -23,7 +20,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
-    public Task FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public Func<T, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
+
+    public async Task FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -33,9 +32,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
@@ -43,7 +40,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromSystemAsync(message, pinLocation);
     }
 
-    public Task FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public async Task FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -53,9 +50,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromUser(string message, PinLocation pinLocation = PinLocation.None)
@@ -63,7 +58,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromUserAsync(message, pinLocation);
     }
 
-    public Task FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
+    public async Task FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -74,9 +69,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
@@ -84,7 +77,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromUserAsync(name, message, pinLocation);
     }
 
-    public Task FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public async Task FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -94,9 +87,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
@@ -104,7 +95,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromAssistantAsync(message, pinLocation);
     }
 
-    public Task FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public async Task FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -114,9 +105,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
@@ -124,7 +113,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromAssistantAsync(functionCall, pinLocation);
     }
 
-    public Task FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public async Task FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -134,9 +123,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
@@ -144,7 +131,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         await FromAssistantAsync(functionCalls, pinLocation);
     }
 
-    public Task FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public async Task FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
@@ -154,9 +141,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
-
-        return Task.CompletedTask;
+        await AddMessageCallback(chatMessage);
     }
 
     public async void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)

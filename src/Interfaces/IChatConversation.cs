@@ -11,6 +11,8 @@ public interface IChatConversation<T> where T : IChatMessage
 
     ICollection<ChatFunction> Functions { get; }
 
+    Func<T, Task> AddMessageCallback { get; }
+
     Task FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
 
     Task FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
