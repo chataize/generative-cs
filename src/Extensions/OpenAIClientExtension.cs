@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ChatAIze.GenerativeCS.Extensions;
 
-public static class ChatGPTExtension
+public static class OpenAIExtension
 {
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<OpenAIClientOptions>? options = null)
     {
