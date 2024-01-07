@@ -8,7 +8,7 @@ public record FunctionCall
     public FunctionCall() { }
 
     [SetsRequiredMembers]
-    public FunctionCall(string name, string? arguments = null)
+    public FunctionCall(string name, string arguments)
     {
         Name = name;
         Arguments = arguments;

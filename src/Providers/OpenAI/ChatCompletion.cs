@@ -277,7 +277,7 @@ internal static class ChatCompletion
                 messageObject.Add("tool_calls", toolCallsArray);
             }
 
-            if (message.FunctionResult != null)
+            if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.Id);
                 messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Result));

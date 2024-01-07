@@ -171,7 +171,7 @@ internal static class ChatCompletion
 
                 partObject.Add("functionCall", functionCallObject);
             }
-            else if (message.FunctionResult != null)
+            else if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
                 var responseObject = new JsonObject
                 {
