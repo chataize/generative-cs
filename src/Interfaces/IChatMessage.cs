@@ -11,7 +11,7 @@ public interface IChatMessage
 
     string? Content { get; set; }
 
-    IEnumerable<FunctionCall> FunctionCalls { get; set; }
+    List<FunctionCall> FunctionCalls { get; set; }
 
     FunctionResult? FunctionResult { get; set; }
 

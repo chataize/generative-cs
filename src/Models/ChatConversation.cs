@@ -116,7 +116,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         var chatMessage = new T
         {
             Role = ChatRole.Assistant,
-            FunctionCalls = functionCalls,
+            FunctionCalls = functionCalls.ToList(),
             PinLocation = pinLocation
         };
 

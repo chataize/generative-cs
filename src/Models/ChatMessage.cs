@@ -32,7 +32,7 @@ public record ChatMessage : IChatMessage
     public ChatMessage(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Assistant;
-        FunctionCalls = functionCalls;
+        FunctionCalls = functionCalls.ToList();
         PinLocation = pinLocation;
     }
 
@@ -49,7 +49,7 @@ public record ChatMessage : IChatMessage
 
     public string? Content { get; set; }
 
-    public IEnumerable<FunctionCall> FunctionCalls { get; set; } = [];
+    public List<FunctionCall> FunctionCalls { get; set; } = [];
 
     public FunctionResult? FunctionResult { get; set; }
 
