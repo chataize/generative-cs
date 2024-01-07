@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Utilities;
@@ -10,7 +11,7 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
     {
         options ??= new();
         httpClient ??= new();
@@ -34,32 +35,32 @@ internal static class ChatCompletion
                     var functionName = functionElement.GetProperty("name").GetString()!;
                     var functionArguments = functionElement.GetProperty("arguments").GetString()!;
 
-                    conversation.FromAssistant(new FunctionCall(toolCallId, functionName, functionArguments));
+                    await conversation.FromAssistantAsync(new FunctionCall(toolCallId, functionName, functionArguments));
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
-                            conversation.FromFunction(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                            await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
                         }
                         else
                         {
                             if (function.Callback != null)
                             {
                                 var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, functionResult));
+                                await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionResult));
                             }
                             else
                             {
                                 var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                conversation.FromFunction(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
+                                await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
                             }
                         }
                     }
                     else
                     {
-                        conversation.FromFunction(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
+                        await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
                     }
                 }
             }
@@ -68,12 +69,12 @@ internal static class ChatCompletion
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
-        conversation.FromAssistant(messageContent);
+        await conversation.FromAssistantAsync(messageContent);
 
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<T>(IChatConversation<T> conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : IChatMessage, new()
     {
         options ??= new();
         httpClient ??= new();
@@ -161,7 +162,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            conversation.FromAssistant(functionCalls);
+            await conversation.FromAssistantAsync(functionCalls);
         }
 
         var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
@@ -172,31 +173,31 @@ internal static class ChatCompletion
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
-                    conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
                 }
                 else
                 {
                     if (function.Callback != null)
                     {
                         var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
-                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                        await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
                     }
                     else
                     {
                         var functionResult = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
+                        await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
                     }
                 }
             }
             else
             {
-                conversation.FromFunction(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+                await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
             }
         }
 
         if (!string.IsNullOrWhiteSpace(entireContent))
         {
-            conversation.FromAssistant(entireContent);
+            await conversation.FromAssistantAsync(entireContent);
         }
 
         if (functionCalls.Count > 0)
@@ -208,7 +209,7 @@ internal static class ChatCompletion
         }
     }
 
-    private static JsonObject CreateChatCompletionRequest(ChatConversation conversation, ChatCompletionOptions options)
+    private static JsonObject CreateChatCompletionRequest<T>(IChatConversation<T> conversation, ChatCompletionOptions options) where T : IChatMessage, new()
     {
         var messages = conversation.Messages.ToList();
         if (options.IsTimeAware)

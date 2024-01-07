@@ -1,19 +1,26 @@
 using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class MessageTools
 {
-    internal static void AddTimeInformation(List<ChatMessage> messages, DateTime currentTime)
+    internal static void AddTimeInformation<T>(List<T> messages, DateTime currentTime) where T : IChatMessage, new()
     {
-        var firstMessage = new ChatMessage(ChatRole.System, $"Current time: {currentTime}", PinLocation.Begin);
+        var firstMessage = new T
+        {
+            Role = ChatRole.System,
+            Content = $"Current time: {currentTime}",
+            PinLocation = PinLocation.Begin
+        };
+
         messages.Insert(0, firstMessage);
     }
 
-    internal static void LimitTokens(List<ChatMessage> messages, int? messageLimit, int? characterLimit)
+    internal static void LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage, new()
     {
-        var sortedMessages = new List<ChatMessage>(messages.Where(m => m.PinLocation == PinLocation.Begin));
+        var sortedMessages = messages.Where(m => m.PinLocation == PinLocation.Begin).ToList();
 
         sortedMessages.AddRange(messages.Where(m => m.PinLocation is PinLocation.None or PinLocation.Automatic));
         sortedMessages.AddRange(messages.Where(m => m.PinLocation == PinLocation.End));
@@ -24,7 +31,7 @@ internal static class MessageTools
         var excessiveMessages = messageLimit.HasValue ? messages.Count - messageLimit : 0;
         var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
 
-        var messagesToRemove = new List<ChatMessage>();
+        var messagesToRemove = new List<T>();
         foreach (var message in messages)
         {
             if (excessiveMessages <= 0 && excessiveCharacters <= 0)
@@ -44,15 +51,21 @@ internal static class MessageTools
         _ = messages.RemoveAll(messagesToRemove.Contains);
     }
 
-    internal static void ReplaceSystemRole(List<ChatMessage> messages)
+    internal static void ReplaceSystemRole<T>(IList<T> messages) where T : IChatMessage, new()
     {
         for (var i = messages.Count - 1; i >= 0; i--)
         {
             var currentMessage = messages[i];
             if (currentMessage.Role == ChatRole.System)
             {
-                var updatedMessage = currentMessage with { };
-                updatedMessage.Role = ChatRole.User;
+                var updatedMessage = new T
+                {
+                    Role = ChatRole.User,
+                    Content = currentMessage.Content,
+                    FunctionCalls = currentMessage.FunctionCalls,
+                    FunctionResult = currentMessage.FunctionResult,
+                    PinLocation = currentMessage.PinLocation
+                };
 
                 messages.RemoveAt(i);
                 messages.Insert(i, updatedMessage);
@@ -60,7 +73,7 @@ internal static class MessageTools
         }
     }
 
-    internal static void MergeMessages(List<ChatMessage> messages)
+    internal static void MergeMessages<T>(IList<T> messages) where T : IChatMessage, new()
     {
         for (var i = messages.Count - 1; i >= 1; i--)
         {
@@ -69,7 +82,15 @@ internal static class MessageTools
 
             if (previousMessage.Role == currentMessage.Role && previousMessage.Name == currentMessage.Name)
             {
-                var replacementMessage = previousMessage with { };
+                var replacementMessage = new T
+                {
+                    Role = previousMessage.Role,
+                    Content = previousMessage.Content,
+                    FunctionCalls = previousMessage.FunctionCalls,
+                    FunctionResult = previousMessage.FunctionResult,
+                    PinLocation = previousMessage.PinLocation
+                };
+
                 replacementMessage.Content += $"\n\n{currentMessage.Content}";
 
                 messages.RemoveAt(i - 1);

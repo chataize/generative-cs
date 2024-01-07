@@ -1,8 +1,9 @@
 ﻿using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Interfaces;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatMessage
+public record ChatMessage : IChatMessage
 {
     public ChatMessage() { }
 
@@ -56,37 +57,37 @@ public record ChatMessage
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;
 
-    public static ChatMessage FromSystem(string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromSystem(string content, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(ChatRole.System, content, pinLocation);
     }
 
-    public static ChatMessage FromUser(string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromUser(string content, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(ChatRole.User, content, pinLocation);
     }
 
-    public static ChatMessage FromUser(string name, string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromUser(string name, string content, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(ChatRole.User, name, content, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromAssistant(string content, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(ChatRole.Assistant, content, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCall, pinLocation);
     }
 
-    public static ChatMessage FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCalls, pinLocation);
     }
 
-    public static ChatMessage FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionResult, pinLocation);
     }

@@ -1,86 +1,167 @@
 ﻿using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Events;
+using ChatAIze.GenerativeCS.Interfaces;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatConversation
+public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage, new()
 {
     public ChatConversation() { }
 
-    public ChatConversation(string systemMessage)
-    {
-        FromSystem(systemMessage, PinLocation.Begin);
-    }
-
-    public ChatConversation(IEnumerable<ChatMessage> messages)
+    public ChatConversation(IEnumerable<T> messages)
     {
         Messages = messages.ToList();
     }
 
-    public event EventHandler<MessageAddedEventArgs>? MessageAdded;
+    public event EventHandler<MessageAddedEventArgs<T>>? MessageAdded;
 
     public string? User { get; set; }
 
-    public List<ChatMessage> Messages { get; set; } = [];
+    public ICollection<T> Messages { get; set; } = [];
 
-    public List<ChatFunction> Functions { get; set; } = [];
+    public ICollection<ChatFunction> Functions { get; set; } = [];
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
-    public void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
+    public Task FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromSystem(message, pinLocation);
+        var chatMessage = new T
+        {
+            Role = ChatRole.System,
+            Content = message,
+            PinLocation = pinLocation
+        };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
     }
 
-    public void FromUser(string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromUser(message, pinLocation);
-
-        Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        await FromSystemAsync(message, pinLocation);
     }
 
-    public void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
+    public Task FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromUser(name, message, pinLocation);
+        var chatMessage = new T
+        {
+            Role = ChatRole.User,
+            Content = message,
+            PinLocation = pinLocation
+        };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
     }
 
-    public void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromAssistant(message, pinLocation);
-
-        Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        await FromUserAsync(message, pinLocation);
     }
 
-    public void FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public Task FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromAssistant(functionCall, pinLocation);
+        var chatMessage = new T
+        {
+            Role = ChatRole.User,
+            Name = name,
+            Content = message,
+            PinLocation = pinLocation
+        };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
     }
 
-    public void FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromAssistant(functionCalls, pinLocation);
-
-        Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        await FromUserAsync(name, message, pinLocation);
     }
 
-    public void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public Task FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = ChatMessage.FromFunction(functionResult, pinLocation);
+        var chatMessage = new T
+        {
+            Role = ChatRole.Assistant,
+            Content = message,
+            PinLocation = pinLocation
+        };
 
         Messages.Add(chatMessage);
-        MessageAdded?.Invoke(this, new MessageAddedEventArgs(chatMessage));
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
+    }
+
+    public async void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
+    {
+        await FromAssistantAsync(message, pinLocation);
+    }
+
+    public Task FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    {
+        var chatMessage = new T
+        {
+            Role = ChatRole.Assistant,
+            FunctionCalls = [functionCall],
+            PinLocation = pinLocation
+        };
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
+    }
+
+    public async void FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    {
+        await FromAssistantAsync(functionCall, pinLocation);
+    }
+
+    public Task FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    {
+        var chatMessage = new T
+        {
+            Role = ChatRole.Assistant,
+            FunctionCalls = functionCalls,
+            PinLocation = pinLocation
+        };
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
+    }
+
+    public async void FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    {
+        await FromAssistantAsync(functionCalls, pinLocation);
+    }
+
+    public Task FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    {
+        var chatMessage = new T
+        {
+            Role = ChatRole.Function,
+            FunctionResult = functionResult,
+            PinLocation = pinLocation
+        };
+
+        Messages.Add(chatMessage);
+        MessageAdded?.Invoke(this, new MessageAddedEventArgs<T>(chatMessage));
+
+        return Task.CompletedTask;
+    }
+
+    public async void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    {
+        await FromFunctionAsync(functionResult, pinLocation);
     }
 
     public void AddFunction(ChatFunction function)
@@ -194,4 +275,11 @@ public record ChatConversation
     {
         Functions.Clear();
     }
+}
+
+public record ChatConversation : ChatConversation<ChatMessage>
+{
+    public ChatConversation() { }
+
+    public ChatConversation(IEnumerable<ChatMessage> messages) : base(messages) { }
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Providers.OpenAI;
@@ -152,23 +153,29 @@ public class OpenAIClient
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await CompleteAsync(new ChatConversation(prompt), options ?? DefaultCompletionOptions, cancellationToken);
+        var conversation = new ChatConversation();
+        conversation.FromUser(prompt);
+
+        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(ChatConversation conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
     {
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
     public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(new ChatConversation(prompt), ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
+        var conversation = new ChatConversation();
+        conversation.FromUser(prompt);
+
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(ChatConversation conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync<T>(IChatConversation<T> conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : IChatMessage, new()
     {
         await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
