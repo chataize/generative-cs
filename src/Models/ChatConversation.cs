@@ -16,8 +16,6 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
 
     public ICollection<T> Messages { get; set; } = [];
 
-    public ICollection<ChatFunction> Functions { get; set; } = [];
-
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
 
     public Task<T> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
@@ -145,118 +143,6 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
     public async void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         await FromFunctionAsync(functionResult, pinLocation);
-    }
-
-    public void AddFunction(ChatFunction function)
-    {
-        Functions.Add(function);
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation = false)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
-    }
-
-    public void AddFunction(Delegate callback)
-    {
-        Functions.Add(new ChatFunction(callback));
-    }
-
-    public void AddFunction(string name, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, callback));
-    }
-
-    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, parameters));
-    }
-
-    public void AddFunction(string name, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, parameters));
-    }
-
-    public void AddFunction(string name, string? description, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, description, callback));
-    }
-
-    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, parameters));
-    }
-
-    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, parameters));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, callback));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate callback)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, callback));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
-    }
-
-    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
-    {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
-    }
-
-    public bool RemoveFunction(ChatFunction function)
-    {
-        return Functions.Remove(function);
-    }
-
-    public bool RemoveFunction(string name)
-    {
-        var function = Functions.LastOrDefault(f => f.Name == name);
-        if (function == null)
-        {
-            return false;
-        }
-
-        return Functions.Remove(function);
-    }
-
-    public bool RemoveFunction(Delegate callback)
-    {
-        var function = Functions.LastOrDefault(f => f.Callback == callback);
-        if (function == null)
-        {
-            return false;
-        }
-
-        return Functions.Remove(function);
-    }
-
-    public void ClearFunctions()
-    {
-        Functions.Clear();
     }
 }
 

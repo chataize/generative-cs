@@ -25,7 +25,6 @@ internal static class ChatCompletion
         var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
-            var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
             {
                 if (toolCallElement.GetProperty("type").GetString() == "function")
@@ -38,7 +37,7 @@ internal static class ChatCompletion
                     var message1 = await conversation.FromAssistantAsync(new FunctionCall(toolCallId, functionName, functionArguments));
                     await options.AddMessageCallback(message1);
 
-                    var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
+                    var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
@@ -174,10 +173,9 @@ internal static class ChatCompletion
             await options.AddMessageCallback(message1);
         }
 
-        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
         foreach (var functionCall in functionCalls)
         {
-            var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionCall.Name, StringComparison.InvariantCultureIgnoreCase));
+            var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionCall.Name, StringComparison.InvariantCultureIgnoreCase));
             if (function != null)
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
@@ -352,12 +350,10 @@ internal static class ChatCompletion
             requestObject.Add("stop", stopArray);
         }
 
-
-        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
-        if (allFunctions.Count > 0)
+        if (options.Functions.Count > 0)
         {
             var toolsArray = new JsonArray();
-            foreach (var function in allFunctions)
+            foreach (var function in options.Functions)
             {
                 var functionObject = FunctionSerializer.SerializeFunction(function);
                 var toolObject = new JsonObject

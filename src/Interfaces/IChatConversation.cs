@@ -9,8 +9,6 @@ public interface IChatConversation<T> where T : IChatMessage
 
     ICollection<T> Messages { get; }
 
-    ICollection<ChatFunction> Functions { get; }
-
     Task<T> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
 
     Task<T> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);

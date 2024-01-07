@@ -47,7 +47,6 @@ internal static class ChatCompletion
 
         var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
         var responseParts = responseDocument.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
-        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
 
         string messageContent = null!;
         foreach (var part in responseParts.EnumerateArray())
@@ -60,7 +59,7 @@ internal static class ChatCompletion
                 var message1 = await conversation.FromAssistantAsync(new FunctionCall(functionName, functionArguments));
                 await options.AddMessageCallback(message1);
 
-                var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
+                var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
@@ -211,11 +210,10 @@ internal static class ChatCompletion
             { "contents", contentsArray },
         };
 
-        var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
-        if (allFunctions.Count > 0)
+        if (options.Functions.Count > 0)
         {
             var functionsArray = new JsonArray();
-            foreach (var function in allFunctions)
+            foreach (var function in options.Functions)
             {
                 functionsArray.Add(FunctionSerializer.SerializeFunction(function));
             }
