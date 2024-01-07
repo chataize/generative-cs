@@ -57,32 +57,39 @@ internal static class ChatCompletion
                 var functionName = functionNameElement.GetString()!;
                 var functionArguments = functionCallElement.GetProperty("args").GetString()!;
 
-                await conversation.FromAssistantAsync(new FunctionCall(functionName, functionArguments));
+                var message1 = await conversation.FromAssistantAsync(new FunctionCall(functionName, functionArguments));
+                await options.AddMessageCallback(message1);
 
                 var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                 if (function != null)
                 {
                     if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
-                        await conversation.FromFunctionAsync(new FunctionResult(functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                        var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                        await options.AddMessageCallback(message2);
                     }
                     else
                     {
                         if (function.Callback != null)
                         {
                             var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                            await conversation.FromFunctionAsync(new FunctionResult(functionName, functionResult));
+                            var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionName, functionResult));
+
+                            await options.AddMessageCallback(message3);
                         }
                         else
                         {
                             var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                            await conversation.FromFunctionAsync(new FunctionResult(functionName, JsonSerializer.Serialize(functionResult)));
+                            var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionName, JsonSerializer.Serialize(functionResult)));
+
+                            await options.AddMessageCallback(message4);
                         }
                     }
                 }
                 else
                 {
-                    await conversation.FromFunctionAsync(new FunctionResult(functionName, $"Function '{functionName}' was not found."));
+                    var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionName, $"Function '{functionName}' was not found."));
+                    await options.AddMessageCallback(message5);
                 }
 
                 return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
@@ -90,11 +97,15 @@ internal static class ChatCompletion
             else if (part.TryGetProperty("text", out var textElement))
             {
                 messageContent = textElement.GetString()!;
-                await conversation.FromAssistantAsync(messageContent);
+
+                var message6 = await conversation.FromAssistantAsync(messageContent);
+                await options.AddMessageCallback(message6);
             }
             else
             {
-                await conversation.FromFunctionAsync(new FunctionResult("Error", "Either call a function or respond with text."));
+                var message7 = await conversation.FromFunctionAsync(new FunctionResult("Error", "Either call a function or respond with text."));
+                await options.AddMessageCallback(message7);
+
                 return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
             }
         }

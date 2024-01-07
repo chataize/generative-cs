@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.Gemini;
@@ -24,6 +25,8 @@ public record ChatCompletionOptions
     public bool IsTimeAware { get; set; }
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
+
+    public Func<IChatMessage, Task> AddMessageCallback { get; } = (_) => Task.CompletedTask;
 
     public Func<string, string, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 

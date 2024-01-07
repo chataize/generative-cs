@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.OpenAI;
@@ -42,6 +43,8 @@ public record ChatCompletionOptions
     public List<string> StopWords { get; set; } = [];
 
     public List<ChatFunction> Functions { get; set; } = [];
+
+    public Func<IChatMessage, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
 
     public Func<string, string?, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 

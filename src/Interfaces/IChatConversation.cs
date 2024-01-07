@@ -11,19 +11,17 @@ public interface IChatConversation<T> where T : IChatMessage
 
     ICollection<ChatFunction> Functions { get; }
 
-    Func<T, Task> AddMessageCallback { get; }
+    Task<T> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
 
-    Task FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
 
-    Task FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
 
-    Task FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
-
-    Task FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
 }

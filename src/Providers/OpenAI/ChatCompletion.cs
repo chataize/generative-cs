@@ -35,32 +35,39 @@ internal static class ChatCompletion
                     var functionName = functionElement.GetProperty("name").GetString()!;
                     var functionArguments = functionElement.GetProperty("arguments").GetString()!;
 
-                    await conversation.FromAssistantAsync(new FunctionCall(toolCallId, functionName, functionArguments));
+                    var message1 = await conversation.FromAssistantAsync(new FunctionCall(toolCallId, functionName, functionArguments));
+                    await options.AddMessageCallback(message1);
 
                     var function = allFunctions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
                     if (function != null)
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
-                            await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                            var message2 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                            await options.AddMessageCallback(message2);
                         }
                         else
                         {
                             if (function.Callback != null)
                             {
                                 var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                                await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionResult));
+                                var message3 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionResult));
+
+                                await options.AddMessageCallback(message3);
                             }
                             else
                             {
                                 var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
+                                var message4 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
+
+                                await options.AddMessageCallback(message4);
                             }
                         }
                     }
                     else
                     {
-                        await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
+                        var message5 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
+                        await options.AddMessageCallback(message5);
                     }
                 }
             }
@@ -69,8 +76,9 @@ internal static class ChatCompletion
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
-        await conversation.FromAssistantAsync(messageContent);
+        var message6 = await conversation.FromAssistantAsync(messageContent);
 
+        await options.AddMessageCallback(message6);
         return messageContent;
     }
 
@@ -162,7 +170,8 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await conversation.FromAssistantAsync(functionCalls);
+            var message1 = await conversation.FromAssistantAsync(functionCalls);
+            await options.AddMessageCallback(message1);
         }
 
         var allFunctions = options.Functions.Concat(conversation.Functions).GroupBy(f => f.Name).Select(g => g.Last()).ToList();
@@ -173,31 +182,38 @@ internal static class ChatCompletion
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
-                    await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    await options.AddMessageCallback(message2);
                 }
                 else
                 {
                     if (function.Callback != null)
                     {
                         var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
-                        await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+
+                        await options.AddMessageCallback(message3);
                     }
                     else
                     {
                         var functionResult = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
+                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
+
+                        await options.AddMessageCallback(message4);
                     }
                 }
             }
             else
             {
-                await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+                var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+                await options.AddMessageCallback(message5);
             }
         }
 
         if (!string.IsNullOrWhiteSpace(entireContent))
         {
-            await conversation.FromAssistantAsync(entireContent);
+            var message6 = await conversation.FromAssistantAsync(entireContent);
+            await options.AddMessageCallback(message6);
         }
 
         if (functionCalls.Count > 0)
