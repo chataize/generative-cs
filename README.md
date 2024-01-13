@@ -93,6 +93,51 @@ var client = new OpenAIClient("<OPENAI API KEY>");
 float[] vectorEmbedding = await client.GetEmbeddingAsync("The quick brown fox jumps over the lazy dog");
 string base64Embedding = await client.GetBase64EmbeddingAsync("The quick brown fox jumps over the lazy dog");
 ```
+## Speech
+### Text-to-Speech
+**Synthesize to File**
+```cs
+var client = new OpenAIClient("<OPENAI API KEY>");
+await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog", "speech.mp3");
+```
+**Synthesize to Byte Array**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+byte[] speech = await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog");
+```
+### Speech-to-Text
+**Transcript From File**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+string transcript = await client.TranscriptAsync("speech.mp3");
+```
+**Transcript From Byte Array**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
+string transcript = await client.TranscriptAsync(audio);
+```
+**Translate From File**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+string translation = await client.TranslateAsync("speech.mp3");
+```
+**Translate From Byte Array**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
+string translation = await client.TranslateAsync(audio);
+```
 ## Options
 > [!TIP]
 > If you use **OpenAI** client, add:
