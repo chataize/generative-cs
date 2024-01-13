@@ -10,7 +10,7 @@
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2024</Copyright>
-    <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/chataize/chataize-cloud</RepositoryUrl>
