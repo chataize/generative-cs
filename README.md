@@ -356,3 +356,62 @@ client.DefaultTranslationOptions = options; // via property
 // Set for single request:
 string translation = await client.TranslateAsync("speech.mp3", options);
 ```
+
+## Function Calling
+### Top-Level Methods
+```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+void ToggleDarkMode(bool isOn)
+{
+    Console.WriteLine($"Dark mode set to: {isOn}");
+}
+
+string GetCurrentWeather(string location)
+{
+    return $"The weather in {location} is 72 degrees and sunny.";
+}
+
+async Task<object> SendEmailAsync(string recipient, string subject, string body)
+{
+    await Task.Delay(3000);
+    return new { Success = true, Property1 = "ABC", Property2 = 123 };
+}
+
+var options = new ChatCompletionOptions();
+
+options.AddFunction(ToggleDarkMode);
+options.AddFunction(GetCurrentWeather);
+options.AddFunction(SendEmailAsync);
+```
+### Static Class Methods
+```cs
+using System.ComponentModel;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+var options = new ChatCompletionOptions();
+
+options.AddFunction(SmartHome.CheckFrontCamera);
+options.AddFunction(SmartHome.SetFrontDoorLockAsync);
+options.AddFunction(SmartHome.SetTemperature);
+
+public static class SmartHome
+{
+    [Description("Checks if there is someone waiting at the front door.")]
+    public static object CheckFrontCamera()
+    {
+        return new { Success = true, IsPersonDetected = true };
+    }
+
+    public static async Task SetFrontDoorLockAsync(bool isLocked)
+    {
+        await Task.Delay(3000);
+        Console.WriteLine($"Front door locked: {isLocked}");
+    }
+
+    public static void SetTemperature(string room, int temperature)
+    {
+        Console.WriteLine($"Temperature in {room} has been set to {temperature} degrees.");
+    }
+}
+```
