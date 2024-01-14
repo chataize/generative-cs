@@ -609,3 +609,15 @@ var options = new ChatCompletionOptions
     CharacterLimit = 10,
 };
 ```
+### Message Pinning
+Messages can be pinned to ensure they stay in the conversation even when message and character limits are exceeded.
+```cs
+using ChatAIze.GenerativeCS.Enums;
+using ChatAIze.GenerativeCS.Models;
+
+var conversation = new ChatConversation();
+
+conversation.FromUser("This will always be the first message", PinLocation.Begin);
+conversation.FromSystem("This message will never be truncated due to limits.", PinLocation.Automatic);
+conversation.FromUser("This will always be the last (most recent) message", PinLocation.End);
+```
