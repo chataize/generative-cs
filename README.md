@@ -95,12 +95,12 @@ string base64Embedding = await client.GetBase64EmbeddingAsync("The quick brown f
 ```
 ## Audio
 ### Text-to-Speech
-**Synthesize to File**
+#### Synthesize to File
 ```cs
 var client = new OpenAIClient("<OPENAI API KEY>");
 await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog", "speech.mp3");
 ```
-**Synthesize to Byte Array**
+#### Synthesize to Byte Array
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 
@@ -108,14 +108,14 @@ var client = new OpenAIClient("<OPENAI API KEY>");
 byte[] speech = await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog");
 ```
 ### Speech-to-Text
-**Transcript From File**
+#### Transcript From File
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 
 var client = new OpenAIClient("<OPENAI API KEY>");
 string transcript = await client.TranscriptAsync("speech.mp3");
 ```
-**Transcript From Byte Array**
+#### Transcript From Byte Array
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 
@@ -123,14 +123,14 @@ var client = new OpenAIClient("<OPENAI API KEY>");
 byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
 string transcript = await client.TranscriptAsync(audio);
 ```
-**Translate From File**
+#### Translate From File
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 
 var client = new OpenAIClient("<OPENAI API KEY>");
 string translation = await client.TranslateAsync("speech.mp3");
 ```
-**Translate From Byte Array**
+#### Translate From Byte Array
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 
@@ -165,7 +165,7 @@ Console.WriteLine(result.ViolenceScore); // 0,908397912979126
 > using ChatAIze.GenerativeCS.Options.Gemini;
 > ```
 ### Dependency Injection
-**OpenAI Client**
+#### OpenAI Client
 ```cs
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Extensions;
@@ -188,7 +188,7 @@ builder.Services.AddOpenAIClient(configure =>
     // set other options here
 });
 ```
-**Gemini Client**
+#### Gemini Client
 ```cs
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Extensions;
@@ -206,7 +206,7 @@ builder.Services.AddGeminiClient(configure =>
 });
 ```
 ### Chat Completion
-**OpenAI Client**
+#### OpenAI Client
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -251,7 +251,7 @@ client.DefaultCompletionOptions = options; // via property
 string response = await client.CompleteAsync(prompt, options);
 string response = await client.CompleteAsync(conversation, options);
 ```
-**Gemini Client**
+#### Gemini Client
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -303,7 +303,7 @@ client.DefaultEmbeddingOptions = options; // via property
 float[] embedding = await client.GetEmbeddingAsync("The quick brown fox jumps over the lazy dog", options);
 ```
 ### Audio
-**Text-to-Speech**
+#### Text-to-Speech
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -326,7 +326,7 @@ client.DefaultTextToSpeechOptions = options; // via property
 // Set for single request:
 await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog", "speech.mp3", options);
 ```
-**Transcription**
+#### Transcription
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -350,7 +350,7 @@ client.DefaultTranscriptionOptions = options; // via property
 // Set for single request:
 string transcript = await client.TranscriptAsync("speech.mp3", options);
 ```
-**Translation**
+#### Translation
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -373,7 +373,7 @@ client.DefaultTranslationOptions = options; // via property
 // Set for single request:
 string translation = await client.TranslateAsync("speech.mp3", options);
 ```
-**Moderation**
+#### Moderation
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Constants;
@@ -397,6 +397,8 @@ var result = await client.ModerateAsync("I am going going to blow up your house 
 ### Top-Level Methods
 ```cs
 using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
 
 void ToggleDarkMode(bool isOn)
 {
@@ -424,6 +426,8 @@ options.AddFunction(SendEmailAsync);
 ```cs
 using System.ComponentModel;
 using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions();
 
@@ -454,6 +458,8 @@ public static class SmartHome
 ### Class Instance Methods
 ```cs
 using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions();
 var product = new Product();
@@ -485,6 +491,8 @@ public class Product
 ### Anonymous Functions
 ```cs
 using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions();
 
@@ -511,6 +519,8 @@ public record WeatherData(int Temperature, int Humidity);
 ```cs
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions();
 
@@ -546,6 +556,10 @@ options.DefaultFunctionCallback = async (name, parameters, cancellationToken) =>
 ### Time Awareness
 You can configure both Gemini and OpenAI clients to be aware of the current date and time.
 ```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
+
 var options = new ChatCompletionOptions
 {
     IsTimeAware = true,
@@ -554,9 +568,44 @@ var options = new ChatCompletionOptions
 ```
 By default, GenerativeCS uses `DateTime.Now`, but you can change the source of current time by specifying custom `TimeCallback`
 ```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
+
 var options = new ChatCompletionOptions
 {
     IsTimeAware = true,
     TimeCallback = () => new DateTime(2024, 1, 14),
+};
+```
+### Limits
+#### Message Limit
+The maximum number of messages sent in a single chat completion request. The oldest messages will be removed one by one until the limit is satisfied.
+- Pinned messages count toward the limit and have priority but are never truncated.
+- The limit does include function calls and results. 
+- Function definitions are not considered messages.
+```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
+
+var options = new ChatCompletionOptions
+{
+    MessageLimit = 10,
+};
+```
+#### Character Limit
+The maximum number of characters sent in a single chat completion request. The oldest messages will be removed one by one until the limit is satisfied.
+- Pinned messages count toward the limit and have priority but are never truncated.
+- The limit does include function calls and results. 
+- Function definitions are not considered messages.
+```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+// or
+using ChatAIze.GenerativeCS.Options.Gemini;
+
+var options = new ChatCompletionOptions
+{
+    CharacterLimit = 10,
 };
 ```
