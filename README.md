@@ -138,6 +138,19 @@ var client = new OpenAIClient("<OPENAI API KEY>");
 byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
 string translation = await client.TranslateAsync(audio);
 ```
+
+## Moderation
+```cs
+using ChatAIze.GenerativeCS.Clients;
+
+var client = new OpenAIClient("<OPENAI API KEY>");
+var result = await client.ModerateAsync("I am going going to blow up your house in Minecraft.");
+
+Console.WriteLine(result.IsFlagged); //true
+Console.WriteLine(result.IsViolence); //true 
+Console.WriteLine(result.ViolenceScore); // 0,908397912979126
+```
+
 ## Options
 > [!NOTE]
 > Per-request options take precedence over default client options.
@@ -359,6 +372,25 @@ client.DefaultTranslationOptions = options; // via property
 
 // Set for single request:
 string translation = await client.TranslateAsync("speech.mp3", options);
+```
+**Moderation**
+```cs
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+var options = new ModerationOptions
+{
+    Model = ModerationModels.TEXT_MODERATION_LATEST,
+    MaxAttempts = 5
+};
+
+// Set for entire client:
+var client = new OpenAIClient("<OPENAI API KEY>", options); // via constructor
+client.DefaultModerationOptions = options; // via property
+
+// Set for single request:
+var result = await client.ModerateAsync("I am going going to blow up your house in Minecraft.", options);
 ```
 
 ## Function Calling
