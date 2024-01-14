@@ -139,6 +139,9 @@ byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
 string translation = await client.TranslateAsync(audio);
 ```
 ## Options
+> [!NOTE]
+> Per-request options take precedence over default client options.
+
 > [!TIP]
 > If you use **OpenAI** client add:
 > ```cs
@@ -221,7 +224,8 @@ var options = new ChatCompletionOptions
     },
     AddMessageCallback = async (message) =>
     {
-        await Console.Out.WriteLineAsync($"Message {message} added");
+        // Called every time a new message is added, including function calls and results:
+        await Console.Out.WriteLineAsync($"Message added: {message}");
     },
     TimeCallback = () => DateTime.Now
 };
@@ -230,7 +234,7 @@ var options = new ChatCompletionOptions
 var client = new OpenAIClient("<OPENAI API KEY>", options); // via constructor
 client.DefaultCompletionOptions = options; // via property
 
-// Set for single completion:
+// Set for single request:
 string response = await client.CompleteAsync(prompt, options);
 string response = await client.CompleteAsync(conversation, options);
 ```
@@ -261,7 +265,7 @@ var options = new ChatCompletionOptions
 var client = new GeminiClient("<GEMINI API KEY>", options); // via constructor
 client.DefaultCompletionOptions = options; // via property
 
-// Set for single completion:
+// Set for single request:
 string response = await client.CompleteAsync(prompt, options);
 string response = await client.CompleteAsync(conversation, options);
 ```
