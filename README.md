@@ -471,3 +471,37 @@ options.AddFunction("GetCurrentWeather", "Gets the current weathe in default loc
 
 public record WeatherData(int Temperature, int Humidity);
 ```
+### Default Function Callback
+```cs
+using ChatAIze.GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+var options = new ChatCompletionOptions();
+
+options.AddFunction("GetUserLocation");
+options.AddFunction("GetCurrentWeather", new FunctionParameter(typeof(string), "location"));
+
+List<FunctionParameter> parameters = [new(typeof(string), "room"), new(typeof(int), "temperature")];
+options.AddFunction("SetRoomTemperature", parameters);
+
+options.DefaultFunctionCallback = async (name, parameters, cancellationToken) =>
+{
+    if (name == "GetUserLocation")
+    {
+        return "London";
+    }
+
+    if (name == "GetCurrentWeather")
+    {
+        return new { Temperature = 20, Weather = "Sunny" };
+    }
+
+    if (name == "SetRoomTemperature")
+    {
+        await Task.Delay(3000, cancellationToken);
+        return new { IsSuccess = true };
+    }
+
+    return new { Error = $"Unknown function: {name}" };
+};
+```
