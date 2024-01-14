@@ -3,6 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>ChatAIze.GenerativeCS</AssemblyName>
     <RootNamespace>ChatAIze.GenerativeCS</RootNamespace>
     <PackageId>ChatAIze.GenerativeCS</PackageId>
     <Product>ChatAIze</Product>
