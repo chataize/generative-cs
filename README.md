@@ -232,7 +232,7 @@ client.DefaultCompletionOptions = options; // via property
 
 // Set for single completion:
 string response = await client.CompleteAsync(prompt, options);
-string response = await client.CompleteAsync(conversartion, options);
+string response = await client.CompleteAsync(conversation, options);
 ```
 **Gemini Client**
 ```cs
@@ -263,7 +263,7 @@ client.DefaultCompletionOptions = options; // via property
 
 // Set for single completion:
 string response = await client.CompleteAsync(prompt, options);
-string response = await client.CompleteAsync(conversartion, options);
+string response = await client.CompleteAsync(conversation, options);
 ```
 ### Embeddings
 ```cs
