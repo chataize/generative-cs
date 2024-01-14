@@ -43,6 +43,26 @@ internal static class MessageTools
             {
                 messagesToRemove.Add(message);
 
+                // If message is a function call, remove paired function result:
+                if (message.FunctionCalls != null)
+                {
+                    foreach (var functionCall in message.FunctionCalls)
+                    {
+                        if (string.IsNullOrEmpty(functionCall.Id))
+                        {
+                            continue;
+                        }
+
+                        foreach (var message2 in messages)
+                        {
+                            if (message2.FunctionResult?.Id == functionCall.Id)
+                            {
+                                messagesToRemove.Add(message2);
+                            }
+                        }
+                    }
+                }
+
                 excessiveMessages--;
                 excessiveCharacters -= message.Content?.Length ?? 0;
             }
