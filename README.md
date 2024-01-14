@@ -140,14 +140,55 @@ string translation = await client.TranslateAsync(audio);
 ```
 ## Options
 > [!TIP]
-> If you use **OpenAI** client, add:
+> If you use **OpenAI** client add:
 > ```cs
 > using ChatAIze.GenerativeCS.Options.OpenAI;
 > ```
-> If you use **Gemini** client, add:
+> If you use **Gemini** client add:
 > ```cs
 > using ChatAIze.GenerativeCS.Options.Gemini;
 > ```
+### Dependency Injection
+**OpenAI Client**
+```cs
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Extensions;
+
+builder.Services.AddOpenAIClient(configure =>
+{
+    configure.ApiKey = "<OPENAI API KEY>";
+    configure.DefaultCompletionOptions = new ChatCompletionOptions()
+    {
+        Model = ChatCompletionModels.GPT_3_5_TURBO_1106,
+        Temperature = 1.0
+        // set other chat completion options here
+    };
+    configure.DefaultEmbeddingOptions = new EmbeddingOptions()
+    {
+        Model = EmbeddingModels.TEXT_EMBEDDING_ADA_002,
+        MaxAttempts = 5
+        // set other embeding options here
+    };
+    // set other options here
+});
+```
+**Gemini Client**
+```cs
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Extensions;
+
+builder.Services.AddGeminiClient(configure =>
+{
+    configure.ApiKey = "<GEMINI API KEY>";
+    configure.DefaultCompletionOptions = new ChatCompletionOptions()
+    {
+        Model = ChatCompletionModels.GEMINI_PRO,
+        MessageLimit = 10
+        // set other chat completion options here
+    };
+    // set other options here
+});
+```
 ### Chat Completion
 **OpenAI Client**
 ```cs
@@ -227,11 +268,12 @@ string response = await client.CompleteAsync(conversartion, options);
 ### Embeddings
 ```cs
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new EmbeddingOptions
 {
-    Model = "text-embedding-ada-002",
+    Model = EmbeddingModels.TEXT_EMBEDDING_ADA_002,
     User = "USER_ID_1234",
     MaxAttempts = 5
 };
@@ -247,12 +289,13 @@ float[] embedding = await client.GetEmbeddingAsync("The quick brown fox jumps ov
 **Text-to-Speech**
 ```cs
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TextToSpeechOptions
 {
-    Model = "tts-1",
+    Model = TextToSpeechModels.TTS_1,
     Voice = TextToSpeechVoice.Alloy,
     Speed = 1.0,
     MaxAttempts = 5,
@@ -269,12 +312,13 @@ await client.SynthesizeSpeechAsync("The quick brown fox jumps over the lazy dog"
 **Transcription**
 ```cs
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TranscriptionOptions
 {
-    Model = "whisper-1",
+    Model = SpeechRecognitionModels.WHISPER_1,
     Language = "en",
     Prompt = "ZyntriQix, Digique Plus, CynapseFive, VortiQore V8, EchoNix Array, ...",
     Temperature = 0.0,
@@ -292,12 +336,13 @@ string transcript = await client.TranscriptAsync("speech.mp3", options);
 **Translation**
 ```cs
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TranslationOptions
 {
-    Model = "whisper-1",
+    Model = SpeechRecognitionModels.WHISPER_1,
     Prompt = "ZyntriQix, Digique Plus, CynapseFive, VortiQore V8, EchoNix Array, ...",
     Temperature = 0.0,
     MaxAttempts = 5,
