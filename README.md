@@ -552,3 +552,11 @@ var options = new ChatCompletionOptions
     // other completion options
 };
 ```
+By default, GenerativeCS uses `DateTime.Now`, but you can change the source of current time by specifying custom `TimeCallback`
+```cs
+var options = new ChatCompletionOptions
+{
+    IsTimeAware = true,
+    TimeCallback = () => new DateTime(2024, 1, 14),
+};
+```
