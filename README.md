@@ -415,3 +415,59 @@ public static class SmartHome
     }
 }
 ```
+### Class Instance Methods
+```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+var options = new ChatCompletionOptions();
+var product = new Product();
+
+options.AddFunction(product.GetDescription);
+options.AddFunction(product.Rename);
+options.AddFunction(product.Delete);
+
+public class Product
+{
+    public string? Name { get; set; }
+
+    public string GetDescription()
+    {
+        return $"This is a {Name}";
+    }
+
+    public void Rename(string name)
+    {
+        Name = name;
+    }
+
+    public void Delete()
+    {
+        Console.WriteLine($"Deleting product: {Name}");
+    }
+}
+```
+### Anonymous Functions
+```cs
+using ChatAIze.GenerativeCS.Options.OpenAI;
+
+var options = new ChatCompletionOptions();
+
+options.AddFunction("GetCurrentWeather", (string location) => 
+{
+    return "The current weather is sunny";
+});
+
+options.AddFunction("GetCurrentWeather", async () =>
+{
+    await Task.Delay(3000);
+    return "The current weather is sunny";
+});
+
+options.AddFunction("GetCurrentWeather", "Gets the current weathe in default location.", async () =>
+{
+    await Task.Delay(3000);
+    return new WeatherData(20, 50);
+});
+
+public record WeatherData(int Temperature, int Humidity);
+```
