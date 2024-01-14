@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
@@ -24,10 +25,19 @@ internal static class ChatCompletion
         }
 
         var request = CreateCompletionRequest(prompt);
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(request.ToString());
+        }
 
         using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(responseDocument.RootElement.ToString());
+        }
 
         var generatedMessage = responseDocument.RootElement.GetProperty("candidates")[0];
         var messageContent = generatedMessage.GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString()!;
@@ -41,11 +51,20 @@ internal static class ChatCompletion
         options ??= new();
 
         var request = CreateChatCompletionRequest(conversation, options);
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(request.ToString());
+        }
 
         using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(responseDocument.RootElement.ToString());
+        }
+
         var responseParts = responseDocument.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
 
         string messageContent = null!;

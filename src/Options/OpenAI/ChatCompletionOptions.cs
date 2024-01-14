@@ -38,6 +38,8 @@ public record ChatCompletionOptions
 
     public bool IsJsonMode { get; set; }
 
+    public bool IsDebugMode { get; set; }
+
     public bool IsTimeAware { get; set; }
 
     public List<string> StopWords { get; set; } = [];

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -17,10 +18,19 @@ internal static class ChatCompletion
         httpClient ??= new();
 
         var request = CreateChatCompletionRequest(conversation, options);
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(request.ToString());
+        }
 
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
+
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(responseDocument.RootElement.ToString());
+        }
 
         var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
@@ -89,6 +99,11 @@ internal static class ChatCompletion
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
 
+        if (options.IsDebugMode)
+        {
+            Debug.WriteLine(request.ToString());
+        }
+
         using var response = await httpClient.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
@@ -120,6 +135,10 @@ internal static class ChatCompletion
             }
 
             using var chunkDocument = JsonDocument.Parse(chunkData);
+            if (options.IsDebugMode)
+            {
+                Debug.WriteLine(chunkDocument.RootElement.ToString());
+            }
 
             var choice = chunkDocument.RootElement.GetProperty("choices")[0];
             if (choice.TryGetProperty("finish_reason", out var finishReasonProperty) && finishReasonProperty.ValueKind != JsonValueKind.Null)

@@ -24,6 +24,8 @@ public record ChatCompletionOptions
 
     public bool IsTimeAware { get; set; }
 
+    public bool IsDebugMode { get; set; }
+
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
     public Func<IChatMessage, Task> AddMessageCallback { get; } = (_) => Task.CompletedTask;
