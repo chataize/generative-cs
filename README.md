@@ -541,3 +541,14 @@ options.DefaultFunctionCallback = async (name, parameters, cancellationToken) =>
     return new { Error = $"Unknown function: {name}" };
 };
 ```
+
+## Additional Features
+### Time Awareness
+You can configure both Gemini and OpenAI clients to be aware of the current date and time.
+```cs
+var options = new ChatCompletionOptions
+{
+    IsTimeAware = true,
+    // other completion options
+};
+```
