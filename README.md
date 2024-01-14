@@ -4,11 +4,11 @@ Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemin
 ## Installation
 ### .NET CLI
 ```bash
-dotnet add package GenerativeCS
+dotnet add package ChatAIze.GenerativeCS
 ```
 ### Package Manager Console
 ```powershell
-Install-Package GenerativeCS
+Install-Package ChatAIze.GenerativeCS
 ```
 
 ## Clients
