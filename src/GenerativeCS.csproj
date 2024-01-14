@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>ChatAIze.GenerativeCS</RootNamespace>
-    <PackageId>GenerativeCS</PackageId>
+    <PackageId>ChatAIze.GenerativeCS</PackageId>
     <Product>ChatAIze</Product>
     <Version>0.1.0</Version>
     <Company>ChatAIze</Company>
