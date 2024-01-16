@@ -9,7 +9,7 @@ using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.Gemini;
 
-internal static class ChatCompletion
+public static class ChatCompletion
 {
     internal static async Task<string> CompleteAsync(string prompt, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
@@ -73,7 +73,7 @@ internal static class ChatCompletion
             if (part.TryGetProperty("functionCall", out var functionCallElement) && functionCallElement.TryGetProperty("name", out var functionNameElement))
             {
                 var functionName = functionNameElement.GetString()!;
-                var functionArguments = functionCallElement.GetProperty("args").GetString()!;
+                var functionArguments = functionCallElement.GetProperty("args").GetRawText()!;
 
                 var message1 = await conversation.FromAssistantAsync(new FunctionCall(functionName, functionArguments));
                 await options.AddMessageCallback(message1);
@@ -183,9 +183,13 @@ internal static class ChatCompletion
             {
                 var functionCallObject = new JsonObject
                 {
-                    { "name", functionCall.Name },
-                    { "args", functionCall.Arguments }
+                    { "name", functionCall.Name }
                 };
+
+                if (functionCall.Arguments != null)
+                {
+                    functionCallObject.Add("args", JsonNode.Parse(functionCall.Arguments)!.AsObject());
+                }
 
                 partObject.Add("functionCall", functionCallObject);
             }
