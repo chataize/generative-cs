@@ -53,11 +53,6 @@ public class GeminiClient
 
     public ChatCompletionOptions? DefaultCompletionOptions { get; set; } = new();
 
-    public static GeminiClient CreateInstance(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
-    {
-        return new GeminiClient(apiKey, defaultCompletionOptions);
-    }
-
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletion.CompleteAsync(prompt, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);

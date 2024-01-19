@@ -128,41 +128,6 @@ public class OpenAIClient
 
     public ModerationOptions? DefaultModerationOptions { get; set; } = new();
 
-    public static OpenAIClient CreateInstance(string apiKey)
-    {
-        return new OpenAIClient(apiKey);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, ChatCompletionOptions? defaultCompletionOptions)
-    {
-        return new OpenAIClient(apiKey, defaultCompletionOptions);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
-    {
-        return new OpenAIClient(apiKey, defaultEmbeddingOptions);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
-    {
-        return new OpenAIClient(apiKey, defaultTextToSpeechOptions);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
-    {
-        return new OpenAIClient(apiKey, defaultTranscriptionOptions);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, TranslationOptions? defaultTranslationOptions)
-    {
-        return new OpenAIClient(apiKey, defaultTranslationOptions);
-    }
-
-    public static OpenAIClient CreateInstance(string apiKey, ModerationOptions? defaultModerationOptions)
-    {
-        return new OpenAIClient(apiKey, defaultModerationOptions);
-    }
-
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
         var conversation = new ChatConversation();
