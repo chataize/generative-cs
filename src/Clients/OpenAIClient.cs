@@ -16,6 +16,24 @@ public class OpenAIClient
     public OpenAIClient() { }
 
     [SetsRequiredMembers]
+    public OpenAIClient(string apiKey)
+    {
+        ApiKey = apiKey;
+    }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(OpenAIClientOptions options)
+    {
+        ApiKey = options.ApiKey;
+        DefaultCompletionOptions = options.DefaultCompletionOptions;
+        DefaultEmbeddingOptions = options.DefaultEmbeddingOptions;
+        DefaultTextToSpeechOptions = options.DefaultTextToSpeechOptions;
+        DefaultTranscriptionOptions = options.DefaultTranscriptionOptions;
+        DefaultTranslationOptions = options.DefaultTranslationOptions;
+        DefaultModerationOptions = options.DefaultModerationOptions;
+    }
+
+    [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options)
     {
@@ -28,12 +46,6 @@ public class OpenAIClient
         DefaultTranscriptionOptions = options.Value.DefaultTranscriptionOptions;
         DefaultTranslationOptions = options.Value.DefaultTranslationOptions;
         DefaultModerationOptions = options.Value.DefaultModerationOptions;
-    }
-
-    [SetsRequiredMembers]
-    public OpenAIClient(string apiKey)
-    {
-        ApiKey = apiKey;
     }
 
     [SetsRequiredMembers]

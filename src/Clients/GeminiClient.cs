@@ -15,14 +15,16 @@ public class GeminiClient
     public GeminiClient() { }
 
     [SetsRequiredMembers]
-    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
+    public GeminiClient(string apiKey)
     {
         ApiKey = apiKey;
+    }
 
-        if (defaultCompletionOptions != null)
-        {
-            DefaultCompletionOptions = defaultCompletionOptions;
-        }
+    [SetsRequiredMembers]
+    public GeminiClient(GeminiClientOptions options)
+    {
+        ApiKey = options.ApiKey;
+        DefaultCompletionOptions = options.DefaultCompletionOptions;
     }
 
     [SetsRequiredMembers]
@@ -33,6 +35,18 @@ public class GeminiClient
 
         ApiKey = options.Value.ApiKey;
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
+    }
+
+
+    [SetsRequiredMembers]
+    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
+    {
+        ApiKey = apiKey;
+
+        if (defaultCompletionOptions != null)
+        {
+            DefaultCompletionOptions = defaultCompletionOptions;
+        }
     }
 
     public required string ApiKey { get; set; }
