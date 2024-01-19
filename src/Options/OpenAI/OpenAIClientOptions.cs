@@ -1,7 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record OpenAIClientOptions
 {
+    public OpenAIClientOptions() { }
+
+    [SetsRequiredMembers]
+    public OpenAIClientOptions(string apiKey)
+    {
+        ApiKey = apiKey;
+    }
+
     public required string ApiKey { get; set; }
 
     public ChatCompletionOptions DefaultCompletionOptions { get; set; } = new();
