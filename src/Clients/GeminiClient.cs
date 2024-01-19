@@ -51,7 +51,7 @@ public class GeminiClient
 
     public required string ApiKey { get; set; }
 
-    public ChatCompletionOptions? DefaultCompletionOptions { get; set; } = new();
+    public ChatCompletionOptions DefaultCompletionOptions { get; set; } = new();
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
     {
