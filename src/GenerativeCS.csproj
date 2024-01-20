@@ -18,8 +18,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>
-      The main ChatAIze server responsible for core platform services, including the
-      website, chatbot console, and more.
+      Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients and support for C# function calling via reflection.
     </Description>
     <PackageTags>
       ai openai gpt gpt3 gpt-3 gpt4 gpt-4 google gemini pro gemini-pro llm language-model
