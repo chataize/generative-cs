@@ -37,7 +37,6 @@ public class GeminiClient
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
     }
 
-
     [SetsRequiredMembers]
     public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
     {

@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace ChatAIze.GenerativeCS.Models;
 
 public record FunctionResult

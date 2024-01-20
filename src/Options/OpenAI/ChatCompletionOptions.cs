@@ -1,4 +1,3 @@
-using System.Text.Json;
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;

@@ -10,11 +10,11 @@ public static class OpenAIExtension
     {
         if (options != null)
         {
-            services.Configure(options);
+            _ = services.Configure(options);
         }
 
-        services.AddHttpClient<OpenAIClient>();
-        services.AddSingleton<OpenAIClient>();
+        _ = services.AddHttpClient<OpenAIClient>();
+        _ = services.AddSingleton<OpenAIClient>();
 
         return services;
     }

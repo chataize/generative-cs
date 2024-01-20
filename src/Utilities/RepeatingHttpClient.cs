@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -37,7 +36,7 @@ internal static class RepeatingHttpClient
                 }
 
                 var result = await client.SendAsync(request, cancellationToken);
-                result.EnsureSuccessStatusCode();
+                _ = result.EnsureSuccessStatusCode();
 
                 return result;
             }
@@ -78,7 +77,7 @@ internal static class RepeatingHttpClient
                 }
 
                 var result = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                result.EnsureSuccessStatusCode();
+                _ = result.EnsureSuccessStatusCode();
 
                 return result;
             }
@@ -118,7 +117,7 @@ internal static class RepeatingHttpClient
                 }
 
                 var result = await client.SendAsync(request, cancellationToken);
-                result.EnsureSuccessStatusCode();
+                _ = result.EnsureSuccessStatusCode();
 
                 return result;
             }
