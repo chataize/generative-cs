@@ -20,6 +20,22 @@
     <Description>
       Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients
       and support for C# function calling via reflection.
+
+      Features:
+      - Chat Completion
+      - Response Streaming
+      - Text Embedding
+      - Text-to-Speech
+      - Speech-to-Text
+      - Moderation
+      - Configurable Token Limit
+      - Configurable Character Limit
+      - Configurable Message Limit
+      - Message Pinning
+      - Function Calling
+      - Support for Dependency Injection
+      - Automatic Reattempt on Failure
+      - Advanced Customization
     </Description>
     <PackageTags>
       ai api api-client api-wrapper artificial-intelligence asp-net asp-net-core aspnet aspnet-core
