@@ -23,22 +23,26 @@
     </Description>
     <PackageTags>
       ai api api-client api-wrapper artificial-intelligence asp-net asp-net-core aspnet aspnet-core
-      aspnetcore assistant audio bot calling chat chat-bot chat-completion chat-completion-provider
-      chat-gpt chat-gpt-api chataize chatbot chatgpt chatgpt-api client completion
-      completion-generator completion-provider conversation conversational conversational-ai cs
-      csharp davinci dialog dotnet dotnet-core embedding embedding-model embeddings embeddings-model
-      function function-calling functional functional-gpt functions functions-calling gemini
-      gemini-api gemini-api-client gemini-client gemini-pro gemini-pro-api gemini-pro-api-client
-      gemini-pro-client generation generative-ai generative-cs generator google google-gemini
-      google-gemini-pro google-gemini-pro-api google-gemini-pro-api-client google-gemini-pro-client
-      gpt gpt-3 gpt-4 gpt-function gpt-functions gpt3 gpt4 language language-model learning library
-      llama llm machine machine-learning method method-calling methods methods-calling ml model
+      aspnetcore assistant audio auto automation bard bing bing-chat bot calling chat chat-bot
+      chat-completion chat-completion-provider chat-gpt chat-gpt-api chataize chatbot chatgpt
+      chatgpt-api client co co-pilot complete completion completion-generator completion-provider
+      completions completions-generator completions-provider conversation conversational
+      conversational-ai copilot cs csharp davinci dialog dotnet dotnet-core embedding
+      embedding-model embeddings embeddings-model function function-calling functional
+      functional-gpt functions functions-calling gemini gemini-api gemini-api-client gemini-client
+      gemini-pro gemini-pro-api gemini-pro-api-client gemini-pro-client generation generative-ai
+      generative-cs generator google google-bard google-gemini google-gemini-pro
+      google-gemini-pro-api google-gemini-pro-api-client google-gemini-pro-client gpt gpt-3 gpt-4
+      gpt-function gpt-functions gpt3 gpt4 kernel language language-model learning library llama llm
+      machine machine-learning method method-calling methods methods-calling microsot ml model
       moderation natural natural-language-processing nlp open-ai open-ai-api open-ai-client openai
-      openai-api openai-api-client openai-client pro processing prompt provider reflection response
-      response-completion response-generation sound speech speech-to-text streaming synthesis text
+      openai-api openai-api-client openai-client pilot pro processing prompt provider reflection
+      respond response response-completion response-generation rest rest-api restful restful-api
+      robot sdk search semantic sound speech speech-to-text stream streaming synthesis text
       text-completion text-embedding text-embeddings text-generation text-synthesis text-to-speech
       token transcript transcription transformer transformer-model transformers transformers-model
-      translation translator tts turbo virtual virtual-assistant voice whisper whisper-api wrapper
+      translation translator tts turbo vector vector-embedding vector-embeddings vector-search
+      vertex virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
   </PropertyGroup>
   <ItemGroup>
