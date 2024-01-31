@@ -56,6 +56,11 @@ internal static class Embeddings
             request.Add("encoding_format", "base64");
         }
 
+        if (options.Dimensions.HasValue)
+        {
+            request.Add("dimensions", options.Dimensions);
+        }
+
         if (options.User != null)
         {
             request.Add("user", options.User);

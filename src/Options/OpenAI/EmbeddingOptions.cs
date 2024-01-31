@@ -14,6 +14,8 @@ public record EmbeddingOptions
 
     public string Model { get; set; } = DefaultModel;
 
+    public int? Dimensions { get; set; }
+
     public string? User { get; set; }
 
     public int MaxAttempts { get; set; } = 5;
