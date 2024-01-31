@@ -4,7 +4,7 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record ModerationOptions
 {
-    private const string DEFAULT_MODEL = ModerationModels.TEXT_MODERATION_LATEST;
+    private const string DEFAULT_MODEL = ModerationModels.TEXT_MODERATION_STABLE;
 
     public ModerationOptions(string model = DEFAULT_MODEL)
     {
