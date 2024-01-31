@@ -14,7 +14,7 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/chataize/chataize-cloud</RepositoryUrl>
+    <RepositoryUrl>https://github.com/chataize/generative-cs</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>
