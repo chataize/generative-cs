@@ -18,15 +18,14 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var i = 0;
-        var embedding = new float[1536];
+        var embedding = new List<float>();
 
         foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
         {
-            embedding[i++] = element.GetSingle();
+            embedding.Add(element.GetSingle());
         }
 
-        return embedding;
+        return [.. embedding];
     }
 
     internal static async Task<string> GetBase64EmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
