@@ -18,11 +18,27 @@
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>
-      Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients and support for C# function calling via reflection.
+      Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients
+      and support for C# function calling via reflection.
     </Description>
     <PackageTags>
-      ai openai gpt gpt3 gpt-3 gpt4 gpt-4 google gemini pro gemini-pro llm language-model
-      generative-ai
+      ai api api-client api-wrapper artificial-intelligence asp-net asp-net-core aspnet aspnet-core
+      aspnetcore assistant audio bot calling chat chat-bot chat-completion chat-completion-provider
+      chat-gpt chat-gpt-api chataize chatbot chatgpt chatgpt-api client completion
+      completion-generator completion-provider conversation conversational conversational-ai cs
+      csharp davinci dialog dotnet dotnet-core embedding embedding-model embeddings embeddings-model
+      function function-calling functional functional-gpt functions functions-calling gemini
+      gemini-api gemini-api-client gemini-client gemini-pro gemini-pro-api gemini-pro-api-client
+      gemini-pro-client generation generative-ai generative-cs generator google google-gemini
+      google-gemini-pro google-gemini-pro-api google-gemini-pro-api-client google-gemini-pro-client
+      gpt gpt-3 gpt-4 gpt-function gpt-functions gpt3 gpt4 language language-model learning library
+      llama llm machine machine-learning method method-calling methods methods-calling ml model
+      moderation natural natural-language-processing nlp open-ai open-ai-api open-ai-client openai
+      openai-api openai-api-client openai-client pro processing prompt provider reflection response
+      response-completion response-generation sound speech speech-to-text streaming synthesis text
+      text-completion text-embedding text-embeddings text-generation text-synthesis text-to-speech
+      token transcript transcription transformer transformer-model transformers transformers-model
+      translation translator tts turbo virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
   </PropertyGroup>
   <ItemGroup>
