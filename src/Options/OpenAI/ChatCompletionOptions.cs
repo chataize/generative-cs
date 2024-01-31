@@ -6,7 +6,7 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record ChatCompletionOptions
 {
-    private const string DefaultModel = ChatCompletionModels.GPT_3_5_TURBO_1106;
+    private const string DefaultModel = ChatCompletionModels.GPT_3_5_TURBO;
 
     public ChatCompletionOptions(string model = DefaultModel)
     {
