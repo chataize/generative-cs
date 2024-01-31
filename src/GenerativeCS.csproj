@@ -60,6 +60,12 @@
       translation translator tts turbo vector vector-embedding vector-embeddings vector-search
       vertex virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
+    <PackageReleaseNotes>
+      - Added feature list to the package description.
+      - Fixed repository URL pointing to wrong repository.
+      
+      https://github.com/chataize/generative-cs/releases
+    </PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None
