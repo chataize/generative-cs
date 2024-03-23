@@ -90,15 +90,15 @@ public static class ChatCompletion
                     {
                         if (function.Callback != null)
                         {
-                            var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                            var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionName, functionResult));
+                            var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
+                            var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionName, functionValue));
 
                             await options.AddMessageCallback(message3);
                         }
                         else
                         {
-                            var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                            var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionName, JsonSerializer.Serialize(functionResult)));
+                            var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
+                            var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionName, JsonSerializer.Serialize(functionValue)));
 
                             await options.AddMessageCallback(message4);
                         }
@@ -198,7 +198,7 @@ public static class ChatCompletion
                 var responseObject = new JsonObject
                 {
                     { "name", message.FunctionResult.Name },
-                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Result) }
+                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Value) }
                 };
 
                 var functionResponseObject = new JsonObject

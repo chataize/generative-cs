@@ -4,22 +4,22 @@ public record FunctionResult
 {
     public FunctionResult() { }
 
-    public FunctionResult(string name, string? result = null)
+    public FunctionResult(string name, string? value = null)
     {
         Name = name;
-        Result = result;
+        Value = value;
     }
 
-    public FunctionResult(string id, string name, string? result = null)
+    public FunctionResult(string id, string name, string? value = null)
     {
         Id = id;
         Name = name;
-        Result = result;
+        Value = value;
     }
 
     public string? Id { get; set; }
 
     public string? Name { get; set; }
 
-    public string? Result { get; set; }
+    public string? Value { get; set; }
 }

@@ -59,15 +59,15 @@ internal static class ChatCompletion
                         {
                             if (function.Callback != null)
                             {
-                                var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                                var message3 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionResult));
+                                var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
+                                var message3 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionValue));
 
                                 await options.AddMessageCallback(message3);
                             }
                             else
                             {
-                                var functionResult = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                var message4 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionResult)));
+                                var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
+                                var message4 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionValue)));
 
                                 await options.AddMessageCallback(message4);
                             }
@@ -206,15 +206,15 @@ internal static class ChatCompletion
                 {
                     if (function.Callback != null)
                     {
-                        var functionResult = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
-                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionResult));
+                        var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
+                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionValue));
 
                         await options.AddMessageCallback(message3);
                     }
                     else
                     {
-                        var functionResult = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionResult)));
+                        var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
+                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionValue)));
 
                         await options.AddMessageCallback(message4);
                     }
@@ -297,7 +297,7 @@ internal static class ChatCompletion
             if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.Id);
-                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Result));
+                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Value));
             }
 
             messagesArray.Add(messageObject);
