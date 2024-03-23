@@ -5,7 +5,7 @@ namespace ChatAIze.GenerativeCS.Interfaces;
 
 public interface IChatConversation<T> where T : IChatMessage
 {
-    string? User { get; }
+    string? UserTrackingId { get; }
 
     ICollection<T> Messages { get; }
 

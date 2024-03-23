@@ -12,7 +12,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         Messages = messages.ToList();
     }
 
-    public string? User { get; set; }
+    public string? UserTrackingId { get; set; }
 
     public ICollection<T> Messages { get; set; } = [];
 

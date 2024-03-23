@@ -309,9 +309,9 @@ internal static class ChatCompletion
             { "messages", messagesArray }
         };
 
-        if (conversation.User != null)
+        if (conversation.UserTrackingId != null)
         {
-            requestObject.Add("user", conversation.User);
+            requestObject.Add("user", conversation.UserTrackingId);
         }
         else if (options.User != null)
         {
