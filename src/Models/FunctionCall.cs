@@ -14,14 +14,14 @@ public record FunctionCall
     }
 
     [SetsRequiredMembers]
-    public FunctionCall(string id, string name, string? arguments = null)
+    public FunctionCall(string toolCallId, string name, string? arguments = null)
     {
-        Id = id;
+        ToolCallId = toolCallId;
         Name = name;
         Arguments = arguments;
     }
 
-    public string? Id { get; set; }
+    public string? ToolCallId { get; set; }
 
     public required string Name { get; set; }
 

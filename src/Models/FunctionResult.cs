@@ -10,14 +10,14 @@ public record FunctionResult
         Value = value;
     }
 
-    public FunctionResult(string id, string name, string? value = null)
+    public FunctionResult(string toolCallId, string name, string? value = null)
     {
-        Id = id;
+        ToolCallId = toolCallId;
         Name = name;
         Value = value;
     }
 
-    public string? Id { get; set; }
+    public string? ToolCallId { get; set; }
 
     public string? Name { get; set; }
 

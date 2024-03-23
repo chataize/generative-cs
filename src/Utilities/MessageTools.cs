@@ -47,14 +47,14 @@ internal static class MessageTools
                 {
                     foreach (var functionCall in message.FunctionCalls)
                     {
-                        if (string.IsNullOrEmpty(functionCall.Id))
+                        if (string.IsNullOrEmpty(functionCall.ToolCallId))
                         {
                             continue;
                         }
 
                         foreach (var message2 in messages)
                         {
-                            if (message2.FunctionResult?.Id == functionCall.Id)
+                            if (message2.FunctionResult?.ToolCallId == functionCall.ToolCallId)
                             {
                                 messagesToRemove.Add(message2);
                             }

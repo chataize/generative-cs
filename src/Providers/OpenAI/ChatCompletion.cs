@@ -199,7 +199,7 @@ internal static class ChatCompletion
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
-                    var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
                     await options.AddMessageCallback(message2);
                 }
                 else
@@ -207,14 +207,14 @@ internal static class ChatCompletion
                     if (function.Callback != null)
                     {
                         var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
-                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, functionValue));
+                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, functionValue));
 
                         await options.AddMessageCallback(message3);
                     }
                     else
                     {
                         var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, JsonSerializer.Serialize(functionValue)));
+                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, JsonSerializer.Serialize(functionValue)));
 
                         await options.AddMessageCallback(message4);
                     }
@@ -222,7 +222,7 @@ internal static class ChatCompletion
             }
             else
             {
-                var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.Id!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+                var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
                 await options.AddMessageCallback(message5);
             }
         }
@@ -281,7 +281,7 @@ internal static class ChatCompletion
 
                 var toolCallObject = new JsonObject
                 {
-                    { "id", functionCall.Id },
+                    { "id", functionCall.ToolCallId },
                     { "type", "function" },
                     { "function", functionObject }
                 };
@@ -296,7 +296,7 @@ internal static class ChatCompletion
 
             if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
-                messageObject.Add("tool_call_id", message.FunctionResult.Id);
+                messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
                 messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Value));
             }
 
