@@ -24,14 +24,14 @@ public record ChatMessage : IChatMessage
 
     public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        Role = ChatRole.Assistant;
+        Role = ChatRole.Chatbot;
         FunctionCalls = [functionCall];
         PinLocation = pinLocation;
     }
 
     public ChatMessage(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        Role = ChatRole.Assistant;
+        Role = ChatRole.Chatbot;
         FunctionCalls = functionCalls.ToList();
         PinLocation = pinLocation;
     }
@@ -72,17 +72,17 @@ public record ChatMessage : IChatMessage
         return new ChatMessage(ChatRole.User, name, content, pinLocation);
     }
 
-    public static IChatMessage FromAssistant(string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromChatbot(string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage(ChatRole.Assistant, content, pinLocation);
+        return new ChatMessage(ChatRole.Chatbot, content, pinLocation);
     }
 
-    public static IChatMessage FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromChatbot(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCall, pinLocation);
     }
 
-    public static IChatMessage FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage FromChatbot(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage(functionCalls, pinLocation);
     }

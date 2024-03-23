@@ -75,7 +75,7 @@ public static class ChatCompletion
                 var functionName = functionNameElement.GetString()!;
                 var functionArguments = functionCallElement.GetProperty("args").GetRawText()!;
 
-                var message1 = await conversation.FromAssistantAsync(new FunctionCall(functionName, functionArguments));
+                var message1 = await conversation.FromChatbotAsync(new FunctionCall(functionName, functionArguments));
                 await options.AddMessageCallback(message1);
 
                 var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
@@ -116,7 +116,7 @@ public static class ChatCompletion
             {
                 messageContent = textElement.GetString()!;
 
-                var message6 = await conversation.FromAssistantAsync(messageContent);
+                var message6 = await conversation.FromChatbotAsync(messageContent);
                 await options.AddMessageCallback(message6);
             }
             else
@@ -263,7 +263,7 @@ public static class ChatCompletion
         {
             ChatRole.System => "user",
             ChatRole.User => "user",
-            ChatRole.Assistant => "model",
+            ChatRole.Chatbot => "model",
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };

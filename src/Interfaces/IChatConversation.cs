@@ -15,11 +15,11 @@ public interface IChatConversation<T> where T : IChatMessage
 
     Task<T> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromChatbotAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
+    Task<T> FromChatbotAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
 
     Task<T> FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
 }

@@ -44,7 +44,7 @@ internal static class ChatCompletion
                     var functionName = functionElement.GetProperty("name").GetString()!;
                     var functionArguments = functionElement.GetProperty("arguments").GetString()!;
 
-                    var message1 = await conversation.FromAssistantAsync(new FunctionCall(toolCallId, functionName, functionArguments));
+                    var message1 = await conversation.FromChatbotAsync(new FunctionCall(toolCallId, functionName, functionArguments));
                     await options.AddMessageCallback(message1);
 
                     var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
@@ -85,7 +85,7 @@ internal static class ChatCompletion
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
-        var message6 = await conversation.FromAssistantAsync(messageContent);
+        var message6 = await conversation.FromChatbotAsync(messageContent);
 
         await options.AddMessageCallback(message6);
         return messageContent;
@@ -188,7 +188,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            var message1 = await conversation.FromAssistantAsync(functionCalls);
+            var message1 = await conversation.FromChatbotAsync(functionCalls);
             await options.AddMessageCallback(message1);
         }
 
@@ -229,7 +229,7 @@ internal static class ChatCompletion
 
         if (!string.IsNullOrWhiteSpace(entireContent))
         {
-            var message6 = await conversation.FromAssistantAsync(entireContent);
+            var message6 = await conversation.FromChatbotAsync(entireContent);
             await options.AddMessageCallback(message6);
         }
 
@@ -396,7 +396,7 @@ internal static class ChatCompletion
         {
             ChatRole.System => "system",
             ChatRole.User => "user",
-            ChatRole.Assistant => "assistant",
+            ChatRole.Chatbot => "assistant",
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };

@@ -84,7 +84,7 @@ while (true)
 }
 ```
 > [!NOTE]
-> Assistant responses, function calls, and function results are automatically added to the conversation.
+> Chatbot responses, function calls, and function results are automatically added to the conversation.
 ## Embeddings
 ```cs
 using ChatAIze.GenerativeCS.Clients;

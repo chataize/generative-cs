@@ -73,11 +73,11 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         _ = await FromUserAsync(name, message, pinLocation);
     }
 
-    public Task<T> FromAssistantAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public Task<T> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
-            Role = ChatRole.Assistant,
+            Role = ChatRole.Chatbot,
             Content = message,
             PinLocation = pinLocation
         };
@@ -86,16 +86,16 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromAssistant(string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromChatbot(string message, PinLocation pinLocation = PinLocation.None)
     {
-        _ = await FromAssistantAsync(message, pinLocation);
+        _ = await FromChatbotAsync(message, pinLocation);
     }
 
-    public Task<T> FromAssistantAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public Task<T> FromChatbotAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
-            Role = ChatRole.Assistant,
+            Role = ChatRole.Chatbot,
             FunctionCalls = [functionCall],
             PinLocation = pinLocation
         };
@@ -104,16 +104,16 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromAssistant(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public async void FromChatbot(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        _ = await FromAssistantAsync(functionCall, pinLocation);
+        _ = await FromChatbotAsync(functionCall, pinLocation);
     }
 
-    public Task<T> FromAssistantAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public Task<T> FromChatbotAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new T
         {
-            Role = ChatRole.Assistant,
+            Role = ChatRole.Chatbot,
             FunctionCalls = functionCalls.ToList(),
             PinLocation = pinLocation
         };
@@ -122,9 +122,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromAssistant(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public async void FromChatbot(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        _ = await FromAssistantAsync(functionCalls, pinLocation);
+        _ = await FromChatbotAsync(functionCalls, pinLocation);
     }
 
     public Task<T> FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
