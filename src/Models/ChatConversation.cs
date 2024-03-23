@@ -59,7 +59,7 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         var chatMessage = new T
         {
             Role = ChatRole.User,
-            Name = name,
+            Author = name,
             Content = message,
             PinLocation = pinLocation
         };

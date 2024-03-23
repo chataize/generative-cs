@@ -260,9 +260,9 @@ internal static class ChatCompletion
                 { "role", GetRoleName(message.Role) }
             };
 
-            if (message.Name != null)
+            if (message.Author != null)
             {
-                messageObject.Add("name", message.Name);
+                messageObject.Add("name", message.Author);
             }
 
             if (message.Content != null)

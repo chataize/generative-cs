@@ -7,7 +7,7 @@ public interface IChatMessage
 {
     ChatRole Role { get; set; }
 
-    string? Name { get; set; }
+    string? Author { get; set; }
 
     string? Content { get; set; }
 

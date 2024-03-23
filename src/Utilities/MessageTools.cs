@@ -99,7 +99,7 @@ internal static class MessageTools
             var previousMessage = messages[i - 1];
             var currentMessage = messages[i];
 
-            if (previousMessage.Role == currentMessage.Role && previousMessage.Name == currentMessage.Name)
+            if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
             {
                 var replacementMessage = new T
                 {
