@@ -13,7 +13,7 @@ public interface IChatMessage
 
     List<FunctionCall> FunctionCalls { get; set; }
 
-    FunctionResult FunctionResult { get; set; }
+    FunctionResult? FunctionResult { get; set; }
 
     PinLocation PinLocation { get; set; }
 }

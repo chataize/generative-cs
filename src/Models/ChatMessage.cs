@@ -51,7 +51,7 @@ public record ChatMessage : IChatMessage
 
     public List<FunctionCall> FunctionCalls { get; set; } = [];
 
-    public FunctionResult FunctionResult { get; set; } = new();
+    public FunctionResult? FunctionResult { get; set; }
 
     public PinLocation PinLocation { get; set; }
 
