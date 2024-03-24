@@ -34,7 +34,7 @@ public record OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>
 
 public record OpenAIClientOptions : OpenAIClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public OpenAIClientOptions() { }
+    public OpenAIClientOptions() : base() { }
 
     [SetsRequiredMembers]
     public OpenAIClientOptions(string apiKey) : base(apiKey) { }

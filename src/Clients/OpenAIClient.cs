@@ -327,7 +327,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
 public class OpenAIClient : OpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>
 {
-    public OpenAIClient() { }
+    public OpenAIClient() : base() { }
 
     [SetsRequiredMembers]
     public OpenAIClient(string apiKey) : base(apiKey) { }

@@ -24,7 +24,7 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
 
 public record GeminiClientOptions : GeminiClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public GeminiClientOptions() { }
+    public GeminiClientOptions() : base() { }
 
     [SetsRequiredMembers]
     public GeminiClientOptions(string apiKey) : base(apiKey) { }

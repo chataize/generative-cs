@@ -151,7 +151,7 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
 
 public record ChatConversation : ChatConversation<ChatMessage, FunctionCall, FunctionResult>
 {
-    public ChatConversation() { }
+    public ChatConversation() : base() { }
 
     public ChatConversation(IEnumerable<ChatMessage> messages) : base(messages) { }
 }
