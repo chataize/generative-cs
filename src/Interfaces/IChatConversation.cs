@@ -1,25 +1,27 @@
 using ChatAIze.GenerativeCS.Enums;
-using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Interfaces;
 
-public interface IChatConversation<T> where T : IChatMessage
+public interface IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
 {
     string? UserTrackingId { get; }
 
-    ICollection<T> Messages { get; }
+    ICollection<TMessage> Messages { get; }
 
-    Task<T> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromChatbotAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromChatbotAsync(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromChatbotAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromChatbotAsync(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
 
-    Task<T> FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromFunctionAsync(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
 }

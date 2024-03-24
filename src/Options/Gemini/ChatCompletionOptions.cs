@@ -4,16 +4,17 @@ using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.Gemini;
 
-public record ChatCompletionOptions
+public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
 {
-    private const string DefaultModel = ChatCompletionModels.GEMINI_PRO;
-
-    public ChatCompletionOptions(string model = DefaultModel)
+    public ChatCompletionOptions(string model = DefaultModels.Gemini.ChatCompletion)
     {
         Model = model;
     }
 
-    public string Model { get; set; } = DefaultModel;
+    public string Model { get; set; } = DefaultModels.Gemini.ChatCompletion;
 
     public int MaxAttempts { get; set; } = 5;
 
@@ -27,7 +28,7 @@ public record ChatCompletionOptions
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
-    public Func<IChatMessage, Task> AddMessageCallback { get; } = (_) => Task.CompletedTask;
+    public Func<TMessage, Task> AddMessageCallback { get; } = (_) => Task.CompletedTask;
 
     public Func<string, string, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
@@ -144,4 +145,11 @@ public record ChatCompletionOptions
     {
         Functions.Clear();
     }
+}
+
+public record ChatCompletionOptions : ChatCompletionOptions<ChatMessage, FunctionCall, FunctionResult>
+{
+    public ChatCompletionOptions() : base() { }
+
+    public ChatCompletionOptions(string model = DefaultModels.Gemini.ChatCompletion) : base(model) { }
 }

@@ -1,4 +1,6 @@
 using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Interfaces;
+using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,22 +8,35 @@ namespace ChatAIze.GenerativeCS.Extensions;
 
 public static class GeminiClientExtension
 {
-    public static IServiceCollection AddGeminiClient(this IServiceCollection services, Action<GeminiClientOptions>? options = null)
+    public static IServiceCollection AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, Action<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>>? options = null)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
     {
         if (options != null)
         {
             _ = services.Configure(options);
         }
 
-        _ = services.AddHttpClient<GeminiClient>();
-        _ = services.AddSingleton<GeminiClient>();
+        _ = services.AddHttpClient<GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddSingleton<GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
 
         return services;
     }
 
-    public static IServiceCollection AddGeminiClient(this IServiceCollection services, string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
+    public static IServiceCollection AddGeminiClient(this IServiceCollection services, Action<GeminiClientOptions>? options = null)
     {
-        return services.AddGeminiClient(o =>
+        return services.AddGeminiClient(options);
+    }
+
+    public static IServiceCollection AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
+    {
+        return services.AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -30,5 +45,10 @@ public static class GeminiClientExtension
                 o.DefaultCompletionOptions = defaultCompletionOptions;
             }
         });
+    }
+
+    public static IServiceCollection AddGeminiClient(this IServiceCollection services, string apiKey)
+    {
+        return services.AddGeminiClient(apiKey);
     }
 }

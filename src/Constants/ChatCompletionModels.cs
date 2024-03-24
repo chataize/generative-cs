@@ -15,7 +15,7 @@ public static class ChatCompletionModels
     public const string GPT_3_5_TURBO_16K = "gpt-3.5-turbo-16k";
 
     public const string GPT_3_5_TURBO_16K_0613 = "gpt-3.5-turbo-16k-0613";
-    
+
     public const string GPT_3_5_TURBO_INSTRUCT = "gpt-3.5-turbo-instruct";
 
     public const string GPT_4 = "gpt-4";

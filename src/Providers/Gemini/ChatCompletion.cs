@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Interfaces;
-using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using ChatAIze.GenerativeCS.Utilities;
 
@@ -11,15 +10,19 @@ namespace ChatAIze.GenerativeCS.Providers.Gemini;
 
 public static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync(string prompt, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
     {
         httpClient ??= new();
         options ??= new();
 
         if (options.Functions.Count >= 1)
         {
-            var conversation = new ChatConversation();
-            conversation.FromUser(prompt);
+            var conversation = new TConversation();
+            await conversation.FromUserAsync(prompt);
 
             return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
         }
@@ -45,7 +48,11 @@ public static class ChatCompletion
         return messageContent;
     }
 
-    internal static async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
     {
         httpClient ??= new();
         options ??= new();
@@ -75,7 +82,7 @@ public static class ChatCompletion
                 var functionName = functionNameElement.GetString()!;
                 var functionArguments = functionCallElement.GetProperty("args").GetRawText()!;
 
-                var message1 = await conversation.FromChatbotAsync(new FunctionCall(functionName, functionArguments));
+                var message1 = await conversation.FromChatbotAsync(new TFunctionCall { Name = functionName, Arguments = functionArguments });
                 await options.AddMessageCallback(message1);
 
                 var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
@@ -83,7 +90,7 @@ public static class ChatCompletion
                 {
                     if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
-                        var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                        var message2 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                         await options.AddMessageCallback(message2);
                     }
                     else
@@ -91,14 +98,14 @@ public static class ChatCompletion
                         if (function.Callback != null)
                         {
                             var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                            var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionName, functionValue));
+                            var message3 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = functionValue });
 
                             await options.AddMessageCallback(message3);
                         }
                         else
                         {
                             var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                            var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionName, JsonSerializer.Serialize(functionValue)));
+                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = JsonSerializer.Serialize(functionValue) });
 
                             await options.AddMessageCallback(message4);
                         }
@@ -106,7 +113,7 @@ public static class ChatCompletion
                 }
                 else
                 {
-                    var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionName, $"Function '{functionName}' was not found."));
+                    var message5 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = $"Function '{functionName}' was not found." });
                     await options.AddMessageCallback(message5);
                 }
 
@@ -121,7 +128,7 @@ public static class ChatCompletion
             }
             else
             {
-                var message7 = await conversation.FromFunctionAsync(new FunctionResult("Error", "Either call a function or respond with text."));
+                var message7 = await conversation.FromFunctionAsync(new TFunctionResult { Name = "Error", Value = "Either call a function or respond with text." });
                 await options.AddMessageCallback(message7);
 
                 return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
@@ -161,17 +168,21 @@ public static class ChatCompletion
         return requestObject;
     }
 
-    private static JsonObject CreateChatCompletionRequest<T>(IChatConversation<T> conversation, ChatCompletionOptions options) where T : IChatMessage, new()
+    private static JsonObject CreateChatCompletionRequest<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
         var messages = conversation.Messages.ToList();
         if (options.IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages, options.TimeCallback());
+            MessageTools.AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(messages, options.TimeCallback());
         }
 
-        MessageTools.LimitTokens(messages, options.MessageLimit, options.CharacterLimit);
-        MessageTools.ReplaceSystemRole(messages);
-        MessageTools.MergeMessages(messages);
+        MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
+        MessageTools.ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(messages);
+        MessageTools.MergeMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
 
         var contentsArray = new JsonArray();
         foreach (var message in messages)

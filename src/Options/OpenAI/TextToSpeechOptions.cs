@@ -5,15 +5,13 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record TextToSpeechOptions
 {
-    private const string DefaultModel = TextToSpeechModels.TTS_1;
-
-    public TextToSpeechOptions(string model = DefaultModel, TextToSpeechVoice voice = TextToSpeechVoice.Alloy)
+    public TextToSpeechOptions(string model = DefaultModels.OpenAI.TextToSpeech, TextToSpeechVoice voice = TextToSpeechVoice.Alloy)
     {
         Model = model;
         Voice = voice;
     }
 
-    public string Model { get; set; } = DefaultModel;
+    public string Model { get; set; } = DefaultModels.OpenAI.TextToSpeech;
 
     public TextToSpeechVoice Voice { get; set; }
 

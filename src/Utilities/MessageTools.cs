@@ -5,9 +5,12 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class MessageTools
 {
-    internal static void AddTimeInformation<T>(List<T> messages, DateTime currentTime) where T : IChatMessage, new()
+    internal static void AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, DateTime currentTime)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
-        var firstMessage = new T
+        var firstMessage = new TMessage
         {
             Role = ChatRole.System,
             Content = $"Current time: {currentTime}",
@@ -17,7 +20,10 @@ internal static class MessageTools
         messages.Insert(0, firstMessage);
     }
 
-    internal static void LimitTokens<T>(List<T> messages, int? messageLimit, int? characterLimit) where T : IChatMessage, new()
+    internal static void LimitTokens<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, int? messageLimit, int? characterLimit)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
         var sortedMessages = messages.Where(m => m.PinLocation == PinLocation.Begin).ToList();
 
@@ -30,7 +36,7 @@ internal static class MessageTools
         var excessiveMessages = messageLimit.HasValue ? messages.Count - messageLimit : 0;
         var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
 
-        var messagesToRemove = new List<T>();
+        var messagesToRemove = new List<TMessage>();
         foreach (var message in messages)
         {
             if (excessiveMessages <= 0 && excessiveCharacters <= 0)
@@ -70,14 +76,17 @@ internal static class MessageTools
         _ = messages.RemoveAll(messagesToRemove.Contains);
     }
 
-    internal static void ReplaceSystemRole<T>(IList<T> messages) where T : IChatMessage, new()
+    internal static void ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
         for (var i = messages.Count - 1; i >= 0; i--)
         {
             var currentMessage = messages[i];
             if (currentMessage.Role == ChatRole.System)
             {
-                var updatedMessage = new T
+                var updatedMessage = new TMessage
                 {
                     Role = ChatRole.User,
                     Content = currentMessage.Content,
@@ -92,7 +101,10 @@ internal static class MessageTools
         }
     }
 
-    internal static void MergeMessages<T>(IList<T> messages) where T : IChatMessage, new()
+    internal static void MergeMessages<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
         for (var i = messages.Count - 1; i >= 1; i--)
         {
@@ -101,7 +113,7 @@ internal static class MessageTools
 
             if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
             {
-                var replacementMessage = new T
+                var replacementMessage = new TMessage
                 {
                     Role = previousMessage.Role,
                     Content = previousMessage.Content,

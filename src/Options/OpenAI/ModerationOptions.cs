@@ -4,14 +4,12 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record ModerationOptions
 {
-    private const string DEFAULT_MODEL = ModerationModels.TEXT_MODERATION_STABLE;
-
-    public ModerationOptions(string model = DEFAULT_MODEL)
+    public ModerationOptions(string model = DefaultModels.OpenAI.Moderation)
     {
         Model = model;
     }
 
-    public string Model { get; set; } = DEFAULT_MODEL;
+    public string Model { get; set; } = DefaultModels.OpenAI.Moderation;
 
     public int MaxAttempts { get; set; } = 5;
 }

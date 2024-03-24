@@ -5,14 +5,12 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record TranslationOptions
 {
-    private const string DefaultModel = SpeechRecognitionModels.WHISPER_1;
-
     public TranslationOptions(string? prompt = null)
     {
         Prompt = prompt;
     }
 
-    public string Model { get; set; } = DefaultModel;
+    public string Model { get; set; } = DefaultModels.OpenAI.SpeechToText;
 
     public string? Prompt { get; set; }
 

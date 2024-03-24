@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using ChatAIze.GenerativeCS.Interfaces;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record FunctionCall
+public record FunctionCall : IFunctionCall
 {
     public FunctionCall() { }
 
@@ -14,7 +15,7 @@ public record FunctionCall
     }
 
     [SetsRequiredMembers]
-    public FunctionCall(string toolCallId, string name, string? arguments = null)
+    public FunctionCall(string toolCallId, string name, string arguments)
     {
         ToolCallId = toolCallId;
         Name = name;
@@ -23,7 +24,7 @@ public record FunctionCall
 
     public string? ToolCallId { get; set; }
 
-    public required string Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string? Arguments { get; set; }
+    public string Arguments { get; set; } = null!;
 }

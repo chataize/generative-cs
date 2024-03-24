@@ -4,15 +4,13 @@ namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
 public record EmbeddingOptions
 {
-    private const string DefaultModel = EmbeddingModels.TEXT_EMBEDDING_3_LARGE;
-
-    public EmbeddingOptions(string model = DefaultModel, string? user = null)
+    public EmbeddingOptions(string model = DefaultModels.OpenAI.Embedding, string? user = null)
     {
         Model = model;
         User = user;
     }
 
-    public string Model { get; set; } = DefaultModel;
+    public string Model { get; set; } = DefaultModels.OpenAI.Embedding;
 
     public int? Dimensions { get; set; }
 

@@ -8,7 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace ChatAIze.GenerativeCS.Clients;
 
-public class GeminiClient
+public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>
+    where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+    where TFunctionCall : IFunctionCall, new()
+    where TFunctionResult : IFunctionResult, new()
 {
     private readonly HttpClient _httpClient = new();
 
@@ -21,7 +25,7 @@ public class GeminiClient
     }
 
     [SetsRequiredMembers]
-    public GeminiClient(GeminiClientOptions options)
+    public GeminiClient(GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
         ApiKey = options.ApiKey;
         DefaultCompletionOptions = options.DefaultCompletionOptions;
@@ -29,7 +33,7 @@ public class GeminiClient
 
     [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
-    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options)
+    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
 
@@ -38,7 +42,7 @@ public class GeminiClient
     }
 
     [SetsRequiredMembers]
-    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null)
+    public GeminiClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
     {
         ApiKey = apiKey;
 
@@ -50,14 +54,14 @@ public class GeminiClient
 
     public required string ApiKey { get; set; }
 
-    public ChatCompletionOptions DefaultCompletionOptions { get; set; } = new();
+    public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
-    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(prompt, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
+        return await ChatCompletion.CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(prompt, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
@@ -173,4 +177,22 @@ public class GeminiClient
     {
         DefaultCompletionOptions.Functions.Clear();
     }
+}
+
+public class GeminiClient : GeminiClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>
+{
+    public GeminiClient() : base() { }
+
+    [SetsRequiredMembers]
+    public GeminiClient(string apiKey) : base(apiKey) { }
+
+    [SetsRequiredMembers]
+    public GeminiClient(GeminiClientOptions options) : base(options) { }
+
+    [SetsRequiredMembers]
+    [ActivatorUtilitiesConstructor]
+    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options) : base(httpClient, options) { }
+
+    [SetsRequiredMembers]
+    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null) : base(apiKey, defaultCompletionOptions) { }
 }

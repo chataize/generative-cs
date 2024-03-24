@@ -4,16 +4,17 @@ using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.OpenAI;
 
-public record ChatCompletionOptions
+public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
 {
-    private const string DefaultModel = ChatCompletionModels.GPT_3_5_TURBO;
-
-    public ChatCompletionOptions(string model = DefaultModel)
+    public ChatCompletionOptions(string model = DefaultModels.OpenAI.ChatCompletion)
     {
         Model = model;
     }
 
-    public string Model { get; set; } = DefaultModel;
+    public string Model { get; set; } = DefaultModels.OpenAI.ChatCompletion;
 
     public string? User { get; set; }
 
@@ -45,7 +46,7 @@ public record ChatCompletionOptions
 
     public List<ChatFunction> Functions { get; set; } = [];
 
-    public Func<IChatMessage, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
+    public Func<TMessage, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
 
     public Func<string, string?, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
@@ -162,4 +163,9 @@ public record ChatCompletionOptions
     {
         Functions.Clear();
     }
+}
+
+public record ChatCompletionOptions : ChatCompletionOptions<ChatMessage, FunctionCall, FunctionResult>
+{
+    public ChatCompletionOptions(string model = DefaultModels.OpenAI.ChatCompletion) : base(model) { }
 }

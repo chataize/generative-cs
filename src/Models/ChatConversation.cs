@@ -3,24 +3,27 @@ using ChatAIze.GenerativeCS.Interfaces;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage, new()
+public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
 {
     public ChatConversation() { }
 
-    public ChatConversation(IEnumerable<T> messages)
+    public ChatConversation(IEnumerable<TMessage> messages)
     {
         Messages = messages.ToList();
     }
 
     public string? UserTrackingId { get; set; }
 
-    public ICollection<T> Messages { get; set; } = [];
+    public ICollection<TMessage> Messages { get; set; } = [];
 
-    public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;
 
-    public Task<T> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.System,
             Content = message,
@@ -36,9 +39,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         _ = await FromSystemAsync(message, pinLocation);
     }
 
-    public Task<T> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.User,
             Content = message,
@@ -54,9 +57,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         _ = await FromUserAsync(message, pinLocation);
     }
 
-    public Task<T> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.User,
             Author = name,
@@ -73,9 +76,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         _ = await FromUserAsync(name, message, pinLocation);
     }
 
-    public Task<T> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.Chatbot,
             Content = message,
@@ -91,9 +94,9 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         _ = await FromChatbotAsync(message, pinLocation);
     }
 
-    public Task<T> FromChatbotAsync(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromChatbotAsync(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.Chatbot,
             FunctionCalls = [functionCall],
@@ -104,14 +107,14 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromChatbot(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
+    public async void FromChatbot(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
         _ = await FromChatbotAsync(functionCall, pinLocation);
     }
 
-    public Task<T> FromChatbotAsync(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromChatbotAsync(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.Chatbot,
             FunctionCalls = functionCalls.ToList(),
@@ -122,14 +125,14 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromChatbot(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public async void FromChatbot(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         _ = await FromChatbotAsync(functionCalls, pinLocation);
     }
 
-    public Task<T> FromFunctionAsync(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromFunctionAsync(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
-        var chatMessage = new T
+        var chatMessage = new TMessage
         {
             Role = ChatRole.Function,
             FunctionResult = functionResult,
@@ -140,13 +143,13 @@ public record ChatConversation<T> : IChatConversation<T> where T : IChatMessage,
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromFunction(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
+    public async void FromFunction(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
         _ = await FromFunctionAsync(functionResult, pinLocation);
     }
 }
 
-public record ChatConversation : ChatConversation<ChatMessage>
+public record ChatConversation : ChatConversation<ChatMessage, FunctionCall, FunctionResult>
 {
     public ChatConversation() { }
 

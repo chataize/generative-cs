@@ -9,7 +9,11 @@ using Microsoft.Extensions.Options;
 
 namespace ChatAIze.GenerativeCS.Clients;
 
-public class OpenAIClient
+public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>
+    where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+    where TFunctionCall : IFunctionCall, new()
+    where TFunctionResult : IFunctionResult, new()
 {
     private readonly HttpClient _httpClient = new();
 
@@ -22,7 +26,7 @@ public class OpenAIClient
     }
 
     [SetsRequiredMembers]
-    public OpenAIClient(OpenAIClientOptions options)
+    public OpenAIClient(OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
         ApiKey = options.ApiKey;
         DefaultCompletionOptions = options.DefaultCompletionOptions;
@@ -35,7 +39,7 @@ public class OpenAIClient
 
     [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
-    public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options)
+    public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
 
@@ -49,7 +53,7 @@ public class OpenAIClient
     }
 
     [SetsRequiredMembers]
-    public OpenAIClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions)
+    public OpenAIClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
     {
         ApiKey = apiKey;
 
@@ -116,7 +120,7 @@ public class OpenAIClient
 
     public required string ApiKey { get; set; }
 
-    public ChatCompletionOptions DefaultCompletionOptions { get; set; } = new();
+    public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
     public EmbeddingOptions DefaultEmbeddingOptions { get; set; } = new();
 
@@ -128,23 +132,23 @@ public class OpenAIClient
 
     public ModerationOptions DefaultModerationOptions { get; set; } = new();
 
-    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
-        var conversation = new ChatConversation();
-        conversation.FromUser(prompt);
+        var conversation = new TConversation();
+        await conversation.FromUserAsync(prompt);
 
         return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var conversation = new ChatConversation();
-        conversation.FromUser(prompt);
+        var conversation = new TConversation();
+        await conversation.FromUserAsync(prompt);
 
         await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
@@ -152,7 +156,7 @@ public class OpenAIClient
         }
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync<T>(IChatConversation<T> conversation, ChatCompletionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    public async IAsyncEnumerable<string> StreamCompletionAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
         {
@@ -319,4 +323,37 @@ public class OpenAIClient
     {
         DefaultCompletionOptions.Functions.Clear();
     }
+}
+
+public class OpenAIClient : OpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>
+{
+    public OpenAIClient() { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey) : base(apiKey) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(OpenAIClientOptions options) : base(options) { }
+
+    [SetsRequiredMembers]
+    [ActivatorUtilitiesConstructor]
+    public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options) : base(httpClient, options) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions) : base(apiKey, defaultCompletionOptions) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, EmbeddingOptions? defaultEmbeddingOptions) : base(apiKey, defaultEmbeddingOptions) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions) : base(apiKey, defaultTextToSpeechOptions) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, TranscriptionOptions? defaultTranscriptionOptions) : base(apiKey, defaultTranscriptionOptions) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, TranslationOptions? defaultTranslationOptions) : base(apiKey, defaultTranslationOptions) { }
+
+    [SetsRequiredMembers]
+    public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions) : base(apiKey, defaultModerationOptions) { }
 }

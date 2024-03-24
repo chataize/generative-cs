@@ -1,16 +1,21 @@
+using System.Diagnostics.CodeAnalysis;
+using ChatAIze.GenerativeCS.Interfaces;
+
 namespace ChatAIze.GenerativeCS.Models;
 
-public record FunctionResult
+public record FunctionResult : IFunctionResult
 {
     public FunctionResult() { }
 
-    public FunctionResult(string name, string? value = null)
+    [SetsRequiredMembers]
+    public FunctionResult(string name, string value)
     {
         Name = name;
         Value = value;
     }
 
-    public FunctionResult(string toolCallId, string name, string? value = null)
+    [SetsRequiredMembers]
+    public FunctionResult(string toolCallId, string name, string value)
     {
         ToolCallId = toolCallId;
         Name = name;
@@ -19,7 +24,7 @@ public record FunctionResult
 
     public string? ToolCallId { get; set; }
 
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string? Value { get; set; }
+    public string Value { get; set; } = null!;
 }

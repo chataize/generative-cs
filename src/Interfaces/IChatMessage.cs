@@ -1,9 +1,10 @@
 using ChatAIze.GenerativeCS.Enums;
-using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Interfaces;
 
-public interface IChatMessage
+public interface IChatMessage<TFunctionCall, TFunctionResult>
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
 {
     ChatRole Role { get; set; }
 
@@ -11,9 +12,9 @@ public interface IChatMessage
 
     string? Content { get; set; }
 
-    List<FunctionCall> FunctionCalls { get; set; }
+    List<TFunctionCall> FunctionCalls { get; set; }
 
-    FunctionResult? FunctionResult { get; set; }
+    TFunctionResult? FunctionResult { get; set; }
 
     PinLocation PinLocation { get; set; }
 }

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Interfaces;
-using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Utilities;
 
@@ -12,7 +11,11 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync<T>(IChatConversation<T> conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
     {
         options ??= new();
         httpClient ??= new();
@@ -44,7 +47,7 @@ internal static class ChatCompletion
                     var functionName = functionElement.GetProperty("name").GetString()!;
                     var functionArguments = functionElement.GetProperty("arguments").GetString()!;
 
-                    var message1 = await conversation.FromChatbotAsync(new FunctionCall(toolCallId, functionName, functionArguments));
+                    var message1 = await conversation.FromChatbotAsync(new TFunctionCall { ToolCallId = toolCallId, Name = functionName, Arguments = functionArguments });
                     await options.AddMessageCallback(message1);
 
                     var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
@@ -52,7 +55,7 @@ internal static class ChatCompletion
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
-                            var message2 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                            var message2 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                             await options.AddMessageCallback(message2);
                         }
                         else
@@ -60,14 +63,14 @@ internal static class ChatCompletion
                             if (function.Callback != null)
                             {
                                 var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                                var message3 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, functionValue));
+                                var message3 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = functionValue });
 
                                 await options.AddMessageCallback(message3);
                             }
                             else
                             {
                                 var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                var message4 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, JsonSerializer.Serialize(functionValue)));
+                                var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue) });
 
                                 await options.AddMessageCallback(message4);
                             }
@@ -75,7 +78,7 @@ internal static class ChatCompletion
                     }
                     else
                     {
-                        var message5 = await conversation.FromFunctionAsync(new FunctionResult(toolCallId, functionName, $"Function '{functionName}' was not found."));
+                        var message5 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = $"Function '{functionName}' was not found." });
                         await options.AddMessageCallback(message5);
                     }
                 }
@@ -91,7 +94,11 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync<T>(IChatConversation<T> conversation, string apiKey, ChatCompletionOptions? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default) where T : IChatMessage, new()
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall, new()
+        where TFunctionResult : IFunctionResult, new()
     {
         options ??= new();
         httpClient ??= new();
@@ -108,7 +115,7 @@ internal static class ChatCompletion
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 
-        var functionCalls = new List<FunctionCall>();
+        var functionCalls = new List<TFunctionCall>();
         var currentToolCallId = string.Empty;
         var currentFunctionName = string.Empty;
         var currentFunctionArguments = string.Empty;
@@ -165,7 +172,7 @@ internal static class ChatCompletion
                     {
                         if (!string.IsNullOrWhiteSpace(currentFunctionName))
                         {
-                            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, currentFunctionArguments));
+                            functionCalls.Add(new TFunctionCall { ToolCallId = currentToolCallId, Name = currentFunctionName, Arguments = currentFunctionArguments });
                         }
 
                         currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
@@ -183,7 +190,7 @@ internal static class ChatCompletion
 
         if (!string.IsNullOrWhiteSpace(currentFunctionName))
         {
-            functionCalls.Add(new FunctionCall(currentToolCallId, currentFunctionName, currentFunctionArguments));
+            functionCalls.Add(new TFunctionCall { ToolCallId = currentToolCallId, Name = currentFunctionName, Arguments = currentFunctionArguments });
         }
 
         if (functionCalls.Count > 0)
@@ -199,7 +206,7 @@ internal static class ChatCompletion
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
-                    var message2 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm."));
+                    var message2 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                     await options.AddMessageCallback(message2);
                 }
                 else
@@ -207,14 +214,14 @@ internal static class ChatCompletion
                     if (function.Callback != null)
                     {
                         var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, cancellationToken);
-                        var message3 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, functionValue));
+                        var message3 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
 
                         await options.AddMessageCallback(message3);
                     }
                     else
                     {
                         var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        var message4 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, JsonSerializer.Serialize(functionValue)));
+                        var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue) });
 
                         await options.AddMessageCallback(message4);
                     }
@@ -222,7 +229,7 @@ internal static class ChatCompletion
             }
             else
             {
-                var message5 = await conversation.FromFunctionAsync(new FunctionResult(functionCall.ToolCallId!, functionCall.Name, $"Function '{functionCall.Name}' was not found."));
+                var message5 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = $"Function '{functionCall.Name}' was not found." });
                 await options.AddMessageCallback(message5);
             }
         }
@@ -242,15 +249,19 @@ internal static class ChatCompletion
         }
     }
 
-    private static JsonObject CreateChatCompletionRequest<T>(IChatConversation<T> conversation, ChatCompletionOptions options) where T : IChatMessage, new()
+    private static JsonObject CreateChatCompletionRequest<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
     {
         var messages = conversation.Messages.ToList();
         if (options.IsTimeAware)
         {
-            MessageTools.AddTimeInformation(messages, options.TimeCallback());
+            MessageTools.AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(messages, options.TimeCallback());
         }
 
-        MessageTools.LimitTokens(messages, options.MessageLimit, options.CharacterLimit);
+        MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
 
         var messagesArray = new JsonArray();
         foreach (var message in messages)
