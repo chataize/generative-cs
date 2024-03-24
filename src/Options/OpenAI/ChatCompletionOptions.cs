@@ -16,7 +16,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public string Model { get; set; } = DefaultModels.OpenAI.ChatCompletion;
 
-    public string? User { get; set; }
+    public string? UserTrackingId { get; set; }
 
     public int MaxAttempts { get; set; } = 5;
 

@@ -325,9 +325,9 @@ internal static class ChatCompletion
         {
             requestObject.Add("user", conversation.UserTrackingId);
         }
-        else if (options.User != null)
+        else if (options.UserTrackingId != null)
         {
-            requestObject.Add("user", options.User);
+            requestObject.Add("user", options.UserTrackingId);
         }
 
         if (options.MaxOutputTokens.HasValue)
