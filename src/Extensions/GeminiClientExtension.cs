@@ -20,7 +20,9 @@ public static class GeminiClientExtension
         }
 
         _ = services.AddHttpClient<GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddHttpClient<GeminiClient>();
         _ = services.AddSingleton<GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddSingleton<GeminiClient>();
 
         return services;
     }

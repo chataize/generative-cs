@@ -20,7 +20,9 @@ public static class OpenAIExtension
         }
 
         _ = services.AddHttpClient<OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddHttpClient<OpenAIClient>();
         _ = services.AddSingleton<OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddSingleton<OpenAIClient>();
 
         return services;
     }
