@@ -25,9 +25,9 @@ public static class GeminiClientExtension
         return services;
     }
 
-    public static IServiceCollection AddGeminiClient(this IServiceCollection services, Action<GeminiClientOptions>? options = null)
+    public static IServiceCollection AddGeminiClient(this IServiceCollection services, Action<GeminiClientOptions<ChatMessage, FunctionCall, FunctionResult>>? options = null)
     {
-        return services.AddGeminiClient(options);
+        return services.AddGeminiClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(options);
     }
 
     public static IServiceCollection AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
@@ -49,6 +49,6 @@ public static class GeminiClientExtension
 
     public static IServiceCollection AddGeminiClient(this IServiceCollection services, string apiKey)
     {
-        return services.AddGeminiClient(apiKey);
+        return services.AddGeminiClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey);
     }
 }

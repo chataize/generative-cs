@@ -25,9 +25,9 @@ public static class OpenAIExtension
         return services;
     }
 
-    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<OpenAIClientOptions>? options = null)
+    public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<OpenAIClientOptions<ChatMessage, FunctionCall, FunctionResult>>? options = null)
     {
-        return services.AddOpenAIClient(options);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(options);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey)
@@ -44,7 +44,7 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey)
     {
-        return services.AddOpenAIClient(apiKey);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
@@ -66,7 +66,7 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, ChatCompletionOptions? defaultCompletionOptions)
     {
-        return services.AddOpenAIClient(apiKey, defaultCompletionOptions);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultCompletionOptions);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
@@ -88,7 +88,7 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
     {
-        return services.AddOpenAIClient(apiKey, defaultEmbeddingOptions);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultEmbeddingOptions);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
@@ -110,7 +110,7 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
     {
-        return services.AddOpenAIClient(apiKey, defaultTextToSpeechOptions);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTextToSpeechOptions);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
@@ -132,7 +132,7 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
     {
-        return services.AddOpenAIClient(apiKey, defaultTranscriptionOptions);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranscriptionOptions);
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
@@ -154,6 +154,6 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
     {
-        return services.AddOpenAIClient(apiKey, defaultTranslationOptions);
+        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranslationOptions);
     }
 }
