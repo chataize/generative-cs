@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
@@ -9,15 +8,12 @@ public record OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public OpenAIClientOptions() { }
-
-    [SetsRequiredMembers]
-    public OpenAIClientOptions(string apiKey)
+    public OpenAIClientOptions(string? apiKey = null)
     {
         ApiKey = apiKey;
     }
 
-    public required string ApiKey { get; set; }
+    public string? ApiKey { get; set; }
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
@@ -34,8 +30,5 @@ public record OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>
 
 public record OpenAIClientOptions : OpenAIClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public OpenAIClientOptions() : base() { }
-
-    [SetsRequiredMembers]
-    public OpenAIClientOptions(string apiKey) : base(apiKey) { }
+    public OpenAIClientOptions(string? apiKey = null) : base(apiKey) { }
 }

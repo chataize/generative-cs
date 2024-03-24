@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
@@ -9,23 +8,17 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public GeminiClientOptions() { }
-
-    [SetsRequiredMembers]
-    public GeminiClientOptions(string apiKey)
+    public GeminiClientOptions(string? apiKey = null)
     {
         ApiKey = apiKey;
     }
 
-    public required string ApiKey { get; set; }
+    public string? ApiKey { get; set; }
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 }
 
 public record GeminiClientOptions : GeminiClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public GeminiClientOptions() : base() { }
-
-    [SetsRequiredMembers]
-    public GeminiClientOptions(string apiKey) : base(apiKey) { }
+    public GeminiClientOptions(string? apiKey = null) : base(apiKey) { }
 }

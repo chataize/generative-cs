@@ -1,9 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Providers.OpenAI;
+using ChatAIze.GenerativeCS.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -17,18 +17,20 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 {
     private readonly HttpClient _httpClient = new();
 
-    public OpenAIClient() { }
+    public OpenAIClient()
+    {
+        ApiKey ??= EnvironmentVariableManager.GetOpenAIAPIKey();
+    }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey)
     {
         ApiKey = apiKey;
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
-        ApiKey = options.ApiKey;
+        ApiKey = options.ApiKey ?? EnvironmentVariableManager.GetOpenAIAPIKey();
+
         DefaultCompletionOptions = options.DefaultCompletionOptions;
         DefaultEmbeddingOptions = options.DefaultEmbeddingOptions;
         DefaultTextToSpeechOptions = options.DefaultTextToSpeechOptions;
@@ -37,13 +39,13 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         DefaultModerationOptions = options.DefaultModerationOptions;
     }
 
-    [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
 
-        ApiKey = options.Value.ApiKey;
+        ApiKey = options.Value.ApiKey ?? EnvironmentVariableManager.GetOpenAIAPIKey();
+
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
         DefaultEmbeddingOptions = options.Value.DefaultEmbeddingOptions;
         DefaultTextToSpeechOptions = options.Value.DefaultTextToSpeechOptions;
@@ -52,7 +54,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         DefaultModerationOptions = options.Value.DefaultModerationOptions;
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
     {
         ApiKey = apiKey;
@@ -63,7 +64,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
     {
         ApiKey = apiKey;
@@ -74,7 +74,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
     {
         ApiKey = apiKey;
@@ -85,7 +84,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
     {
         ApiKey = apiKey;
@@ -96,7 +94,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TranslationOptions? defaultTranslationOptions)
     {
         ApiKey = apiKey;
@@ -107,7 +104,6 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions)
     {
         ApiKey = apiKey;
@@ -118,7 +114,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    public required string ApiKey { get; set; }
+    public string ApiKey { get; set; } = null!;
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
@@ -329,31 +325,22 @@ public class OpenAIClient : OpenAIClient<ChatConversation, ChatMessage, Function
 {
     public OpenAIClient() : base() { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey) : base(apiKey) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(OpenAIClientOptions options) : base(options) { }
 
-    [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options) : base(httpClient, options) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions) : base(apiKey, defaultCompletionOptions) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, EmbeddingOptions? defaultEmbeddingOptions) : base(apiKey, defaultEmbeddingOptions) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions) : base(apiKey, defaultTextToSpeechOptions) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TranscriptionOptions? defaultTranscriptionOptions) : base(apiKey, defaultTranscriptionOptions) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, TranslationOptions? defaultTranslationOptions) : base(apiKey, defaultTranslationOptions) { }
 
-    [SetsRequiredMembers]
     public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions) : base(apiKey, defaultModerationOptions) { }
 }

@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using ChatAIze.GenerativeCS.Providers.Gemini;
+using ChatAIze.GenerativeCS.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -16,32 +16,31 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 {
     private readonly HttpClient _httpClient = new();
 
-    public GeminiClient() { }
+    public GeminiClient()
+    {
+        ApiKey ??= EnvironmentVariableManager.GetGeminiAPIKey();
+    }
 
-    [SetsRequiredMembers]
     public GeminiClient(string apiKey)
     {
         ApiKey = apiKey;
     }
 
-    [SetsRequiredMembers]
     public GeminiClient(GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
-        ApiKey = options.ApiKey;
+        ApiKey = options.ApiKey ?? EnvironmentVariableManager.GetGeminiAPIKey();
         DefaultCompletionOptions = options.DefaultCompletionOptions;
     }
 
-    [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
     public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
 
-        ApiKey = options.Value.ApiKey;
+        ApiKey = options.Value.ApiKey ?? EnvironmentVariableManager.GetGeminiAPIKey();
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
     }
 
-    [SetsRequiredMembers]
     public GeminiClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
     {
         ApiKey = apiKey;
@@ -52,7 +51,7 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         }
     }
 
-    public required string ApiKey { get; set; }
+    public string ApiKey { get; set; } = null!;
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
@@ -183,16 +182,12 @@ public class GeminiClient : GeminiClient<ChatConversation, ChatMessage, Function
 {
     public GeminiClient() : base() { }
 
-    [SetsRequiredMembers]
     public GeminiClient(string apiKey) : base(apiKey) { }
 
-    [SetsRequiredMembers]
     public GeminiClient(GeminiClientOptions options) : base(options) { }
 
-    [SetsRequiredMembers]
     [ActivatorUtilitiesConstructor]
     public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options) : base(httpClient, options) { }
 
-    [SetsRequiredMembers]
     public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null) : base(apiKey, defaultCompletionOptions) { }
 }
