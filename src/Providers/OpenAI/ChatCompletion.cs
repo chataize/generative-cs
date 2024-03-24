@@ -261,6 +261,7 @@ internal static class ChatCompletion
             MessageTools.AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(messages, options.TimeCallback());
         }
 
+        MessageTools.RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
         MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
 
         var messagesArray = new JsonArray();

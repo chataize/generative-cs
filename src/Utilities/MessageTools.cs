@@ -20,6 +20,32 @@ internal static class MessageTools
         messages.Insert(0, firstMessage);
     }
 
+    internal static void RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
+    {
+        for (var i = messages.Count - 1; i >= 0; i--)
+        {
+            var currentMessage = messages[i];
+
+            var isUnsentProperty = currentMessage.GetType().GetProperty("IsUnsent");
+            if (isUnsentProperty != null && isUnsentProperty.GetValue(currentMessage) as bool? == true)
+            {
+                messages.RemoveAt(i);
+                continue;
+            }
+
+            var isDeletedProperty = currentMessage.GetType().GetProperty("IsDeleted");
+            if (isDeletedProperty != null && isDeletedProperty.GetValue(currentMessage) as bool? == true)
+            {
+                messages.RemoveAt(i);
+                continue;
+            }
+
+        }
+    }
+
     internal static void LimitTokens<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, int? messageLimit, int? characterLimit)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
         where TFunctionCall : IFunctionCall

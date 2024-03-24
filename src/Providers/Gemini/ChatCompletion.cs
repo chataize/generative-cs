@@ -180,6 +180,7 @@ public static class ChatCompletion
             MessageTools.AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(messages, options.TimeCallback());
         }
 
+        MessageTools.RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
         MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
         MessageTools.ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(messages);
         MessageTools.MergeMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
