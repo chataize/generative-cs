@@ -30,7 +30,7 @@ internal static class Moderation
             { "input", text }
         };
 
-        if (options.Model != ModerationModels.OpenAI.TEXT_MODERATION_LATEST)
+        if (options.Model != ModerationModels.OpenAI.TextModerationLatest)
         {
             request.Add("model", options.Model);
         }
