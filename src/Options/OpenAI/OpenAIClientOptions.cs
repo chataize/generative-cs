@@ -8,6 +8,8 @@ public record OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
+    public OpenAIClientOptions() { }
+
     public OpenAIClientOptions(string? apiKey = null)
     {
         ApiKey = apiKey;
@@ -30,5 +32,7 @@ public record OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>
 
 public record OpenAIClientOptions : OpenAIClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public OpenAIClientOptions(string? apiKey = null) : base(apiKey) { }
+    public OpenAIClientOptions() : base() { }
+
+    public OpenAIClientOptions(string? apiKey) : base(apiKey) { }
 }

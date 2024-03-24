@@ -8,7 +8,9 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public GeminiClientOptions(string? apiKey = null)
+    public GeminiClientOptions() { }
+
+    public GeminiClientOptions(string? apiKey)
     {
         ApiKey = apiKey;
     }
@@ -20,5 +22,7 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
 
 public record GeminiClientOptions : GeminiClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
-    public GeminiClientOptions(string? apiKey = null) : base(apiKey) { }
+    public GeminiClientOptions() : base() { }
+
+    public GeminiClientOptions(string? apiKey) : base(apiKey) { }
 }
