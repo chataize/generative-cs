@@ -17,6 +17,7 @@ public static class OpenAIExtension
         if (options != null)
         {
             _ = services.Configure(options);
+            _ = services.Configure((Action<OpenAIClientOptions>)options);
         }
 
         _ = services.AddHttpClient<OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
