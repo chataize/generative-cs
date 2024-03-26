@@ -20,7 +20,6 @@
     <Description>
       Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients
       and support for C# function calling via reflection.
-
       Features:
       - Chat Completion
       - Response Streaming
@@ -63,7 +62,6 @@
     <PackageReleaseNotes>
       - Added feature list to the package description.
       - Fixed repository URL pointing to wrong repository.
-      
       https://github.com/chataize/generative-cs/releases
     </PackageReleaseNotes>
   </PropertyGroup>
@@ -81,7 +79,7 @@
         Version="8.0.0" />
     <PackageReference
         Include="Microsoft.Extensions.Options"
-        Version="8.0.1" />
+        Version="8.0.2" />
     <PackageReference
         Include="Microsoft.Extensions.Http"
         Version="8.0.0" />
