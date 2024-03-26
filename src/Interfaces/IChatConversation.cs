@@ -15,7 +15,7 @@ public interface IChatConversation<TMessage, TFunctionCall, TFunctionResult>
 
     Task<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None);
+    Task<TMessage> FromUserAsync(string author, string message, PinLocation pinLocation = PinLocation.None);
 
     Task<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
 

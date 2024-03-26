@@ -16,10 +16,10 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(ChatRole role, string name, string content, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(ChatRole role, string author, string content, PinLocation pinLocation = PinLocation.None)
     {
         Role = role;
-        Author = name;
+        Author = author;
         Content = content;
         PinLocation = pinLocation;
     }
@@ -69,14 +69,14 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, content, pinLocation);
     }
 
-    public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string name, string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string author, string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, name, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, author, content, pinLocation);
     }
 
-    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(string author, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.Chatbot, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.Chatbot, author, pinLocation);
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
@@ -101,7 +101,7 @@ public record ChatMessage : ChatMessage<FunctionCall, FunctionResult>
 
     public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None) : base(role, content, pinLocation) { }
 
-    public ChatMessage(ChatRole role, string name, string content, PinLocation pinLocation = PinLocation.None) : base(role, name, content, pinLocation) { }
+    public ChatMessage(ChatRole role, string author, string content, PinLocation pinLocation = PinLocation.None) : base(role, author, content, pinLocation) { }
 
     public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None) : base(functionCall, pinLocation) { }
 
