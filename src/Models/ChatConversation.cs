@@ -57,12 +57,12 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
         _ = await FromUserAsync(message, pinLocation);
     }
 
-    public Task<TMessage> FromUserAsync(string name, string message, PinLocation pinLocation = PinLocation.None)
+    public Task<TMessage> FromUserAsync(string author, string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new TMessage
         {
             Role = ChatRole.User,
-            Author = name,
+            Author = author,
             Content = message,
             PinLocation = pinLocation
         };
@@ -71,9 +71,9 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
         return Task.FromResult(chatMessage);
     }
 
-    public async void FromUser(string name, string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string author, string message, PinLocation pinLocation = PinLocation.None)
     {
-        _ = await FromUserAsync(name, message, pinLocation);
+        _ = await FromUserAsync(author, message, pinLocation);
     }
 
     public Task<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)
