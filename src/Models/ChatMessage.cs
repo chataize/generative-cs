@@ -51,7 +51,7 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
 
     public string? Content { get; set; }
 
-    public List<TFunctionCall> FunctionCalls { get; set; } = [];
+    public ICollection<TFunctionCall> FunctionCalls { get; set; } = [];
 
     public TFunctionResult? FunctionResult { get; set; }
 

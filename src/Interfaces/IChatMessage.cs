@@ -12,7 +12,7 @@ public interface IChatMessage<TFunctionCall, TFunctionResult>
 
     string? Content { get; set; }
 
-    List<TFunctionCall> FunctionCalls { get; set; }
+    ICollection<TFunctionCall> FunctionCalls { get; set; }
 
     TFunctionResult? FunctionResult { get; set; }
 
