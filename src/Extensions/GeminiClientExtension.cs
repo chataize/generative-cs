@@ -17,7 +17,11 @@ public static class GeminiClientExtension
         if (options != null)
         {
             _ = services.Configure(options);
-            _ = services.Configure((Action<GeminiClientOptions>)options);
+
+            if (options is Action<GeminiClientOptions> options2)
+            {
+                _ = services.Configure(options2);
+            }
         }
 
         _ = services.AddHttpClient<GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
