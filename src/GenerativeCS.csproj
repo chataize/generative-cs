@@ -60,8 +60,6 @@
       vertex virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
     <PackageReleaseNotes>
-      - Added feature list to the package description.
-      - Fixed repository URL pointing to wrong repository.
       https://github.com/chataize/generative-cs/releases
     </PackageReleaseNotes>
   </PropertyGroup>
