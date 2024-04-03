@@ -26,7 +26,8 @@ using ChatAIze.GenerativeCS.Extensions;
 builder.Services.AddOpenAIClient("<OPENAI API KEY>");
 builder.Services.AddGeminiClient("<GEMINI API KEY>");
 ```
-
+> [!NOTE]
+> By default, both `OpenAIClient` and `GeminiClient` services are registered as singleton. It's advised not to change global client settings after the web application has already been launched. Use per-request settings instead.
 ## Chat Completion
 ### Simple Prompt
 ```cs
