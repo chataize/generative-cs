@@ -1,6 +1,37 @@
 # GenerativeCS
 Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients and support for C# function calling via reflection.
 
+## Supported Features
+### OpenAI
+- [x] Chat Completion
+- [x] Text Embedding
+- [x] Text-to-Speech
+- [x] Speech-to-Text
+    - [x] Transcription
+    - [x] Translation
+- [x] Moderation
+- [x] Response Streaming
+- [x] Function Calling
+- [ ] Image Generation
+- [ ] Assistants API
+- [ ] Files API
+### Gemini
+- [x] Chat Completion
+- [x] Function Calling
+- [ ] Text Embedding
+- [ ] Moderation
+- [ ] Response Streaming
+- [ ] Multi-Modal Requests
+### Miscellaneous
+- [x] Dependency Injection
+- [x] Time Awareness
+- [x] Message/Character Count Limiting
+- [x] Message Pinning
+- [x] Auto-Reattempt on Failure 
+- [ ] Token Counting
+- [ ] XML Documentation
+- [ ] Unit Tests
+
 ## Installation
 ### .NET CLI
 ```bash
