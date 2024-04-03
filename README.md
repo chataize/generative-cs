@@ -86,6 +86,7 @@ while (true)
 ```
 > [!NOTE]
 > Chatbot responses, function calls, and function results are automatically added to the conversation.
+> You don't need to and should not call ```conversation.FromAssistant(...)``` manually, unless you want to *inject* custom messages (e.g. welcome message).
 ## Embeddings
 ```cs
 using ChatAIze.GenerativeCS.Clients;
