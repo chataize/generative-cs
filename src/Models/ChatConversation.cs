@@ -10,6 +10,11 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
 {
     public ChatConversation() { }
 
+    public ChatConversation(string systemMessage)
+    {
+        FromSystem(systemMessage);
+    }
+
     public ChatConversation(IEnumerable<TMessage> messages)
     {
         Messages = messages.ToList();
@@ -152,6 +157,8 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
 public record ChatConversation : ChatConversation<ChatMessage, FunctionCall, FunctionResult>
 {
     public ChatConversation() : base() { }
+
+    public ChatConversation(string systemMessage) : base(systemMessage) { }
 
     public ChatConversation(IEnumerable<ChatMessage> messages) : base(messages) { }
 }
