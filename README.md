@@ -210,13 +210,13 @@ builder.Services.AddOpenAIClient(configure =>
     configure.ApiKey = "<OPENAI API KEY>";
     configure.DefaultCompletionOptions = new ChatCompletionOptions()
     {
-        Model = ChatCompletionModels.GPT_3_5_TURBO_1106,
+        Model = ChatCompletionModels.OpenAI.GPT35Turbo,
         Temperature = 1.0
         // set other chat completion options here
     };
     configure.DefaultEmbeddingOptions = new EmbeddingOptions()
     {
-        Model = EmbeddingModels.TEXT_EMBEDDING_ADA_002,
+        Model = EmbeddingModels.OpenAI.TextEmbedding3Large,
         MaxAttempts = 5
         // set other embeding options here
     };
@@ -233,7 +233,7 @@ builder.Services.AddGeminiClient(configure =>
     configure.ApiKey = "<GEMINI API KEY>";
     configure.DefaultCompletionOptions = new ChatCompletionOptions()
     {
-        Model = ChatCompletionModels.GEMINI_PRO,
+        Model = ChatCompletionModels.Gemini.GeminiPro,
         MessageLimit = 10
         // set other chat completion options here
     };
@@ -250,8 +250,8 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new ChatCompletionOptions
 {
-    Model = ChatCompletionModels.GPT_3_5_TURBO_1106,
-    User = "USER_ID_1234",
+    Model = ChatCompletionModels.OpenAI.GPT35Turbo,
+    UserTrackingId = "USER_ID_1234",
     MaxAttempts = 5,
     MaxOutputTokens = 2000,
     MessageLimit = 10,
@@ -295,7 +295,7 @@ using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions
 {
-    Model = ChatCompletionModels.GPT_3_5_TURBO_1106,
+    Model = ChatCompletionModels.Gemini.GeminiPro,
     MaxAttempts = 5,
     MessageLimit = 10,
     CharacterLimit = 20000,
@@ -325,7 +325,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new EmbeddingOptions
 {
-    Model = EmbeddingModels.TEXT_EMBEDDING_ADA_002,
+    Model = EmbeddingModels.OpenAI.TextEmbedding3Large,
     User = "USER_ID_1234",
     MaxAttempts = 5
 };
@@ -347,7 +347,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TextToSpeechOptions
 {
-    Model = TextToSpeechModels.TTS_1,
+    Model = TextToSpeechModels.OpenAI.TTS1,
     Voice = TextToSpeechVoice.Alloy,
     Speed = 1.0,
     MaxAttempts = 5,
@@ -370,7 +370,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TranscriptionOptions
 {
-    Model = SpeechRecognitionModels.WHISPER_1,
+    Model = SpeechRecognitionModels.OpenAI.Whisper1,
     Language = "en",
     Prompt = "ZyntriQix, Digique Plus, CynapseFive, VortiQore V8, EchoNix Array, ...",
     Temperature = 0.0,
@@ -394,7 +394,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new TranslationOptions
 {
-    Model = SpeechRecognitionModels.WHISPER_1,
+    Model = SpeechRecognitionModels.OpenAI.Whisper1,
     Prompt = "ZyntriQix, Digique Plus, CynapseFive, VortiQore V8, EchoNix Array, ...",
     Temperature = 0.0,
     MaxAttempts = 5,
@@ -416,7 +416,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new ModerationOptions
 {
-    Model = ModerationModels.TEXT_MODERATION_LATEST,
+    Model = ModerationModels.OpenAI.TextModerationStable,
     MaxAttempts = 5
 };
 
