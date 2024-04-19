@@ -60,7 +60,7 @@ builder.Services.AddOpenAIClient("<OPENAI API KEY>");
 builder.Services.AddGeminiClient("<GEMINI API KEY>");
 ```
 > [!NOTE]
-> By default, both `OpenAIClient` and `GeminiClient` services are registered as singleton. It's advised not to change global client settings after the web application has already been launched. Use per-request settings instead.
+> By default, both `OpenAIClient` and `GeminiClient` services are registered as singleton. It's advised not to change global client options after the web application has already been launched. Use per-request options instead.
 ## Chat Completion
 ### Simple Prompt
 ```cs
