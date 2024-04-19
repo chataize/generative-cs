@@ -61,9 +61,9 @@ internal static class Embeddings
             request.Add("dimensions", options.Dimensions);
         }
 
-        if (options.User != null)
+        if (options.UserTrackingId != null)
         {
-            request.Add("user", options.User);
+            request.Add("user", options.UserTrackingId);
         }
 
         return request;
