@@ -179,7 +179,7 @@ string translation = await client.TranslateAsync(audio);
 using ChatAIze.GenerativeCS.Clients;
 
 var client = new OpenAIClient("<OPENAI API KEY>");
-var result = await client.ModerateAsync("I am going going to blow up your house in Minecraft.");
+var result = await client.ModerateAsync("I am going to blow up your house in Minecraft.");
 
 Console.WriteLine(result.IsFlagged); // true
 Console.WriteLine(result.IsViolence); // true 
