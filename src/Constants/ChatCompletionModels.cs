@@ -11,7 +11,7 @@ public static class ChatCompletionModels
         public const string GPT4Turbo = "gpt-4-turbo";
 
         public const string GPT4Turbo20240409 = "gpt-4-turbo-2024-04-09";
-        
+
         public const string GPT4TurboPreview = "gpt-4-turbo-preview";
 
         public const string GPT40125Preview = "gpt-4-0125-preview";
@@ -51,6 +51,12 @@ public static class ChatCompletionModels
 
     public static class Gemini
     {
-        public const string GeminiPro = "gemini-pro";
+        public const string Gemini10Pro = "gemini-1.0-pro";
+
+        public const string Gemini15Flash = "gemini-1.5-flash-latest";
+
+        public const string Gemini15Pro = "gemini-1.5-pro-latest";
+
+        public const string Gemini10Pro001 = "gemini-1.0-pro-001";
     }
 }

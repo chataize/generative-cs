@@ -17,6 +17,6 @@ public static class DefaultModels
 
     public static class Gemini
     {
-        public const string ChatCompletion = ChatCompletionModels.Gemini.GeminiPro;
+        public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini15Flash;
     }
 }
