@@ -32,6 +32,8 @@ public static class ChatCompletionModels
 
         public const string GPT41106Preview = "gpt-4-1106-preview";
 
+        public const string GPT4Turbo = "gpt-4-turbo";
+
         public const string GPT4TurboPreview = "gpt-4-turbo-preview";
     }
 
