@@ -295,7 +295,7 @@ using ChatAIze.GenerativeCS.Options.Gemini;
 
 var options = new ChatCompletionOptions
 {
-    Model = ChatCompletionModels.Gemini.GeminiPro,
+    Model = ChatCompletionModels.Gemini.Gemini15Flash,
     MaxAttempts = 5,
     MessageLimit = 10,
     CharacterLimit = 20000,
