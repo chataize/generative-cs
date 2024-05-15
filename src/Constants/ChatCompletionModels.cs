@@ -35,6 +35,8 @@ public static class ChatCompletionModels
         public const string GPT4Turbo = "gpt-4-turbo";
 
         public const string GPT4TurboPreview = "gpt-4-turbo-preview";
+
+        public const string GPT4o = "gpt-4o";
     }
 
     public static class Gemini
