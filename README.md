@@ -210,7 +210,7 @@ builder.Services.AddOpenAIClient(configure =>
     configure.ApiKey = "<OPENAI API KEY>";
     configure.DefaultCompletionOptions = new ChatCompletionOptions()
     {
-        Model = ChatCompletionModels.OpenAI.GPT35Turbo,
+        Model = ChatCompletionModels.OpenAI.GPT4o,
         Temperature = 1.0
         // set other chat completion options here
     };
@@ -250,7 +250,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new ChatCompletionOptions
 {
-    Model = ChatCompletionModels.OpenAI.GPT35Turbo,
+    Model = ChatCompletionModels.OpenAI.GPT4o,
     UserTrackingId = "USER_ID_1234",
     MaxAttempts = 5,
     MaxOutputTokens = 2000,
