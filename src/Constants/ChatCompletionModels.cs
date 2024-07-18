@@ -6,6 +6,10 @@ public static class ChatCompletionModels
     {
         public const string GPT4o = "gpt-4o";
 
+        public const string GPT4oMini = "gpt-4o-mini";
+
+        public const string GPT4oMini20240718 = "gpt-4o-mini-2024-07-18";
+
         public const string GPT4o20240513 = "gpt-4o-2024-05-13";
 
         public const string GPT4Turbo = "gpt-4-turbo";
