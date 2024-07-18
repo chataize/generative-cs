@@ -6,7 +6,7 @@ public static class DefaultModels
     {
         public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT4oMini;
 
-        public const string Embedding = EmbeddingModels.OpenAI.TextEmbedding3Large;
+        public const string Embedding = EmbeddingModels.OpenAI.TextEmbedding3Small;
 
         public const string TextToSpeech = TextToSpeechModels.OpenAI.TTS1;
 
