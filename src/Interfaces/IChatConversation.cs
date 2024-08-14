@@ -7,7 +7,10 @@ public interface IChatConversation<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    string? UserTrackingId { get; }
+    string? UserTrackingId
+    {
+        get => null;
+    }
 
     ICollection<TMessage> Messages { get; }
 

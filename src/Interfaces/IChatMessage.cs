@@ -8,7 +8,14 @@ public interface IChatMessage<TFunctionCall, TFunctionResult>
 {
     ChatRole Role { get; set; }
 
-    string? Author { get; set; }
+    string? Author
+    {
+        get => null;
+        set
+        {
+            return;
+        }
+    }
 
     string? Content { get; set; }
 
