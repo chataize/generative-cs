@@ -7,7 +7,7 @@
     <RootNamespace>ChatAIze.GenerativeCS</RootNamespace>
     <PackageId>ChatAIze.GenerativeCS</PackageId>
     <Product>ChatAIze</Product>
-    <Version>0.3.6</Version>
+    <Version>0.4.0</Version>
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2024</Copyright>
