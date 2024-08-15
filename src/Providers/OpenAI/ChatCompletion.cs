@@ -11,7 +11,7 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -33,6 +33,16 @@ internal static class ChatCompletion
         if (options.IsDebugMode)
         {
             Debug.WriteLine(responseDocument.RootElement.ToString());
+        }
+
+        if (usageTracker != null)
+        {
+            var usage = responseDocument.RootElement.GetProperty("usage");
+            var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
+            var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
+
+            usageTracker.AddPromptTokens(promptTokens);
+            usageTracker.AddCompletionTokens(completionTokens);
         }
 
         var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
@@ -84,7 +94,7 @@ internal static class ChatCompletion
                 }
             }
 
-            return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
+            return await CompleteAsync(conversation, apiKey, options, usageTracker, httpClient, cancellationToken);
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
@@ -94,7 +104,7 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -105,6 +115,14 @@ internal static class ChatCompletion
 
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);
+
+        if (usageTracker != null)
+        {
+            request.Add("stream_options", new JsonObject
+            {
+                { "include_usage", true }
+            });
+        }
 
         if (options.IsDebugMode)
         {
@@ -147,12 +165,26 @@ internal static class ChatCompletion
                 Debug.WriteLine(chunkDocument.RootElement.ToString());
             }
 
-            var choice = chunkDocument.RootElement.GetProperty("choices")[0];
-            if (choice.TryGetProperty("finish_reason", out var finishReasonProperty) && finishReasonProperty.ValueKind != JsonValueKind.Null)
+            if (usageTracker != null)
             {
-                break;
+                var usage = chunkDocument.RootElement.GetProperty("usage");
+                if (usage.ValueKind != JsonValueKind.Null)
+                {
+                    var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
+                    var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
+
+                    usageTracker.AddPromptTokens(promptTokens);
+                    usageTracker.AddCompletionTokens(completionTokens);
+                }
             }
 
+            var choices = chunkDocument.RootElement.GetProperty("choices");
+            if (choices.GetArrayLength() == 0)
+            {
+                continue;
+            }
+
+            var choice = choices[0];
             var delta = choice.GetProperty("delta");
 
             if (delta.TryGetProperty("content", out var contentProperty) && contentProperty.ValueKind != JsonValueKind.Null)
@@ -242,7 +274,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in StreamCompletionAsync(conversation, apiKey, options, httpClient, cancellationToken))
+            await foreach (var chunk in StreamCompletionAsync(conversation, apiKey, options, usageTracker, httpClient, cancellationToken))
             {
                 yield return chunk;
             }

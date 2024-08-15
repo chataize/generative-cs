@@ -7,7 +7,7 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {
-    internal static async Task<float[]> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<float[]> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
@@ -18,8 +18,15 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var embedding = new List<float>();
+        if (usageTracker != null)
+        {
+            var usage = responseDocument.RootElement.GetProperty("usage");
+            var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
 
+            usageTracker.AddPromptTokens(promptTokens);
+        }
+
+        var embedding = new List<float>();
         foreach (var element in responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
         {
             embedding.Add(element.GetSingle());
@@ -28,7 +35,7 @@ internal static class Embeddings
         return [.. embedding];
     }
 
-    internal static async Task<string> GetBase64EmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> GetBase64EmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
@@ -39,7 +46,14 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        var embedding = new List<float>();
+        if (usageTracker != null)
+        {
+            var usage = responseDocument.RootElement.GetProperty("usage");
+            var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
+
+            usageTracker.AddPromptTokens(promptTokens);
+        }
+
         return responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").GetString()!;
     }
 

@@ -128,46 +128,46 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
     public ModerationOptions DefaultModerationOptions { get; set; } = new();
 
-    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
         var conversation = new TConversation();
         await conversation.FromUserAsync(prompt);
 
-        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, cancellationToken);
+        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
+        return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken);
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var conversation = new TConversation();
         await conversation.FromUserAsync(prompt);
 
-        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken))
         {
             yield return chunk;
         }
     }
 
-    public async Task<float[]> GetEmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<float[]> GetEmbeddingAsync(string text, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        return await Embeddings.GetEmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, _httpClient, cancellationToken);
+        return await Embeddings.GetEmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, usageTracker, _httpClient, cancellationToken);
     }
 
-    public async Task<string> GetBase64EmbeddingAsync(string text, EmbeddingOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> GetBase64EmbeddingAsync(string text, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        return await Embeddings.GetBase64EmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, _httpClient, cancellationToken);
+        return await Embeddings.GetBase64EmbeddingAsync(text, ApiKey, options ?? DefaultEmbeddingOptions, usageTracker, _httpClient, cancellationToken);
     }
 
     public async Task<byte[]> SynthesizeSpeechAsync(string text, TextToSpeechOptions? options = null, CancellationToken cancellationToken = default)
