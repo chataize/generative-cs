@@ -136,6 +136,16 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
 
+    public async Task<string> CompleteAsync(string systemMessage, string userMessage, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
+    {
+        var conversation = new TConversation();
+
+        await conversation.FromSystemAsync(systemMessage);
+        await conversation.FromUserAsync(userMessage);
+
+        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
+    }
+
     public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
         return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken);
