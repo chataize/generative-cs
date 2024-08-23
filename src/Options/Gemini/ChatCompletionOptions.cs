@@ -26,6 +26,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsDebugMode { get; set; }
 
+    public Func<string?>? SystemMessageCallback { get; set; } = null;
+
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
     public Func<TMessage, Task> AddMessageCallback { get; } = (_) => Task.CompletedTask;

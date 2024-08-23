@@ -288,6 +288,12 @@ internal static class ChatCompletion
         where TFunctionResult : IFunctionResult
     {
         var messages = conversation.Messages.ToList();
+
+        if (options.SystemMessageCallback != null)
+        {
+            MessageTools.AddDynamicSystemMessage<TMessage, TFunctionCall, TFunctionResult>(messages, options.SystemMessageCallback());
+        }
+
         if (options.IsTimeAware)
         {
             MessageTools.AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(messages, options.TimeCallback());

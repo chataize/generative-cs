@@ -5,6 +5,26 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class MessageTools
 {
+    internal static void AddDynamicSystemMessage<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, string? systemMessage)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
+    {
+        if (string.IsNullOrWhiteSpace(systemMessage))
+        {
+            return;
+        }
+
+        var firstMessage = new TMessage
+        {
+            Role = ChatRole.System,
+            Content = systemMessage,
+            PinLocation = PinLocation.Begin
+        };
+
+        messages.Insert(0, firstMessage);
+    }
+
     internal static void AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, DateTime currentTime)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
