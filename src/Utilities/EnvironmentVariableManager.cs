@@ -4,25 +4,13 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class EnvironmentVariableManager
 {
-    internal static string GetOpenAIAPIKey()
+    internal static string? GetOpenAIAPIKey()
     {
-        var apiKey = Environment.GetEnvironmentVariable(EnvironmentVariables.OpenAIAPIKey);
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            throw new Exception("OPENAI_API_KEY environment variable is not set.");
-        }
-
-        return apiKey;
+        return Environment.GetEnvironmentVariable(EnvironmentVariables.OpenAIAPIKey);
     }
 
-    internal static string GetGeminiAPIKey()
+    internal static string? GetGeminiAPIKey()
     {
-        var apiKey = Environment.GetEnvironmentVariable(EnvironmentVariables.GeminiAPIKey);
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            throw new Exception("GEMINI_API_KEY environment variable is not set.");
-        }
-
-        return apiKey;
+        return Environment.GetEnvironmentVariable(EnvironmentVariables.GeminiAPIKey);
     }
 }
