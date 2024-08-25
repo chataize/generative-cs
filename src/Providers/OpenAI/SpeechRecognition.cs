@@ -7,10 +7,15 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class SpeechRecognition
 {
-    internal static async Task<string> TranscriptAsync(byte[] audio, string apiKey, TranscriptionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> TranscriptAsync(byte[] audio, string? apiKey, TranscriptionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         using var requestContent = CreateTranscriptionRequest(audio, options);
         using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", requestContent, apiKey, options.MaxAttempts, cancellationToken);
@@ -18,10 +23,15 @@ internal static class SpeechRecognition
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
-    internal static async Task<string> TranslateAsync(byte[] audio, string apiKey, TranslationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> TranslateAsync(byte[] audio, string? apiKey, TranslationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         using var requestContent = CreateTranslationRequest(audio, options);
         using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", requestContent, apiKey, options.MaxAttempts, cancellationToken);

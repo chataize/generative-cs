@@ -7,10 +7,15 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class TextToSpeech
 {
-    internal static async Task<byte[]> SynthesizeSpeechAsync(string text, string apiKey, TextToSpeechOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<byte[]> SynthesizeSpeechAsync(string text, string? apiKey, TextToSpeechOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var requestObject = CreateSpeechSynthesisRequest(text, options);
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/audio/speech", requestObject, apiKey, options.MaxAttempts, cancellationToken);

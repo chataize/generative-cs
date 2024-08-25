@@ -7,10 +7,15 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class Embeddings
 {
-    internal static async Task<float[]> GetEmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<float[]> GetEmbeddingAsync(string text, string? apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateEmbeddingRequest(text, false, options);
 
@@ -35,10 +40,15 @@ internal static class Embeddings
         return [.. embedding];
     }
 
-    internal static async Task<string> GetBase64EmbeddingAsync(string text, string apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> GetBase64EmbeddingAsync(string text, string? apiKey = null, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateEmbeddingRequest(text, true, options);
 

@@ -9,12 +9,15 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public ChatCompletionOptions(string model = DefaultModels.Gemini.ChatCompletion)
+    public ChatCompletionOptions(string model = DefaultModels.Gemini.ChatCompletion, string? apiKey = null)
     {
         Model = model;
+        ApiKey = apiKey;
     }
 
     public string Model { get; set; } = DefaultModels.Gemini.ChatCompletion;
+
+    public string? ApiKey { get; set; }
 
     public int MaxAttempts { get; set; } = 5;
 

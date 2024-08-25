@@ -11,7 +11,7 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -19,6 +19,11 @@ internal static class ChatCompletion
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateChatCompletionRequest(conversation, options);
         if (options.IsDebugMode)
@@ -104,7 +109,7 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -112,6 +117,11 @@ internal static class ChatCompletion
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateChatCompletionRequest(conversation, options);
         request.Add("stream", true);

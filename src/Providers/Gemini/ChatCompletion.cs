@@ -10,7 +10,7 @@ namespace ChatAIze.GenerativeCS.Providers.Gemini;
 
 public static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -18,6 +18,11 @@ public static class ChatCompletion
     {
         httpClient ??= new();
         options ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         if (options.Functions.Count >= 1)
         {
@@ -48,7 +53,7 @@ public static class ChatCompletion
         return messageContent;
     }
 
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -56,6 +61,11 @@ public static class ChatCompletion
     {
         httpClient ??= new();
         options ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateChatCompletionRequest(conversation, options);
         if (options.IsDebugMode)

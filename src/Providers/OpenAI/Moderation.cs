@@ -9,10 +9,15 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class Moderation
 {
-    internal static async Task<ModerationResult> ModerateAsync(string text, string apiKey, ModerationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<ModerationResult> ModerateAsync(string text, string? apiKey, ModerationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new();
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            apiKey = options.ApiKey;
+        }
 
         var request = CreateModerationRequest(text, options);
 
