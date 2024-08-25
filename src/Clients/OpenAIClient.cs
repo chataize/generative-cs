@@ -19,17 +19,30 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
     public OpenAIClient()
     {
-        ApiKey ??= EnvironmentVariableManager.GetOpenAIAPIKey();
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetOpenAIAPIKey();
+        }
     }
 
     public OpenAIClient(string apiKey)
     {
         ApiKey = apiKey;
+
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetOpenAIAPIKey();
+        }
     }
 
     public OpenAIClient(OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
-        ApiKey = options.ApiKey ?? EnvironmentVariableManager.GetOpenAIAPIKey();
+        ApiKey = options.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetOpenAIAPIKey();
+        }
 
         DefaultCompletionOptions = options.DefaultCompletionOptions;
         DefaultEmbeddingOptions = options.DefaultEmbeddingOptions;
@@ -43,8 +56,12 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
+        ApiKey = options.Value.ApiKey;
 
-        ApiKey = options.Value.ApiKey ?? EnvironmentVariableManager.GetOpenAIAPIKey();
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetOpenAIAPIKey();
+        }
 
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
         DefaultEmbeddingOptions = options.Value.DefaultEmbeddingOptions;
@@ -54,67 +71,37 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
         DefaultModerationOptions = options.Value.DefaultModerationOptions;
     }
 
-    public OpenAIClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
+    public OpenAIClient(ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> defaultCompletionOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultCompletionOptions != null)
-        {
-            DefaultCompletionOptions = defaultCompletionOptions;
-        }
+        DefaultCompletionOptions = defaultCompletionOptions;
     }
 
-    public OpenAIClient(string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
+    public OpenAIClient(EmbeddingOptions defaultEmbeddingOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultEmbeddingOptions != null)
-        {
-            DefaultEmbeddingOptions = defaultEmbeddingOptions;
-        }
+        DefaultEmbeddingOptions = defaultEmbeddingOptions;
     }
 
-    public OpenAIClient(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
+    public OpenAIClient(TextToSpeechOptions defaultTextToSpeechOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultTextToSpeechOptions != null)
-        {
-            DefaultTextToSpeechOptions = defaultTextToSpeechOptions;
-        }
+        DefaultTextToSpeechOptions = defaultTextToSpeechOptions;
     }
 
-    public OpenAIClient(string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
+    public OpenAIClient(TranscriptionOptions defaultTranscriptionOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultTranscriptionOptions != null)
-        {
-            DefaultTranscriptionOptions = defaultTranscriptionOptions;
-        }
+        DefaultTranscriptionOptions = defaultTranscriptionOptions;
     }
 
-    public OpenAIClient(string apiKey, TranslationOptions? defaultTranslationOptions)
+    public OpenAIClient(TranslationOptions defaultTranslationOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultTranslationOptions != null)
-        {
-            DefaultTranslationOptions = defaultTranslationOptions;
-        }
+        DefaultTranslationOptions = defaultTranslationOptions;
     }
 
-    public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions)
+    public OpenAIClient(ModerationOptions defaultModerationOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultModerationOptions != null)
-        {
-            DefaultModerationOptions = defaultModerationOptions;
-        }
+        DefaultModerationOptions = defaultModerationOptions;
     }
 
-    public string ApiKey { get; set; } = null!;
+    public string? ApiKey { get; set; }
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
@@ -342,15 +329,15 @@ public class OpenAIClient : OpenAIClient<ChatConversation, ChatMessage, Function
     [ActivatorUtilitiesConstructor]
     public OpenAIClient(HttpClient httpClient, IOptions<OpenAIClientOptions> options) : base(httpClient, options) { }
 
-    public OpenAIClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions) : base(apiKey, defaultCompletionOptions) { }
+    public OpenAIClient(ChatCompletionOptions defaultCompletionOptions) : base(defaultCompletionOptions) { }
 
-    public OpenAIClient(string apiKey, EmbeddingOptions? defaultEmbeddingOptions) : base(apiKey, defaultEmbeddingOptions) { }
+    public OpenAIClient(EmbeddingOptions defaultEmbeddingOptions) : base(defaultEmbeddingOptions) { }
 
-    public OpenAIClient(string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions) : base(apiKey, defaultTextToSpeechOptions) { }
+    public OpenAIClient(TextToSpeechOptions defaultTextToSpeechOptions) : base(defaultTextToSpeechOptions) { }
 
-    public OpenAIClient(string apiKey, TranscriptionOptions? defaultTranscriptionOptions) : base(apiKey, defaultTranscriptionOptions) { }
+    public OpenAIClient(TranscriptionOptions defaultTranscriptionOptions) : base(defaultTranscriptionOptions) { }
 
-    public OpenAIClient(string apiKey, TranslationOptions? defaultTranslationOptions) : base(apiKey, defaultTranslationOptions) { }
+    public OpenAIClient(TranslationOptions defaultTranslationOptions) : base(defaultTranslationOptions) { }
 
-    public OpenAIClient(string apiKey, ModerationOptions? defaultModerationOptions) : base(apiKey, defaultModerationOptions) { }
+    public OpenAIClient(ModerationOptions defaultModerationOptions) : base(defaultModerationOptions) { }
 }

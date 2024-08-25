@@ -18,17 +18,31 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
     public GeminiClient()
     {
-        ApiKey ??= EnvironmentVariableManager.GetGeminiAPIKey();
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
+        }
     }
 
     public GeminiClient(string apiKey)
     {
         ApiKey = apiKey;
+
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
+        }
     }
 
     public GeminiClient(GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
     {
-        ApiKey = options.ApiKey ?? EnvironmentVariableManager.GetGeminiAPIKey();
+        ApiKey = options.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
+        }
+
         DefaultCompletionOptions = options.DefaultCompletionOptions;
     }
 
@@ -36,22 +50,22 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
     {
         _httpClient = httpClient;
+        ApiKey = options.Value.ApiKey;
 
-        ApiKey = options.Value.ApiKey ?? EnvironmentVariableManager.GetGeminiAPIKey();
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
+        }
+
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
     }
 
-    public GeminiClient(string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
+    public GeminiClient(ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> defaultCompletionOptions)
     {
-        ApiKey = apiKey;
-
-        if (defaultCompletionOptions != null)
-        {
-            DefaultCompletionOptions = defaultCompletionOptions;
-        }
+        DefaultCompletionOptions = defaultCompletionOptions;
     }
 
-    public string ApiKey { get; set; } = null!;
+    public string? ApiKey { get; set; }
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
@@ -189,5 +203,5 @@ public class GeminiClient : GeminiClient<ChatConversation, ChatMessage, Function
     [ActivatorUtilitiesConstructor]
     public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions> options) : base(httpClient, options) { }
 
-    public GeminiClient(string apiKey, ChatCompletionOptions? defaultCompletionOptions = null) : base(apiKey, defaultCompletionOptions) { }
+    public GeminiClient(ChatCompletionOptions defaultCompletionOptions) : base(defaultCompletionOptions) { }
 }
