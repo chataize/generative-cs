@@ -1,22 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AssemblyName>ChatAIze.GenerativeCS</AssemblyName>
-    <RootNamespace>ChatAIze.GenerativeCS</RootNamespace>
-    <PackageId>ChatAIze.GenerativeCS</PackageId>
-    <Product>ChatAIze</Product>
+    <Product>Generative CS</Product>
     <Version>0.6.0</Version>
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2024</Copyright>
-    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <AssemblyName>ChatAIze.GenerativeCS</AssemblyName>
+    <RootNamespace>ChatAIze.GenerativeCS</RootNamespace>
+    <PackageId>ChatAIze.GenerativeCS</PackageId>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/chataize/generative-cs</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://www.chataize.com</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/chataize/generative-cs/releases</PackageReleaseNotes>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/chataize/generative-cs</RepositoryUrl>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <Description>
       Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients
       and support for C# function calling via reflection.
@@ -59,27 +60,14 @@
       translation translator tts turbo vector vector-embedding vector-embeddings vector-search
       vertex virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
-    <PackageReleaseNotes>
-      https://github.com/chataize/generative-cs/releases
-    </PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
-    <None
-        Include="icon.png"
-        Pack="true"
-        PackagePath="\" />
-    <None
-        Include="../README.md"
-        Pack="true"
-        PackagePath="" />
-    <PackageReference
-        Include="Microsoft.Extensions.DependencyInjection"
-        Version="8.0.0" />
-    <PackageReference
-        Include="Microsoft.Extensions.Options"
-        Version="8.0.2" />
-    <PackageReference
-        Include="Microsoft.Extensions.Http"
-        Version="8.0.0" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
   </ItemGroup>
 </Project>
