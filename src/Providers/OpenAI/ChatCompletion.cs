@@ -418,6 +418,11 @@ internal static class ChatCompletion
             requestObject.Add("response_format", responseFormatObject);
         }
 
+        if (!options.IsParallelFunctionCallingOn)
+        {
+            requestObject.Add("parallel_tool_calls", false);
+        }
+
         if (options.StopWords != null && options.StopWords.Count > 0)
         {
             var stopArray = new JsonArray();

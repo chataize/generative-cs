@@ -41,6 +41,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsJsonMode { get; set; }
 
+    public bool IsParallelFunctionCallingOn { get; set; } = true;
+
     public bool IsDebugMode { get; set; }
 
     public bool IsTimeAware { get; set; }
