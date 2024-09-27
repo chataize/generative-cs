@@ -6,13 +6,23 @@ public static class ChatCompletionModels
     {
         public const string GPT4o = "gpt-4o";
 
+        public const string GPT4o20240513 = "gpt-4o-2024-05-13";
+
         public const string GPT4o20240806 = "gpt-4o-2024-08-06";
 
-        public const string GPT4o20240513 = "gpt-4o-2024-05-13";
+        public const string ChatGPT4oLatest = "chatgpt-4o-latest";
 
         public const string GPT4oMini = "gpt-4o-mini";
 
         public const string GPT4oMini20240718 = "gpt-4o-mini-2024-07-18";
+
+        public const string O1Preview = "o1-preview";
+
+        public const string O1Preview20240912 = "o1-preview-2024-09-12";
+
+        public const string O1Mini = "o1-mini";
+
+        public const string O1Mini20240912 = "o1-mini-2024-09-12";
 
         public const string GPT4Turbo = "gpt-4-turbo";
 
