@@ -28,6 +28,14 @@ public record ModerationResult
 
     public double HateThreateningScore { get; set; }
 
+    public bool IsIllicit { get; set; }
+
+    public double IllicitScore { get; set; }
+
+    public bool IsIllicitViolent { get; set; }
+
+    public double IllicitViolentScore { get; set; }
+
     public bool IsSelfHarm { get; set; }
 
     public double SelfHarmScore { get; set; }
