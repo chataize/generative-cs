@@ -12,7 +12,7 @@ public static class DefaultModels
 
         public const string SpeechToText = SpeechRecognitionModels.OpenAI.Whisper1;
 
-        public const string Moderation = ModerationModels.OpenAI.TextModerationStable;
+        public const string Moderation = ModerationModels.OpenAI.OmniModerationLatest;
     }
 
     public static class Gemini
