@@ -27,7 +27,7 @@ public static class ChatCompletion
         if (options.Functions.Count >= 1)
         {
             var conversation = new TConversation();
-            await conversation.FromUserAsync(prompt);
+            _ = await conversation.FromUserAsync(prompt);
 
             return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
         }

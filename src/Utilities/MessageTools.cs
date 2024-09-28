@@ -50,19 +50,18 @@ internal static class MessageTools
             var currentMessage = messages[i];
 
             var isUnsentProperty = currentMessage.GetType().GetProperty("IsUnsent");
-            if (isUnsentProperty != null && isUnsentProperty.GetValue(currentMessage) as bool? == true)
+            if (isUnsentProperty != null && (isUnsentProperty.GetValue(currentMessage) as bool?) == true)
             {
                 messages.RemoveAt(i);
                 continue;
             }
 
             var isDeletedProperty = currentMessage.GetType().GetProperty("IsDeleted");
-            if (isDeletedProperty != null && isDeletedProperty.GetValue(currentMessage) as bool? == true)
+            if (isDeletedProperty != null && (isDeletedProperty.GetValue(currentMessage) as bool?) == true)
             {
                 messages.RemoveAt(i);
                 continue;
             }
-
         }
     }
 

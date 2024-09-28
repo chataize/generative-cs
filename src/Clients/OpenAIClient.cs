@@ -118,7 +118,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
         var conversation = new TConversation();
-        await conversation.FromUserAsync(prompt);
+        _ = await conversation.FromUserAsync(prompt);
 
         return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
@@ -127,8 +127,8 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     {
         var conversation = new TConversation();
 
-        await conversation.FromSystemAsync(systemMessage);
-        await conversation.FromUserAsync(userMessage);
+        _ = await conversation.FromSystemAsync(systemMessage);
+        _ = await conversation.FromUserAsync(userMessage);
 
         return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
@@ -141,7 +141,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var conversation = new TConversation();
-        await conversation.FromUserAsync(prompt);
+        _ = await conversation.FromUserAsync(prompt);
 
         await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken))
         {
