@@ -380,7 +380,7 @@ internal static class ChatCompletion
 
         if (options.MaxOutputTokens.HasValue)
         {
-            requestObject.Add("max_tokens", options.MaxOutputTokens.Value);
+            requestObject.Add("max_completion_tokens", options.MaxOutputTokens.Value);
         }
 
         if (options.Seed.HasValue)
