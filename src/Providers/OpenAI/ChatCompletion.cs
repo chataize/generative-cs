@@ -423,6 +423,11 @@ internal static class ChatCompletion
             requestObject.Add("parallel_tool_calls", false);
         }
 
+        if (options.IsStoringOutputs)
+        {
+            requestObject.Add("store", true);
+        }
+
         if (options.StopWords != null && options.StopWords.Count > 0)
         {
             var stopArray = new JsonArray();

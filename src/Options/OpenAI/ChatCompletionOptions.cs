@@ -43,9 +43,11 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsParallelFunctionCallingOn { get; set; } = true;
 
-    public bool IsDebugMode { get; set; }
+    public bool IsStoringOutputs { get; set; }
 
     public bool IsTimeAware { get; set; }
+
+    public bool IsDebugMode { get; set; }
 
     public List<string> StopWords { get; set; } = [];
 
