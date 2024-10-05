@@ -79,7 +79,7 @@ internal static class MessageTools
         messages.AddRange(sortedMessages);
 
         var excessiveMessages = messageLimit.HasValue ? messages.Count - messageLimit : 0;
-        var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0) - characterLimit : 0;
+        var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0 + m.FunctionResult?.Value.Length ?? 0) - characterLimit : 0;
 
         var messagesToRemove = new List<TMessage>();
         foreach (var message in messages)
@@ -114,7 +114,7 @@ internal static class MessageTools
                 }
 
                 excessiveMessages--;
-                excessiveCharacters -= message.Content?.Length ?? 0;
+                excessiveCharacters -= message.Content?.Length ?? 0 + message.FunctionResult?.Value.Length ?? 0;
             }
         }
 
