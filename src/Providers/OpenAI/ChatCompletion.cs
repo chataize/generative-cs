@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
@@ -11,6 +12,12 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
+    private static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
+
     internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
@@ -90,7 +97,7 @@ internal static class ChatCompletion
                             else
                             {
                                 var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue) });
+                                var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
 
                                 await options.AddMessageCallback(message4);
                             }
@@ -273,7 +280,7 @@ internal static class ChatCompletion
                     else
                     {
                         var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue) });
+                        var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
 
                         await options.AddMessageCallback(message4);
                     }
@@ -352,7 +359,7 @@ internal static class ChatCompletion
                 var functionObject = new JsonObject
                 {
                     { "name", functionCall.Name },
-                    { "arguments", JsonSerializer.Serialize(functionCall.Arguments) }
+                    { "arguments", JsonSerializer.Serialize(functionCall.Arguments, JsonOptions) }
                 };
 
                 var toolCallObject = new JsonObject
@@ -373,7 +380,7 @@ internal static class ChatCompletion
             if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
-                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Value));
+                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Value, JsonOptions));
             }
 
             messagesArray.Add(messageObject);

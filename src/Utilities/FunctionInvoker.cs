@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace ChatAIze.GenerativeCS.Utilities;
@@ -6,6 +7,7 @@ internal static class FunctionInvoker
 {
     private static JsonSerializerOptions JsonOptions { get; } = new()
     {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
@@ -33,7 +35,7 @@ internal static class FunctionInvoker
                     {
                         if (!Enum.TryParse(parameter.ParameterType, stringValue, true, out var enumValue))
                         {
-                            return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." });
+                            return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." }, JsonOptions);
                         }
 
                         parsedArguments.Add(enumValue);
@@ -46,7 +48,7 @@ internal static class FunctionInvoker
                 }
                 catch
                 {
-                    return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." });
+                    return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." }, JsonOptions);
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != DBNull.Value)
@@ -55,7 +57,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return JsonSerializer.Serialize(new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." });
+                return JsonSerializer.Serialize(new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." }, JsonOptions);
             }
         }
 
@@ -73,9 +75,9 @@ internal static class FunctionInvoker
 
         if (invocationResult == null)
         {
-            return JsonSerializer.Serialize(new { IsSuccess = true });
+            return JsonSerializer.Serialize(new { IsSuccess = true }, JsonOptions);
         }
 
-        return JsonSerializer.Serialize(invocationResult);
+        return JsonSerializer.Serialize(invocationResult, JsonOptions);
     }
 }

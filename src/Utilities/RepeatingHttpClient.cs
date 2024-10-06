@@ -1,12 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class RepeatingHttpClient
 {
+    private static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
+
     private static readonly TimeSpan[] Delays = [
         TimeSpan.FromSeconds(1),
         TimeSpan.FromSeconds(3),
@@ -22,7 +29,7 @@ internal static class RepeatingHttpClient
         {
             try
             {
-                var requestContent = JsonSerializer.Serialize(value);
+                var requestContent = JsonSerializer.Serialize(value, JsonOptions);
                 using var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -63,7 +70,7 @@ internal static class RepeatingHttpClient
         {
             try
             {
-                var requestContent = JsonSerializer.Serialize(value);
+                var requestContent = JsonSerializer.Serialize(value, JsonOptions);
                 using var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
