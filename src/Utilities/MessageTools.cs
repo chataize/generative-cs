@@ -126,14 +126,23 @@ internal static class MessageTools
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
     {
-        var lastFunctionCallingMessage = messages.LastOrDefault(m => m.FunctionCalls.Count > 0);
-        if (lastFunctionCallingMessage == null)
+        var lastNonFunctionMessage = messages.LastOrDefault(m => m.Role == ChatRole.System || m.Role == ChatRole.User);
+        if (lastNonFunctionMessage == null)
         {
             return;
         }
 
-        var lastToolCallIds = lastFunctionCallingMessage.FunctionCalls.Select(fc => fc.ToolCallId).ToList();
-        messages.RemoveAll(m => m.FunctionCalls.Count > 0 && m.FunctionCalls != lastFunctionCallingMessage.FunctionCalls || m.FunctionResult != null && !lastToolCallIds.Contains(m.FunctionResult.ToolCallId));
+        var lastNonFunctionMessageIndex = messages.IndexOf(lastNonFunctionMessage);
+        for (var i = 0; i < lastNonFunctionMessageIndex; i++)
+        {
+            var currentMessage = messages[i];
+            if (currentMessage.FunctionCalls.Count > 0 || currentMessage.FunctionResult != null)
+            {
+                messages.RemoveAt(i);
+                i--;
+                lastNonFunctionMessageIndex--;
+            }
+        }
     }
 
     internal static void ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
