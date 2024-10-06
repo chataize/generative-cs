@@ -11,7 +11,7 @@ var options = new ChatCompletionOptions
     IsDebugMode = true
 };
 
-options.AddFunction("ShowMessage", (string content) => Console.WriteLine($"Message [{content}]"));
+options.AddFunction("CheckTemperature", (string city) => Random.Shared.Next(0, 100));
 
 while (true)
 {
