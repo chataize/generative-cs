@@ -56,9 +56,11 @@ internal static class ChatCompletion
         {
             var usage = responseDocument.RootElement.GetProperty("usage");
             var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
+            var cachedTokens = usage.GetProperty("prompt_tokens_details").GetProperty("cached_tokens").GetInt32();
             var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
 
             usageTracker.AddPromptTokens(promptTokens);
+            usageTracker.AddCachedTokens(cachedTokens);
             usageTracker.AddCompletionTokens(completionTokens);
         }
 
@@ -205,9 +207,11 @@ internal static class ChatCompletion
                 if (usage.ValueKind != JsonValueKind.Null)
                 {
                     var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
+                    var cachedTokens = usage.GetProperty("prompt_tokens_details").GetProperty("cached_tokens").GetInt32();
                     var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
 
                     usageTracker.AddPromptTokens(promptTokens);
+                    usageTracker.AddCachedTokens(cachedTokens);
                     usageTracker.AddCompletionTokens(completionTokens);
                 }
             }
