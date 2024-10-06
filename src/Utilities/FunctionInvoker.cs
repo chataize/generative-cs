@@ -11,7 +11,7 @@ internal static class FunctionInvoker
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<string> InvokeAsync(Delegate callback, string? arguments, CancellationToken cancellationToken = default)
+    internal static async ValueTask<string> InvokeAsync(Delegate callback, string? arguments, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
         using var argumentsDocument = arguments != null ? JsonDocument.Parse(arguments) : JsonDocument.Parse("{}");
@@ -62,6 +62,7 @@ internal static class FunctionInvoker
         }
 
         var invocationResult = callback.DynamicInvoke([.. parsedArguments]);
+
         if (invocationResult is Task task)
         {
             await task.ConfigureAwait(false);
@@ -70,6 +71,16 @@ internal static class FunctionInvoker
             if (taskResultProperty != null)
             {
                 invocationResult = taskResultProperty.GetValue(task);
+            }
+        }
+        else if (invocationResult is ValueTask valueTask)
+        {
+            await valueTask.ConfigureAwait(false);
+
+            var taskResultProperty = valueTask.GetType().GetProperty("Result");
+            if (taskResultProperty != null)
+            {
+                invocationResult = taskResultProperty.GetValue(valueTask);
             }
         }
 
