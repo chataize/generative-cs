@@ -30,14 +30,14 @@ internal static class MessageTools
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
     {
-        var firstMessage = new TMessage
+        var timeMessage = new TMessage
         {
             Role = ChatRole.System,
             Content = $"Current time: {currentTime}",
-            PinLocation = PinLocation.Begin
+            PinLocation = PinLocation.End
         };
 
-        messages.Insert(0, firstMessage);
+        messages.Add(timeMessage);
     }
 
     internal static void RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
@@ -131,7 +131,7 @@ internal static class MessageTools
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
     {
-        var lastNonFunctionMessage = messages.LastOrDefault(m => m.Role == ChatRole.System || m.Role == ChatRole.User);
+        var lastNonFunctionMessage = messages.LastOrDefault(m => m.Role == ChatRole.User);
         if (lastNonFunctionMessage == null)
         {
             return;

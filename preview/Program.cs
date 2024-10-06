@@ -8,6 +8,7 @@ var conversation = new ChatConversation();
 var options = new ChatCompletionOptions
 {
     IsStoringOutputs = true,
+    IsTimeAware = true,
     IsIgnoringPreviousFunctionCalls = true,
     IsDebugMode = true
 };
