@@ -47,6 +47,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsTimeAware { get; set; }
 
+    public bool IsIgnoringPreviousFunctionCalls { get; set; }
+
     public bool IsDebugMode { get; set; }
 
     public List<string> StopWords { get; set; } = [];

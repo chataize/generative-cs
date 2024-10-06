@@ -310,6 +310,12 @@ internal static class ChatCompletion
         }
 
         MessageTools.RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
+
+        if (options.IsIgnoringPreviousFunctionCalls)
+        {
+            MessageTools.RemovePreviousFunctionCalls<TMessage, TFunctionCall, TFunctionResult>(messages);
+        }
+
         MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
 
         var messagesArray = new JsonArray();

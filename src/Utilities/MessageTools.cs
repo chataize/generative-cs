@@ -121,6 +121,21 @@ internal static class MessageTools
         _ = messages.RemoveAll(messagesToRemove.Contains);
     }
 
+    internal static void RemovePreviousFunctionCalls<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
+    {
+        var lastFunctionCallingMessage = messages.LastOrDefault(m => m.FunctionCalls.Count > 0);
+        if (lastFunctionCallingMessage == null)
+        {
+            return;
+        }
+
+        var lastToolCallIds = lastFunctionCallingMessage.FunctionCalls.Select(fc => fc.ToolCallId).ToList();
+        messages.RemoveAll(m => m.FunctionCalls.Count > 0 && m.FunctionCalls != lastFunctionCallingMessage.FunctionCalls || m.FunctionResult != null && !lastToolCallIds.Contains(m.FunctionResult.ToolCallId));
+    }
+
     internal static void ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
