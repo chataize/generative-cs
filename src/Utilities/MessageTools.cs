@@ -33,7 +33,7 @@ internal static class MessageTools
         var timeMessage = new TMessage
         {
             Role = ChatRole.System,
-            Content = $"Current time: {currentTime}",
+            Content = $"Current Time: '{currentTime:dddd, MMMM d, yyyy, HH:mm}'.",
             PinLocation = PinLocation.End
         };
 
