@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Product>Generative CS</Product>
-    <Version>0.8.3</Version>
+    <Version>0.8.4</Version>
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2024</Copyright>
