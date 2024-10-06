@@ -78,8 +78,8 @@ internal static class MessageTools
         messages.Clear();
         messages.AddRange(sortedMessages);
 
-        var excessiveMessages = messageLimit.HasValue ? messages.Count - messageLimit : 0;
-        var excessiveCharacters = characterLimit.HasValue ? messages.Sum(m => m.Content?.Length ?? 0 + m.FunctionResult?.Value.Length ?? 0) - characterLimit : 0;
+        var excessiveMessages = messageLimit.HasValue ? messages.Count(m => m.Role != ChatRole.System) - messageLimit : 0;
+        var excessiveCharacters = characterLimit.HasValue ? messages.Where(m => m.Role != ChatRole.System).Sum(m => m.Content?.Length ?? 0 + m.FunctionResult?.Value.Length ?? 0) - characterLimit : 0;
 
         var messagesToRemove = new List<TMessage>();
         foreach (var message in messages)
@@ -87,6 +87,11 @@ internal static class MessageTools
             if (excessiveMessages <= 0 && excessiveCharacters <= 0)
             {
                 break;
+            }
+
+            if (message.Role == ChatRole.System)
+            {
+                continue;
             }
 
             if ((excessiveMessages >= 0 || excessiveCharacters >= 0) && message.PinLocation == PinLocation.None)
