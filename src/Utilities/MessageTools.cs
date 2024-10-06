@@ -127,9 +127,9 @@ internal static class MessageTools
     }
 
     internal static void RemovePreviousFunctionCalls<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages)
-        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
-        where TFunctionCall : IFunctionCall
-        where TFunctionResult : IFunctionResult
+    where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+    where TFunctionCall : IFunctionCall
+    where TFunctionResult : IFunctionResult
     {
         var lastNonFunctionMessage = messages.LastOrDefault(m => m.Role == ChatRole.System || m.Role == ChatRole.User);
         if (lastNonFunctionMessage == null)
@@ -138,14 +138,12 @@ internal static class MessageTools
         }
 
         var lastNonFunctionMessageIndex = messages.IndexOf(lastNonFunctionMessage);
-        for (var i = 0; i < lastNonFunctionMessageIndex; i++)
+        for (var i = lastNonFunctionMessageIndex - 1; i >= 0; i--)
         {
             var currentMessage = messages[i];
             if (currentMessage.FunctionCalls.Count > 0 || currentMessage.FunctionResult != null)
             {
                 messages.RemoveAt(i);
-                i--;
-                lastNonFunctionMessageIndex--;
             }
         }
     }
