@@ -11,7 +11,7 @@ var options = new ChatCompletionOptions
     IsDebugMode = true
 };
 
-options.AddFunction("Foo", (int number) => Console.WriteLine($"Bar [{number}]"));
+options.AddFunction("ShowMessage", (string content) => Console.WriteLine($"Message [{content}]"));
 
 while (true)
 {
