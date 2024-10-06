@@ -11,12 +11,17 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 internal static class ChatCompletion
 {
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
+        if (recursion >= 5)
+        {
+            throw new InvalidOperationException("Recursion limit reached (infinite loop detected).");
+        }
+
         options ??= new();
         httpClient ??= new();
 
@@ -99,7 +104,7 @@ internal static class ChatCompletion
                 }
             }
 
-            return await CompleteAsync(conversation, apiKey, options, usageTracker, httpClient, cancellationToken);
+            return await CompleteAsync(conversation, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken);
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
@@ -109,12 +114,17 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
+        if (recursion >= 5)
+        {
+            throw new InvalidOperationException("Recursion limit reached (infinite loop detected).");
+        }
+
         options ??= new();
         httpClient ??= new();
 
@@ -284,7 +294,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in StreamCompletionAsync(conversation, apiKey, options, usageTracker, httpClient, cancellationToken))
+            await foreach (var chunk in StreamCompletionAsync(conversation, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
             {
                 yield return chunk;
             }
