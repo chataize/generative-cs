@@ -97,9 +97,16 @@ internal static class ChatCompletion
                             else
                             {
                                 var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                                var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
-
-                                await options.AddMessageCallback(message4);
+                                if (functionValue is string stringValue)
+                                {
+                                    var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = stringValue });
+                                    await options.AddMessageCallback(message4);
+                                }
+                                else
+                                {
+                                    var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
+                                    await options.AddMessageCallback(message4);
+                                }
                             }
                         }
                     }
@@ -280,9 +287,16 @@ internal static class ChatCompletion
                     else
                     {
                         var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
-                        var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
-
-                        await options.AddMessageCallback(message4);
+                        if (functionValue is string stringValue)
+                        {
+                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = stringValue });
+                            await options.AddMessageCallback(message4);
+                        }
+                        else
+                        {
+                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
+                            await options.AddMessageCallback(message4);
+                        }
                     }
                 }
             }
@@ -359,7 +373,7 @@ internal static class ChatCompletion
                 var functionObject = new JsonObject
                 {
                     { "name", functionCall.Name },
-                    { "arguments", JsonSerializer.Serialize(functionCall.Arguments, JsonOptions) }
+                    { "arguments", functionCall.Arguments }
                 };
 
                 var toolCallObject = new JsonObject
@@ -380,7 +394,7 @@ internal static class ChatCompletion
             if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
-                messageObject.Add("content", JsonSerializer.Serialize(message.FunctionResult.Value, JsonOptions));
+                messageObject.Add("content", message.FunctionResult.Value);
             }
 
             messagesArray.Add(messageObject);

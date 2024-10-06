@@ -11,7 +11,8 @@ var options = new ChatCompletionOptions
     IsDebugMode = true
 };
 
-options.AddFunction("CheckTemperature", (string city) => Random.Shared.Next(0, 100));
+options.AddFunction("CheckCityTemperature", (string city) => Random.Shared.Next(0, 100));
+options.AddFunction("CheckCountryTemperature", (string city) => new { Temp = Random.Shared.Next(0, 100) });
 
 while (true)
 {

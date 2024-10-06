@@ -35,20 +35,20 @@ internal static class FunctionInvoker
                     {
                         if (!Enum.TryParse(parameter.ParameterType, stringValue, true, out var enumValue))
                         {
-                            return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'." }, JsonOptions);
+                            return $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'.";
                         }
 
                         parsedArguments.Add(enumValue);
                     }
                     else
                     {
-                        var parsedValue = JsonSerializer.Deserialize(rawValue, parameter.ParameterType, JsonOptions);
+                        var parsedValue = JsonSerializer.Deserialize(rawValue, parameter.ParameterType);
                         parsedArguments.Add(parsedValue);
                     }
                 }
                 catch
                 {
-                    return JsonSerializer.Serialize(new { Error = $"Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'." }, JsonOptions);
+                    return $"Error: Value '{stringValue}' is not valid for parameter '{parameter.Name}'. Expected type: '{parameter.ParameterType.Name}'.";
                 }
             }
             else if (parameter.IsOptional && parameter.DefaultValue != DBNull.Value)
@@ -57,7 +57,7 @@ internal static class FunctionInvoker
             }
             else
             {
-                return JsonSerializer.Serialize(new { Error = $"You must provide a value for the required parameter '{parameter.Name}'." }, JsonOptions);
+                return $"Error: You must provide a value for the required parameter '{parameter.Name}'.";
             }
         }
 
@@ -75,7 +75,12 @@ internal static class FunctionInvoker
 
         if (invocationResult == null)
         {
-            return JsonSerializer.Serialize(new { IsSuccess = true }, JsonOptions);
+            return "OK: Function executed successfully.";
+        }
+
+        if (invocationResult is string stringResult)
+        {
+            return stringResult;
         }
 
         return JsonSerializer.Serialize(invocationResult, JsonOptions);
