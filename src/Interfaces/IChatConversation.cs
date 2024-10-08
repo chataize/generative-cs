@@ -11,17 +11,17 @@ public interface IChatConversation<TMessage, TFunctionCall, TFunctionResult>
 
     ICollection<TMessage> Messages { get; }
 
-    Task<TMessage> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromSystemAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromUserAsync(string author, string message, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromUserAsync(string author, string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromChatbotAsync(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromChatbotAsync(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromChatbotAsync(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromChatbotAsync(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None);
 
-    Task<TMessage> FromFunctionAsync(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
+    ValueTask<TMessage> FromFunctionAsync(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None);
 }
