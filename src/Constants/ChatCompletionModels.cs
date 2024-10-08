@@ -67,12 +67,28 @@ public static class ChatCompletionModels
 
     public static class Gemini
     {
+        public const string Gemini15Pro002 = "gemini-1.5-pro-002";
+
+        public const string Gemini15Pro = "gemini-1.5-pro";
+
+        public const string Gemini15Flash = "gemini-1.5-flash";
+
+        public const string Gemini15Flash002 = "gemini-1.5-flash-002";
+
+        public const string Gemini15Flash8B = "gemini-1.5-flash-8b";
+
+        public const string Gemma22B = "gemma-2-2b-it";
+
+        public const string Gemma29B = "gemma-2-9b-it";
+
+        public const string Gemma227B = "gemma-2-27b-it";
+
+        public const string Gemini15ProExperimental0827 = "gemini-1.5-pro-exp-0827";
+
+        public const string Gemini15FlashExperimental0827 = "gemini-1.5-flash-exp-0827";
+
+        public const string Gemini15Flash8BExperimental0924 = "gemini-1.5-flash-8b-exp-0924";
+
         public const string Gemini10Pro = "gemini-1.0-pro";
-
-        public const string Gemini15Flash = "gemini-1.5-flash-latest";
-
-        public const string Gemini15Pro = "gemini-1.5-pro-latest";
-
-        public const string Gemini10Pro001 = "gemini-1.0-pro-001";
     }
 }
