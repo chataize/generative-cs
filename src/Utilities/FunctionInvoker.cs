@@ -84,7 +84,7 @@ internal static class FunctionInvoker
             }
         }
 
-        if (invocationResult == null)
+        if (invocationResult is null)
         {
             return "OK: Function executed successfully.";
         }

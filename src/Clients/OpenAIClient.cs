@@ -293,7 +293,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public bool RemoveFunction(string name)
     {
         var function = DefaultCompletionOptions.Functions.LastOrDefault(f => f.Name == name);
-        if (function == null)
+        if (function is null)
         {
             return false;
         }
@@ -304,7 +304,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     public bool RemoveFunction(Delegate callback)
     {
         var function = DefaultCompletionOptions.Functions.LastOrDefault(f => f.Callback == callback);
-        if (function == null)
+        if (function is null)
         {
             return false;
         }

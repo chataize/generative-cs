@@ -132,7 +132,7 @@ internal static class MessageTools
     where TFunctionResult : IFunctionResult
     {
         var lastNonFunctionMessage = messages.LastOrDefault(m => m.Role == ChatRole.User);
-        if (lastNonFunctionMessage == null)
+        if (lastNonFunctionMessage is null)
         {
             return;
         }

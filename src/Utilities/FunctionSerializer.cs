@@ -75,7 +75,7 @@ internal static class FunctionSerializer
 
         var description = function.Description;
 
-        if (description == null && function.Callback != null)
+        if (description is null && function.Callback != null)
         {
             description = GetDescription(function.Callback.Method);
         }
