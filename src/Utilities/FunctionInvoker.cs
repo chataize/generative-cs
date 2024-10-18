@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using ChatAIze.GenerativeCS.Extensions;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
@@ -24,7 +25,7 @@ internal static class FunctionInvoker
                 continue;
             }
 
-            if (argumentsDocument.RootElement.TryGetProperty(parameter.Name!, out var argument) && argument.ValueKind != JsonValueKind.Null)
+            if (argumentsDocument.RootElement.TryGetProperty(parameter.Name!.ToSnakeCase(), out var argument) && argument.ValueKind != JsonValueKind.Null)
             {
                 var rawValue = argument.GetRawText();
                 var stringValue = argument.ValueKind == JsonValueKind.String ? argument.GetString() : rawValue;
@@ -33,7 +34,7 @@ internal static class FunctionInvoker
                 {
                     if (parameter.ParameterType.IsEnum)
                     {
-                        if (!Enum.TryParse(parameter.ParameterType, stringValue, true, out var enumValue))
+                        if (!Enum.TryParse(parameter.ParameterType, stringValue!.Replace("_", ""), true, out var enumValue))
                         {
                             return $"Value '{stringValue}' is not a valid enum member for parameter '{parameter.Name}'.";
                         }
