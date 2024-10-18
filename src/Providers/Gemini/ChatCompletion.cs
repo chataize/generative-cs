@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
@@ -10,6 +11,12 @@ namespace ChatAIze.GenerativeCS.Providers.Gemini;
 
 public static class ChatCompletion
 {
+    private static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
+
     internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
         where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
@@ -115,7 +122,7 @@ public static class ChatCompletion
                         else
                         {
                             var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = JsonSerializer.Serialize(functionValue) });
+                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
 
                             await options.AddMessageCallback(message4);
                         }
@@ -226,7 +233,7 @@ public static class ChatCompletion
                 var responseObject = new JsonObject
                 {
                     { "name", message.FunctionResult.Name },
-                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Value) }
+                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Value, JsonOptions) }
                 };
 
                 var functionResponseObject = new JsonObject
