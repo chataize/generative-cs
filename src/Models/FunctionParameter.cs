@@ -7,20 +7,20 @@ public record FunctionParameter
     public FunctionParameter() { }
 
     [SetsRequiredMembers]
-    public FunctionParameter(Type type, string name, bool isOptional = false)
+    public FunctionParameter(Type type, string name, bool IsRequired = true)
     {
         Type = type;
         Name = name;
-        IsOptional = isOptional;
+        this.IsRequired = IsRequired;
     }
 
     [SetsRequiredMembers]
-    public FunctionParameter(Type type, string name, string? description, bool isOptional = false)
+    public FunctionParameter(Type type, string name, string? description, bool isRequired = true)
     {
         Type = type;
         Name = name;
         Description = description;
-        IsOptional = isOptional;
+        IsRequired = isRequired;
     }
 
     public required Type Type { get; set; }
@@ -29,5 +29,5 @@ public record FunctionParameter
 
     public string? Description { get; set; }
 
-    public bool IsOptional { get; set; } = true;
+    public bool IsRequired { get; set; } = true;
 }

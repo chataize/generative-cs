@@ -25,7 +25,7 @@ internal static class FunctionSerializer
 
                 propertiesObject.Add(parameter.Name, propertyObject);
 
-                if (!parameter.IsOptional)
+                if (parameter.IsRequired)
                 {
                     requiredArray.Add(parameter.Name);
                 }
