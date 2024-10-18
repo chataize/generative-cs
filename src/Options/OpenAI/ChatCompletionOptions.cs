@@ -43,6 +43,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsParallelFunctionCallingOn { get; set; } = true;
 
+    public bool IsStrictFunctionCallingOn { get; set; }
+
     public bool IsStoringOutputs { get; set; }
 
     public bool IsTimeAware { get; set; }

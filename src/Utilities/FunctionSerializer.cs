@@ -8,7 +8,7 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 internal static class FunctionSerializer
 {
-    internal static JsonObject SerializeFunction(ChatFunction function, bool isParallelFunctionCallingOn = false)
+    internal static JsonObject SerializeFunction(ChatFunction function, bool isStrictModeOn = false)
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
@@ -50,7 +50,7 @@ internal static class FunctionSerializer
 
                 propertiesObject.Add(parameterName, propertyObject);
 
-                if (!parameter.IsOptional || IsRequired(parameter))
+                if (!parameter.IsOptional || isStrictModeOn || IsRequired(parameter))
                 {
                     requiredArray.Add(parameterName);
                 }
@@ -86,7 +86,7 @@ internal static class FunctionSerializer
             functionObject.Add("description", description);
         }
 
-        if (allRequired && !isParallelFunctionCallingOn)
+        if (allRequired && isStrictModeOn)
         {
             functionObject.Add("strict", true);
         }

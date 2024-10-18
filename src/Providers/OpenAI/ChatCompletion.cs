@@ -459,7 +459,7 @@ internal static class ChatCompletion
             requestObject.Add("response_format", responseFormatObject);
         }
 
-        if (!options.IsParallelFunctionCallingOn)
+        if (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn)
         {
             requestObject.Add("parallel_tool_calls", false);
         }
@@ -485,7 +485,7 @@ internal static class ChatCompletion
             var toolsArray = new JsonArray();
             foreach (var function in options.Functions)
             {
-                var functionObject = FunctionSerializer.SerializeFunction(function, options.IsParallelFunctionCallingOn);
+                var functionObject = FunctionSerializer.SerializeFunction(function, options.IsStrictFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
                     { "type", "function" },
