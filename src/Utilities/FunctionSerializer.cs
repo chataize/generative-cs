@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Models;
 namespace ChatAIze.GenerativeCS.Utilities;
 
-internal static class FunctionSerializer
+public static class SchemaSerializer
 {
     internal static JsonObject SerializeFunction(ChatFunction function, bool isStrictModeOn = false)
     {
@@ -99,6 +99,23 @@ internal static class FunctionSerializer
         return functionObject;
     }
 
+    public static JsonObject SerializeResponseFormat(Type type)
+    {
+        var jsonSchemaObject = new JsonObject
+        {
+            { "name", type.Name },
+            { "schema", SerializeProperty(type) }
+        };
+
+        var formatObject = new JsonObject
+        {
+            { "type", "json_schema" },
+            {"json_schema", jsonSchemaObject }
+        };
+
+        return formatObject;
+    }
+
     private static JsonObject SerializeParameter(ParameterInfo parameter)
     {
         var parameterType = parameter.ParameterType;
@@ -157,12 +174,17 @@ internal static class FunctionSerializer
             if (properties.Any())
             {
                 var propertiesObject = new JsonObject();
+                var requiredArray = new JsonArray();
+
                 foreach (var property in properties)
                 {
                     propertiesObject.Add(property.Name, SerializeProperty(property.PropertyType));
+                    requiredArray.Add(property.Name);
                 }
 
                 propertyObject.Add("properties", propertiesObject);
+                propertyObject.Add("required", requiredArray);
+                propertyObject.Add("additionalProperties", false);
             }
         }
 

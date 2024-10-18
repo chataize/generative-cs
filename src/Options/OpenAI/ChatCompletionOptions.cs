@@ -39,6 +39,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public double? PresencePenalty { get; set; }
 
+    public Type? ResponseType { get; set; }
+
     public bool IsJsonMode { get; set; }
 
     public bool IsParallelFunctionCallingOn { get; set; } = true;

@@ -449,7 +449,11 @@ internal static class ChatCompletion
             requestObject.Add("presence_penalty", options.PresencePenalty.Value);
         }
 
-        if (options.IsJsonMode)
+        if (options.ResponseType != null)
+        {
+            requestObject.Add("response_format", SchemaSerializer.SerializeResponseFormat(options.ResponseType));
+        }
+        else if (options.IsJsonMode)
         {
             var responseFormatObject = new JsonObject
             {
@@ -459,7 +463,7 @@ internal static class ChatCompletion
             requestObject.Add("response_format", responseFormatObject);
         }
 
-        if (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn)
+        if (options.Functions.Count > 0 && (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn))
         {
             requestObject.Add("parallel_tool_calls", false);
         }
@@ -485,7 +489,7 @@ internal static class ChatCompletion
             var toolsArray = new JsonArray();
             foreach (var function in options.Functions)
             {
-                var functionObject = FunctionSerializer.SerializeFunction(function, options.IsStrictFunctionCallingOn);
+                var functionObject = SchemaSerializer.SerializeFunction(function, options.IsStrictFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
                     { "type", "function" },
