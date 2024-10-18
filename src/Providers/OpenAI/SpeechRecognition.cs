@@ -50,12 +50,12 @@ internal static class SpeechRecognition
             { new StringContent(options.Model), "model" }
         };
 
-        if (!string.IsNullOrEmpty(options.Language))
+        if (!string.IsNullOrWhiteSpace(options.Language))
         {
             content.Add(new StringContent(options.Language), "language");
         }
 
-        if (!string.IsNullOrEmpty(options.Prompt))
+        if (!string.IsNullOrWhiteSpace(options.Prompt))
         {
             content.Add(new StringContent(options.Prompt), "prompt");
         }
@@ -84,7 +84,7 @@ internal static class SpeechRecognition
             { new StringContent(options.Model), "model" }
         };
 
-        if (!string.IsNullOrEmpty(options.Prompt))
+        if (!string.IsNullOrWhiteSpace(options.Prompt))
         {
             content.Add(new StringContent(options.Prompt), "prompt");
         }

@@ -103,7 +103,7 @@ internal static class MessageTools
                 {
                     foreach (var functionCall in message.FunctionCalls)
                     {
-                        if (string.IsNullOrEmpty(functionCall.ToolCallId))
+                        if (string.IsNullOrWhiteSpace(functionCall.ToolCallId))
                         {
                             continue;
                         }

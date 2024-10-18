@@ -81,7 +81,7 @@ internal static class FunctionSerializer
             description = GetDescription(function.Callback.Method);
         }
 
-        if (!string.IsNullOrEmpty(description))
+        if (!string.IsNullOrWhiteSpace(description))
         {
             functionObject.Add("description", description);
         }

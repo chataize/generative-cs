@@ -221,7 +221,7 @@ public static class ChatCompletion
 
                 partObject.Add("functionCall", functionCallObject);
             }
-            else if (message.FunctionResult != null && !string.IsNullOrEmpty(message.FunctionResult.Name))
+            else if (message.FunctionResult != null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
                 var responseObject = new JsonObject
                 {
