@@ -485,7 +485,7 @@ internal static class ChatCompletion
             var toolsArray = new JsonArray();
             foreach (var function in options.Functions)
             {
-                var functionObject = FunctionSerializer.SerializeFunction(function);
+                var functionObject = FunctionSerializer.SerializeFunction(function, options.IsParallelFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
                     { "type", "function" },

@@ -10,6 +10,7 @@ var options = new ChatCompletionOptions
     IsStoringOutputs = true,
     IsTimeAware = true,
     IsIgnoringPreviousFunctionCalls = true,
+    IsParallelFunctionCallingOn = false,
     IsDebugMode = true
 };
 
