@@ -74,8 +74,6 @@
         PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ChatAIze.GenerativeCS">
-      <HintPath>../src/bin/Debug/net8.0/ChatAIze.GenerativeCS.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="../src/ChatAIze.GenerativeCS.csproj" />
   </ItemGroup>
 </Project>
