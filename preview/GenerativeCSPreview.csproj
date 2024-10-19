@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Title>Generative CS Preview</Title>
     <Product>Generative CS</Product>
     <Version>0.9.1</Version>
     <Company>ChatAIze</Company>
