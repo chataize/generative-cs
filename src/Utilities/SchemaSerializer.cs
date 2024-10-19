@@ -62,12 +62,12 @@ public static class SchemaSerializer
         {
             { "type", "object" },
             { "properties", propertiesObject },
+            { "additionalProperties", false }
         };
 
         if (requiredArray.Count != 0)
         {
             parametersObject.Add("required", requiredArray);
-            parametersObject.Add("additionalProperties", false);
         }
 
         var functionObject = new JsonObject
@@ -111,7 +111,7 @@ public static class SchemaSerializer
         var formatObject = new JsonObject
         {
             { "type", "json_schema" },
-            {"json_schema", jsonSchemaObject }
+            { "json_schema", jsonSchemaObject }
         };
 
         return formatObject;
