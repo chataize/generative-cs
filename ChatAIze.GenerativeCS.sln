@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerativeCS", "src\GenerativeCS.csproj", "{0A709B5B-267E-4FFA-B510-AF12D0526186}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatAIze.GenerativeCS", "src\ChatAIze.GenerativeCS.csproj", "{0A709B5B-267E-4FFA-B510-AF12D0526186}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerativeCSPreview", "preview\GenerativeCSPreview.csproj", "{E366C997-62D1-41D8-8BAF-1E7C5D36CA3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatAIze.GenerativeCS.Preview", "preview\ChatAIze.GenerativeCS.Preview.csproj", "{E366C997-62D1-41D8-8BAF-1E7C5D36CA3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
