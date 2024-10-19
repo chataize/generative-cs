@@ -105,7 +105,8 @@ public static class SchemaSerializer
         var jsonSchemaObject = new JsonObject
         {
             { "name", type.Name.ToSnakeCase() },
-            { "schema", SerializeProperty(type) }
+            { "schema", SerializeProperty(type) },
+            { "strict", true },
         };
 
         var formatObject = new JsonObject
