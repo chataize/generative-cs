@@ -33,7 +33,7 @@ public static class SchemaSerializer
                     var enumValuesArray = new JsonArray();
                     foreach (var enumValue in parameter.EnumValues)
                     {
-                        enumValuesArray.Add(enumValue);
+                        enumValuesArray.Add(enumValue.ToSnakeCase());
                     }
 
                     propertyObject.Add("enum", enumValuesArray);
