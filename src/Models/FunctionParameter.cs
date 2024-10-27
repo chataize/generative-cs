@@ -29,5 +29,7 @@ public record FunctionParameter
 
     public string? Description { get; set; }
 
+    public List<string> EnumValues { get; set; } = [];
+
     public bool IsRequired { get; set; } = true;
 }

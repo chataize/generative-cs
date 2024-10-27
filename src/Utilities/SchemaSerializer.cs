@@ -20,9 +20,23 @@ public static class SchemaSerializer
             foreach (var parameter in function.Parameters)
             {
                 var propertyObject = SerializeProperty(parameter.Type);
+
                 if (parameter.Description != null)
                 {
                     propertyObject.Add("description", parameter.Description);
+                }
+
+                if (parameter.EnumValues.Count > 0)
+                {
+                    propertiesObject.Remove("enum");
+
+                    var enumValuesArray = new JsonArray();
+                    foreach (var enumValue in parameter.EnumValues)
+                    {
+                        enumValuesArray.Add(enumValue);
+                    }
+
+                    propertyObject.Add("enum", enumValuesArray);
                 }
 
                 propertiesObject.Add(parameter.Name.ToSnakeCase(), propertyObject);
