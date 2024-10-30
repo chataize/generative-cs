@@ -154,7 +154,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool RemoveFunction(string name)
     {
-        var function = Functions.LastOrDefault(f => f.Name == name);
+        var function = Functions.FirstOrDefault(f => f.Name == name);
         if (function is null)
         {
             return false;
@@ -165,7 +165,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool RemoveFunction(Delegate callback)
     {
-        var function = Functions.LastOrDefault(f => f.Callback == callback);
+        var function = Functions.FirstOrDefault(f => f.Callback == callback);
         if (function is null)
         {
             return false;
