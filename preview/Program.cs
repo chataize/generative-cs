@@ -14,8 +14,8 @@ var options = new ChatCompletionOptions
     IsDebugMode = true
 };
 
-options.AddFunction("CheckCityTemperature", (string city) => Random.Shared.Next(0, 100));
-options.AddFunction("CheckCountryTemperature", async (string country) => {
+options.AddFunction("Check City Temperature", (string city) => Random.Shared.Next(0, 100));
+options.AddFunction("Check Country Temperature", async (string country) => {
     await Task.Delay(5000);
     return new { Temp = Random.Shared.Next(0, 100) };
 });

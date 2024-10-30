@@ -1,6 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using ChatAIze.GenerativeCS.Extensions;
+using ChatAIze.Utilities;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
@@ -25,7 +25,7 @@ internal static class FunctionInvoker
                 continue;
             }
 
-            if (argumentsDocument.RootElement.TryGetProperty(parameter.Name!.ToSnakeCase(), out var argument) && argument.ValueKind != JsonValueKind.Null)
+            if (argumentsDocument.RootElement.TryGetProperty(parameter.Name!.ToSnakeLower(), out var argument) && argument.ValueKind != JsonValueKind.Null)
             {
                 var rawValue = argument.GetRawText();
                 var stringValue = argument.ValueKind == JsonValueKind.String ? argument.GetString() : rawValue;

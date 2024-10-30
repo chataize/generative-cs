@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using ChatAIze.GenerativeCS.Extensions;
 using ChatAIze.GenerativeCS.Models;
+using ChatAIze.Utilities;
 namespace ChatAIze.GenerativeCS.Utilities;
 
 public static class SchemaSerializer
@@ -33,17 +33,17 @@ public static class SchemaSerializer
                     var enumValuesArray = new JsonArray();
                     foreach (var enumValue in parameter.EnumValues)
                     {
-                        enumValuesArray.Add(enumValue.ToSnakeCase());
+                        enumValuesArray.Add(enumValue.ToSnakeLower());
                     }
 
                     propertyObject.Add("enum", enumValuesArray);
                 }
 
-                propertiesObject.Add(parameter.Name.ToSnakeCase(), propertyObject);
+                propertiesObject.Add(parameter.Name.ToSnakeLower(), propertyObject);
 
                 if (parameter.IsRequired)
                 {
-                    requiredArray.Add(parameter.Name.ToSnakeCase());
+                    requiredArray.Add(parameter.Name.ToSnakeLower());
                 }
                 else
                 {
@@ -60,7 +60,7 @@ public static class SchemaSerializer
                     continue;
                 }
 
-                var parameterName = parameter.Name!.ToSnakeCase();
+                var parameterName = parameter.Name!.ToSnakeLower();
                 var propertyObject = SerializeParameter(parameter);
 
                 propertiesObject.Add(parameterName, propertyObject);
@@ -86,7 +86,7 @@ public static class SchemaSerializer
 
         var functionObject = new JsonObject
         {
-            { "name", function.Name.ToSnakeCase() }
+            { "name", function.Name.ToSnakeLower() }
         };
 
         var description = function.Description;
@@ -118,7 +118,7 @@ public static class SchemaSerializer
     {
         var jsonSchemaObject = new JsonObject
         {
-            { "name", type.Name.ToSnakeCase() },
+            { "name", type.Name.ToSnakeLower() },
             { "schema", SerializeProperty(type) },
             { "strict", true },
         };
@@ -156,7 +156,7 @@ public static class SchemaSerializer
         var (typeName, typeDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
         {
-            { "type", typeName.ToSnakeCase() }
+            { "type", typeName.ToSnakeLower() }
         };
 
         if (typeDescription != null)
@@ -169,7 +169,7 @@ public static class SchemaSerializer
             var membersArray = new JsonArray();
             foreach (var enumMember in Enum.GetNames(propertyType))
             {
-                membersArray.Add(enumMember.ToSnakeCase());
+                membersArray.Add(enumMember.ToSnakeLower());
             }
 
             propertyObject.Add("enum", membersArray);
@@ -194,7 +194,7 @@ public static class SchemaSerializer
 
                 foreach (var property in properties)
                 {
-                    var propertyName = property.Name.ToSnakeCase();
+                    var propertyName = property.Name.ToSnakeLower();
 
                     propertiesObject.Add(propertyName, SerializeProperty(property.PropertyType));
                     requiredArray.Add(propertyName);

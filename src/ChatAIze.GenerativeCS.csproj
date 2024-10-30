@@ -82,5 +82,8 @@
     <PackageReference
         Include="Microsoft.Extensions.Http"
         Version="8.0.1" />
+    <PackageReference
+        Include="ChatAIze.Utilities"
+        Version="0.1.1" />
   </ItemGroup>
 </Project>

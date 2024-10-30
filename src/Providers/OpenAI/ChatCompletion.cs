@@ -4,10 +4,10 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.GenerativeCS.Enums;
-using ChatAIze.GenerativeCS.Extensions;
 using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Utilities;
+using ChatAIze.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
@@ -80,7 +80,7 @@ internal static class ChatCompletion
                     var message1 = await conversation.FromChatbotAsync(new TFunctionCall { ToolCallId = toolCallId, Name = functionName, Arguments = functionArguments });
                     await options.AddMessageCallback(message1);
 
-                    var function = options.Functions.LastOrDefault(f => f.Name.ToSnakeCase().Equals(functionName, StringComparison.InvariantCultureIgnoreCase));
+                    var function = options.Functions.LastOrDefault(f => f.Name.NormalizedEquals(functionName));
                     if (function != null)
                     {
                         if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
@@ -272,7 +272,7 @@ internal static class ChatCompletion
 
         foreach (var functionCall in functionCalls)
         {
-            var function = options.Functions.LastOrDefault(f => f.Name.Equals(functionCall.Name, StringComparison.InvariantCultureIgnoreCase));
+            var function = options.Functions.LastOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
             if (function != null)
             {
                 if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
