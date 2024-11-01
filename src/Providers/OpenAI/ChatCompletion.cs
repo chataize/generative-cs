@@ -82,7 +82,7 @@ internal static class ChatCompletion
                     var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
                     if (function != null)
                     {
-                        if (function.RequiresConfirmation && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
+                        if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
                             var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                             await options.AddMessageCallback(message2);
@@ -274,7 +274,7 @@ internal static class ChatCompletion
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
             if (function != null)
             {
-                if (function.RequiresConfirmation && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
+                if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
                     var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                     await options.AddMessageCallback(message2);

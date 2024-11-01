@@ -57,7 +57,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public List<string> StopWords { get; set; } = [];
 
-    public List<ChatFunction> Functions { get; set; } = [];
+    public List<IChatFunction> Functions { get; set; } = [];
 
     public Func<string?>? SystemMessageCallback { get; set; } = null;
 
@@ -72,14 +72,14 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
         Functions.Add(function);
     }
 
-    public void AddFunction(string name, bool requiresConfirmation = false)
+    public void AddFunction(string name, bool requiresDoubleCheck = false)
     {
-        Functions.Add(new ChatFunction(name, requiresConfirmation));
+        Functions.Add(new ChatFunction(name, requiresDoubleCheck));
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation = false)
+    public void AddFunction(string name, string? description, bool requiresDoubleCheck = false)
     {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation));
+        Functions.Add(new ChatFunction(name, description, requiresDoubleCheck));
     }
 
     public void AddFunction(Delegate callback)
@@ -92,12 +92,12 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
         Functions.Add(new ChatFunction(name, callback));
     }
 
-    public void AddFunction(string name, IEnumerable<FunctionParameter> parameters)
+    public void AddFunction(string name, ICollection<IFunctionParameter> parameters)
     {
         Functions.Add(new ChatFunction(name, parameters));
     }
 
-    public void AddFunction(string name, params FunctionParameter[] parameters)
+    public void AddFunction(string name, params IFunctionParameter[] parameters)
     {
         Functions.Add(new ChatFunction(name, parameters));
     }
@@ -107,47 +107,47 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
         Functions.Add(new ChatFunction(name, description, callback));
     }
 
-    public void AddFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
+    public void AddFunction(string name, string? description, ICollection<IFunctionParameter> parameters)
     {
         Functions.Add(new ChatFunction(name, description, parameters));
     }
 
-    public void AddFunction(string name, string? description, params FunctionParameter[] parameters)
+    public void AddFunction(string name, string? description, params IFunctionParameter[] parameters)
     {
         Functions.Add(new ChatFunction(name, description, parameters));
     }
 
-    public void AddFunction(string name, bool requiresConfirmation, Delegate callback)
+    public void AddFunction(string name, bool requiresDoubleCheck, Delegate callback)
     {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, callback));
+        Functions.Add(new ChatFunction(name, requiresDoubleCheck, callback));
     }
 
-    public void AddFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    public void AddFunction(string name, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
     {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+        Functions.Add(new ChatFunction(name, requiresDoubleCheck, parameters));
     }
 
-    public void AddFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
+    public void AddFunction(string name, bool requiresDoubleCheck, params IFunctionParameter[] parameters)
     {
-        Functions.Add(new ChatFunction(name, requiresConfirmation, parameters));
+        Functions.Add(new ChatFunction(name, requiresDoubleCheck, parameters));
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation, Delegate callback)
+    public void AddFunction(string name, string? description, bool requiresDoubleCheck, Delegate callback)
     {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, callback));
+        Functions.Add(new ChatFunction(name, description, requiresDoubleCheck, callback));
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    public void AddFunction(string name, string? description, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
     {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
+        Functions.Add(new ChatFunction(name, description, requiresDoubleCheck, parameters));
     }
 
-    public void AddFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
+    public void AddFunction(string name, string? description, bool requiresDoubleCheck, params IFunctionParameter[] parameters)
     {
-        Functions.Add(new ChatFunction(name, description, requiresConfirmation, parameters));
+        Functions.Add(new ChatFunction(name, description, requiresDoubleCheck, parameters));
     }
 
-    public bool RemoveFunction(ChatFunction function)
+    public bool RemoveFunction(IChatFunction function)
     {
         return Functions.Remove(function);
     }

@@ -1,26 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatFunction
+public record ChatFunction : IChatFunction
 {
     public ChatFunction() { }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation = false)
+    public ChatFunction(string name, bool requiresDoubleCheck = false)
     {
         Name = name;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = [];
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation = false)
+    public ChatFunction(string name, string? description, bool requiresDoubleCheck = false)
     {
         Name = name;
         Description = description;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = [];
     }
 
@@ -39,14 +40,14 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, IEnumerable<FunctionParameter> parameters)
+    public ChatFunction(string name, ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Parameters = parameters;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, params FunctionParameter[] parameters)
+    public ChatFunction(string name, params IFunctionParameter[] parameters)
     {
         Name = name;
         Parameters = parameters;
@@ -61,7 +62,7 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, IEnumerable<FunctionParameter> parameters)
+    public ChatFunction(string name, string? description, ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Description = description;
@@ -77,53 +78,53 @@ public record ChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation, Delegate callback)
+    public ChatFunction(string name, bool requiresDoubleCheck, Delegate callback)
     {
         Name = name;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Callback = callback;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    public ChatFunction(string name, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
     {
         Name = name;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = parameters;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresConfirmation, params FunctionParameter[] parameters)
+    public ChatFunction(string name, bool requiresDoubleCheck, params FunctionParameter[] parameters)
     {
         Name = name;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = parameters;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation, Delegate callback)
+    public ChatFunction(string name, string? description, bool requiresDoubleCheck, Delegate callback)
     {
         Name = name;
         Description = description;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Callback = callback;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation, IEnumerable<FunctionParameter> parameters)
+    public ChatFunction(string name, string? description, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Description = description;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = parameters;
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresConfirmation, params FunctionParameter[] parameters)
+    public ChatFunction(string name, string? description, bool requiresDoubleCheck, params FunctionParameter[] parameters)
     {
         Name = name;
         Description = description;
-        RequiresConfirmation = requiresConfirmation;
+        RequiresDoubleCheck = requiresDoubleCheck;
         Parameters = parameters;
     }
 
@@ -131,9 +132,9 @@ public record ChatFunction
 
     public string? Description { get; set; }
 
-    public bool RequiresConfirmation { get; set; }
+    public bool RequiresDoubleCheck { get; set; }
 
-    public IEnumerable<FunctionParameter>? Parameters { get; set; }
+    public ICollection<IFunctionParameter> Parameters { get; set; } = [];
 
     public Delegate? Callback { get; set; }
 }

@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using ChatAIze.Abstractions.Chat;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record FunctionParameter
+public record FunctionParameter : IFunctionParameter
 {
     public FunctionParameter() { }
 
@@ -29,7 +30,7 @@ public record FunctionParameter
 
     public string? Description { get; set; }
 
-    public List<string> EnumValues { get; set; } = [];
+    public ICollection<string> EnumValues { get; set; } = [];
 
     public bool IsRequired { get; set; } = true;
 }

@@ -3,13 +3,14 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using ChatAIze.GenerativeCS.Models;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.Utilities;
+
 namespace ChatAIze.GenerativeCS.Utilities;
 
 public static class SchemaSerializer
 {
-    internal static JsonObject SerializeFunction(ChatFunction function, bool isStrictModeOn = false)
+    internal static JsonObject SerializeFunction(IChatFunction function, bool isStrictModeOn = false)
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
