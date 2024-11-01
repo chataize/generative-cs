@@ -8,8 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace ChatAIze.GenerativeCS.Clients;
 
-public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>
-    where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
+    where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
     where TFunctionCall : IFunctionCall, new()
     where TFunctionResult : IFunctionResult, new()
@@ -71,12 +71,12 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(prompt, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
+        return await ChatCompletion.CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(prompt, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
+        return await ChatCompletion.CompleteAsync(chat, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
     }
 
     public void AddFunction(ChatFunction function)
@@ -192,7 +192,7 @@ public class GeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     }
 }
 
-public class GeminiClient : GeminiClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>
+public class GeminiClient : GeminiClient<Chat, ChatMessage, FunctionCall, FunctionResult>
 {
     public GeminiClient() : base() { }
 

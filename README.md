@@ -81,45 +81,45 @@ await foreach (string chunk in client.StreamCompletionAsync("Write an article ab
     Console.Write(chunk);
 }
 ```
-### Conversation
+### Chat
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Models;
 
 var client = new OpenAIClient("<OPENAI API KEY>");
-var conversation = new ChatConversation();
+var chat = new Chat();
 
 while (true)
 {
     string message = Console.ReadLine()!;
-    conversation.FromUser(message);
+    chat.FromUser(message);
 
-    string response = await client.CompleteAsync(conversation);
+    string response = await client.CompleteAsync(chat);
     Console.WriteLine(response);
 }   
 ```
-### Streamed Conversation
+### Streamed Chat
 ```cs
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Models;
 
 var client = new OpenAIClient("<OPENAI API KEY>");
-var conversation = new ChatConversation();
+var chat = new Chat();
 
 while (true)
 {
     string message = Console.ReadLine()!;
-    conversation.FromUser(message);
+    chat.FromUser(message);
 
-    await foreach (string chunk in client.StreamCompletionAsync(conversation))
+    await foreach (string chunk in client.StreamCompletionAsync(chat))
     {
         Console.Write(chunk);
     }
 }
 ```
 > [!NOTE]
-> Chatbot responses, function calls, and function results are automatically added to the conversation.
-> You don't need to and should not call ```conversation.FromAssistant(...)``` manually, unless you want to *inject* custom messages (e.g. welcome message).
+> Chatbot responses, function calls, and function results are automatically added to the chat.
+> You don't need to and should not call ```chat.FromAssistant(...)``` manually, unless you want to *inject* custom messages (e.g. welcome message).
 ## Embeddings
 ```cs
 using ChatAIze.GenerativeCS.Clients;
@@ -284,7 +284,7 @@ client.DefaultCompletionOptions = options; // via property
 
 // Set for single request:
 string response = await client.CompleteAsync(prompt, options);
-string response = await client.CompleteAsync(conversation, options);
+string response = await client.CompleteAsync(chat, options);
 ```
 #### Gemini Client
 ```cs
@@ -315,7 +315,7 @@ client.DefaultCompletionOptions = options; // via property
 
 // Set for single request:
 string response = await client.CompleteAsync(prompt, options);
-string response = await client.CompleteAsync(conversation, options);
+string response = await client.CompleteAsync(chat, options);
 ```
 ### Embeddings
 ```cs
@@ -645,14 +645,14 @@ var options = new ChatCompletionOptions
 };
 ```
 ### Message Pinning
-Messages can be pinned to ensure they stay in the conversation even when message and character limits are exceeded.
+Messages can be pinned to ensure they stay in the chat even when message and character limits are exceeded.
 ```cs
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Models;
 
-var conversation = new ChatConversation();
+var chat = new Chat();
 
-conversation.FromUser("This will always be the first message", PinLocation.Begin);
-conversation.FromSystem("This message will never be truncated due to limits.", PinLocation.Automatic);
-conversation.FromUser("This will always be the last (most recent) message", PinLocation.End);
+chat.FromUser("This will always be the first message", PinLocation.Begin);
+chat.FromSystem("This message will never be truncated due to limits.", PinLocation.Automatic);
+chat.FromUser("This will always be the last (most recent) message", PinLocation.End);
 ```

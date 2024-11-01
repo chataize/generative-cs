@@ -9,8 +9,8 @@ using Microsoft.Extensions.Options;
 
 namespace ChatAIze.GenerativeCS.Clients;
 
-public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>
-    where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
+    where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
     where TFunctionCall : IFunctionCall, new()
     where TFunctionResult : IFunctionResult, new()
@@ -117,41 +117,41 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
 
     public async Task<string> CompleteAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        var conversation = new TConversation();
-        _ = await conversation.FromUserAsync(prompt);
+        var chat = new TChat();
+        _ = await chat.FromUserAsync(prompt);
 
-        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
+        return await CompleteAsync(chat, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
 
     public async Task<string> CompleteAsync(string systemMessage, string userMessage, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        var conversation = new TConversation();
+        var chat = new TChat();
 
-        _ = await conversation.FromSystemAsync(systemMessage);
-        _ = await conversation.FromUserAsync(userMessage);
+        _ = await chat.FromSystemAsync(systemMessage);
+        _ = await chat.FromUserAsync(userMessage);
 
-        return await CompleteAsync(conversation, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
+        return await CompleteAsync(chat, options ?? DefaultCompletionOptions, usageTracker, cancellationToken);
     }
 
-    public async Task<string> CompleteAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken);
+        return await ChatCompletion.CompleteAsync(chat, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken);
     }
 
     public async IAsyncEnumerable<string> StreamCompletionAsync(string prompt, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var conversation = new TConversation();
-        _ = await conversation.FromUserAsync(prompt);
+        var chat = new TChat();
+        _ = await chat.FromUserAsync(prompt);
 
-        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(chat, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken))
         {
             yield return chunk;
         }
     }
 
-    public async IAsyncEnumerable<string> StreamCompletionAsync(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamCompletionAsync(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(conversation, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken))
+        await foreach (var chunk in ChatCompletion.StreamCompletionAsync(chat, ApiKey, options ?? DefaultCompletionOptions, usageTracker, _httpClient, cancellationToken: cancellationToken))
         {
             yield return chunk;
         }
@@ -318,7 +318,7 @@ public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResul
     }
 }
 
-public class OpenAIClient : OpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>
+public class OpenAIClient : OpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>
 {
     public OpenAIClient() : base() { }
 

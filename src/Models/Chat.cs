@@ -3,19 +3,19 @@ using ChatAIze.GenerativeCS.Enums;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, TFunctionCall, TFunctionResult>
+public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, TFunctionCall, TFunctionResult>
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public ChatConversation() { }
+    public Chat() { }
 
-    public ChatConversation(string systemMessage)
+    public Chat(string systemMessage)
     {
         FromSystem(systemMessage);
     }
 
-    public ChatConversation(IEnumerable<TMessage> messages)
+    public Chat(IEnumerable<TMessage> messages)
     {
         Messages = messages.ToList();
     }
@@ -154,11 +154,11 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
     }
 }
 
-public record ChatConversation : ChatConversation<ChatMessage, FunctionCall, FunctionResult>
+public record Chat : Chat<ChatMessage, FunctionCall, FunctionResult>
 {
-    public ChatConversation() : base() { }
+    public Chat() : base() { }
 
-    public ChatConversation(string systemMessage) : base(systemMessage) { }
+    public Chat(string systemMessage) : base(systemMessage) { }
 
-    public ChatConversation(IEnumerable<ChatMessage> messages) : base(messages) { }
+    public Chat(IEnumerable<ChatMessage> messages) : base(messages) { }
 }

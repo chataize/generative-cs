@@ -17,8 +17,8 @@ public static class ChatCompletion
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(string prompt, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -33,10 +33,10 @@ public static class ChatCompletion
 
         if (options.Functions.Count >= 1)
         {
-            var conversation = new TConversation();
-            _ = await conversation.FromUserAsync(prompt);
+            var chat = new TChat();
+            _ = await chat.FromUserAsync(prompt);
 
-            return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
+            return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
         }
 
         var request = CreateCompletionRequest(prompt);
@@ -60,8 +60,8 @@ public static class ChatCompletion
         return messageContent;
     }
 
-    internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
+    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -74,7 +74,7 @@ public static class ChatCompletion
             apiKey = options.ApiKey;
         }
 
-        var request = CreateChatCompletionRequest(conversation, options);
+        var request = CreateChatCompletionRequest(chat, options);
         if (options.IsDebugMode)
         {
             Debug.WriteLine(request.ToString());
@@ -99,15 +99,15 @@ public static class ChatCompletion
                 var functionName = functionNameElement.GetString()!;
                 var functionArguments = functionCallElement.GetProperty("args").GetRawText()!;
 
-                var message1 = await conversation.FromChatbotAsync(new TFunctionCall { Name = functionName, Arguments = functionArguments });
+                var message1 = await chat.FromChatbotAsync(new TFunctionCall { Name = functionName, Arguments = functionArguments });
                 await options.AddMessageCallback(message1);
 
                 var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
                 if (function != null)
                 {
-                    if (function.RequiresConfirmation && conversation.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
+                    if (function.RequiresConfirmation && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
-                        var message2 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
+                        var message2 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                         await options.AddMessageCallback(message2);
                     }
                     else
@@ -115,14 +115,14 @@ public static class ChatCompletion
                         if (function.Callback != null)
                         {
                             var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
-                            var message3 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = functionValue });
+                            var message3 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = functionValue });
 
                             await options.AddMessageCallback(message3);
                         }
                         else
                         {
                             var functionValue = await options.DefaultFunctionCallback(functionName, functionArguments, cancellationToken);
-                            var message4 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
+                            var message4 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
 
                             await options.AddMessageCallback(message4);
                         }
@@ -130,25 +130,25 @@ public static class ChatCompletion
                 }
                 else
                 {
-                    var message5 = await conversation.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = $"Function '{functionName}' was not found." });
+                    var message5 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = $"Function '{functionName}' was not found." });
                     await options.AddMessageCallback(message5);
                 }
 
-                return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
+                return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
             }
             else if (part.TryGetProperty("text", out var textElement))
             {
                 messageContent = textElement.GetString()!;
 
-                var message6 = await conversation.FromChatbotAsync(messageContent);
+                var message6 = await chat.FromChatbotAsync(messageContent);
                 await options.AddMessageCallback(message6);
             }
             else
             {
-                var message7 = await conversation.FromFunctionAsync(new TFunctionResult { Name = "Error", Value = "Either call a function or respond with text." });
+                var message7 = await chat.FromFunctionAsync(new TFunctionResult { Name = "Error", Value = "Either call a function or respond with text." });
                 await options.AddMessageCallback(message7);
 
-                return await CompleteAsync(conversation, apiKey, options, httpClient, cancellationToken);
+                return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
             }
         }
 
@@ -185,13 +185,13 @@ public static class ChatCompletion
         return requestObject;
     }
 
-    private static JsonObject CreateChatCompletionRequest<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
+    private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
     {
-        var messages = conversation.Messages.ToList();
+        var messages = chat.Messages.ToList();
 
         if (options.SystemMessageCallback != null)
         {

@@ -3,7 +3,7 @@ using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var client = new OpenAIClient();
-var conversation = new ChatConversation();
+var chat = new Chat();
 
 var options = new ChatCompletionOptions
 {
@@ -28,8 +28,8 @@ while (true)
         break;
     }
 
-    conversation.FromUser(input);
+    chat.FromUser(input);
 
-    var response = await client.CompleteAsync(conversation, options);
+    var response = await client.CompleteAsync(chat, options);
     Console.WriteLine(response);
 }

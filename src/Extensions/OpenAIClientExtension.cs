@@ -8,8 +8,8 @@ namespace ChatAIze.GenerativeCS.Extensions;
 
 public static class OpenAIExtension
 {
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, Action<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>>? options = null)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, Action<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>>? options = null)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -24,9 +24,9 @@ public static class OpenAIExtension
             }
         }
 
-        _ = services.AddHttpClient<OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddHttpClient<OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
         _ = services.AddHttpClient<OpenAIClient>();
-        _ = services.AddSingleton<OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>>();
+        _ = services.AddSingleton<OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
         _ = services.AddSingleton<OpenAIClient>();
 
         return services;
@@ -34,16 +34,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, Action<OpenAIClientOptions<ChatMessage, FunctionCall, FunctionResult>>? options = null)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(options);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(options);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
         });
@@ -51,16 +51,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -73,16 +73,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, ChatCompletionOptions? defaultCompletionOptions)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultCompletionOptions);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultCompletionOptions);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -95,16 +95,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultEmbeddingOptions);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultEmbeddingOptions);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -117,16 +117,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTextToSpeechOptions);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTextToSpeechOptions);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -139,16 +139,16 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranscriptionOptions);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranscriptionOptions);
     }
 
-    public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
-        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
+    public static IServiceCollection AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
+        where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return services.AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(o =>
+        return services.AddOpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>(o =>
         {
             o.ApiKey = apiKey;
 
@@ -161,6 +161,6 @@ public static class OpenAIExtension
 
     public static IServiceCollection AddOpenAIClient(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
     {
-        return services.AddOpenAIClient<ChatConversation, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranslationOptions);
+        return services.AddOpenAIClient<Chat, ChatMessage, FunctionCall, FunctionResult>(apiKey, defaultTranslationOptions);
     }
 }
