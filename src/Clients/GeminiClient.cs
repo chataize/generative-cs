@@ -1,4 +1,4 @@
-using ChatAIze.GenerativeCS.Interfaces;
+using ChatAIze.Abstractions;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using ChatAIze.GenerativeCS.Providers.Gemini;

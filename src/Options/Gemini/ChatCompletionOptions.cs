@@ -1,5 +1,5 @@
+using ChatAIze.Abstractions;
 using ChatAIze.GenerativeCS.Constants;
-using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.Gemini;

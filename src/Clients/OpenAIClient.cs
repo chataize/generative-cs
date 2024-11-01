@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using ChatAIze.GenerativeCS.Interfaces;
+using ChatAIze.Abstractions;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Providers.OpenAI;

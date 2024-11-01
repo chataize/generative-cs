@@ -1,5 +1,5 @@
+using ChatAIze.Abstractions;
 using ChatAIze.GenerativeCS.Clients;
-using ChatAIze.GenerativeCS.Interfaces;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using Microsoft.Extensions.DependencyInjection;

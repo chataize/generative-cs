@@ -1,5 +1,5 @@
-﻿using ChatAIze.GenerativeCS.Enums;
-using ChatAIze.GenerativeCS.Interfaces;
+﻿using ChatAIze.Abstractions;
+using ChatAIze.GenerativeCS.Enums;
 
 namespace ChatAIze.GenerativeCS.Models;
 

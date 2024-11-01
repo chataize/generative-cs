@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using ChatAIze.GenerativeCS.Interfaces;
+using ChatAIze.Abstractions;
 
 namespace ChatAIze.GenerativeCS.Models;
 
