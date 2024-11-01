@@ -1,4 +1,4 @@
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Enums;
 
 namespace ChatAIze.GenerativeCS.Utilities;
@@ -183,7 +183,7 @@ internal static class MessageTools
             var previousMessage = messages[i - 1];
             var currentMessage = messages[i];
 
-            if (previousMessage.Role == currentMessage.Role && previousMessage.Author == currentMessage.Author)
+            if (previousMessage.Role == currentMessage.Role && previousMessage.UserName == currentMessage.UserName)
             {
                 var replacementMessage = new TMessage
                 {

@@ -1,4 +1,4 @@
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Models;
 

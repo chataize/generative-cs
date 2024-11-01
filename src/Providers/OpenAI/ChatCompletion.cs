@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Utilities;
 using ChatAIze.Utilities;
@@ -19,7 +19,7 @@ internal static class ChatCompletion
     };
 
     internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, CancellationToken cancellationToken = default)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -131,7 +131,7 @@ internal static class ChatCompletion
     }
 
     internal static async IAsyncEnumerable<string> StreamCompletionAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -327,7 +327,7 @@ internal static class ChatCompletion
     }
 
     private static JsonObject CreateChatCompletionRequest<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
@@ -361,9 +361,9 @@ internal static class ChatCompletion
                 { "role", GetRoleName(message.Role) }
             };
 
-            if (message.Author != null)
+            if (message.UserName != null)
             {
-                messageObject.Add("name", message.Author);
+                messageObject.Add("name", message.UserName);
             }
 
             if (message.Content != null)

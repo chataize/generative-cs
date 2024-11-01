@@ -1,4 +1,4 @@
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
@@ -9,7 +9,7 @@ namespace ChatAIze.GenerativeCS.Extensions;
 public static class OpenAIExtension
 {
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, Action<OpenAIClientOptions<TMessage, TFunctionCall, TFunctionResult>>? options = null)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -38,7 +38,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -55,7 +55,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -77,7 +77,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, EmbeddingOptions? defaultEmbeddingOptions)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -99,7 +99,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TextToSpeechOptions? defaultTextToSpeechOptions)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -121,7 +121,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranscriptionOptions? defaultTranscriptionOptions)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -143,7 +143,7 @@ public static class OpenAIExtension
     }
 
     public static IServiceCollection AddOpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, TranslationOptions? defaultTranslationOptions)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()

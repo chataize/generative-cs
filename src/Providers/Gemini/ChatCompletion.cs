@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using ChatAIze.GenerativeCS.Utilities;
 using ChatAIze.Utilities;
@@ -18,7 +18,7 @@ public static class ChatCompletion
     };
 
     internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(string prompt, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -61,7 +61,7 @@ public static class ChatCompletion
     }
 
     internal static async Task<string> CompleteAsync<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -186,7 +186,7 @@ public static class ChatCompletion
     }
 
     private static JsonObject CreateChatCompletionRequest<TConversation, TMessage, TFunctionCall, TFunctionResult>(TConversation conversation, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult

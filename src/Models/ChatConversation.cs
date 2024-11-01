@@ -1,9 +1,9 @@
-﻿using ChatAIze.Abstractions;
+﻿using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Enums;
 
 namespace ChatAIze.GenerativeCS.Models;
 
-public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChatConversation<TMessage, TFunctionCall, TFunctionResult>
+public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, TFunctionCall, TFunctionResult>
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
@@ -62,12 +62,12 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
         _ = await FromUserAsync(message, pinLocation);
     }
 
-    public ValueTask<TMessage> FromUserAsync(string author, string message, PinLocation pinLocation = PinLocation.None)
+    public ValueTask<TMessage> FromUserAsync(string userName, string message, PinLocation pinLocation = PinLocation.None)
     {
         var chatMessage = new TMessage
         {
             Role = ChatRole.User,
-            Author = author,
+            UserName = userName,
             Content = message,
             PinLocation = pinLocation
         };
@@ -76,9 +76,9 @@ public record ChatConversation<TMessage, TFunctionCall, TFunctionResult> : IChat
         return ValueTask.FromResult(chatMessage);
     }
 
-    public async void FromUser(string author, string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string userName, string message, PinLocation pinLocation = PinLocation.None)
     {
-        _ = await FromUserAsync(author, message, pinLocation);
+        _ = await FromUserAsync(userName, message, pinLocation);
     }
 
     public ValueTask<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)

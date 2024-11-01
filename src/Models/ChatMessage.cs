@@ -1,5 +1,4 @@
-﻿using ChatAIze.Abstractions;
-using ChatAIze.GenerativeCS.Enums;
+﻿using ChatAIze.Abstractions.Chat;
 
 namespace ChatAIze.GenerativeCS.Models;
 
@@ -16,10 +15,10 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(ChatRole role, string author, string content, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None)
     {
         Role = role;
-        Author = author;
+        UserName = userName;
         Content = content;
         PinLocation = pinLocation;
     }
@@ -47,7 +46,7 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
 
     public ChatRole Role { get; set; }
 
-    public string? Author { get; set; }
+    public string? UserName { get; set; }
 
     public string? Content { get; set; }
 
@@ -69,14 +68,14 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, content, pinLocation);
     }
 
-    public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string author, string content, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string userName, string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, author, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, userName, content, pinLocation);
     }
 
-    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(string author, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(string userName, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.Chatbot, author, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.Chatbot, userName, pinLocation);
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
@@ -101,7 +100,7 @@ public record ChatMessage : ChatMessage<FunctionCall, FunctionResult>
 
     public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None) : base(role, content, pinLocation) { }
 
-    public ChatMessage(ChatRole role, string author, string content, PinLocation pinLocation = PinLocation.None) : base(role, author, content, pinLocation) { }
+    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None) : base(role, userName, content, pinLocation) { }
 
     public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None) : base(functionCall, pinLocation) { }
 

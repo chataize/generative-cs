@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Providers.OpenAI;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace ChatAIze.GenerativeCS.Clients;
 
 public class OpenAIClient<TConversation, TMessage, TFunctionCall, TFunctionResult>
-    where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+    where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
     where TFunctionCall : IFunctionCall, new()
     where TFunctionResult : IFunctionResult, new()

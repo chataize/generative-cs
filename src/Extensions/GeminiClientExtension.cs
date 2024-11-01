@@ -1,4 +1,4 @@
-using ChatAIze.Abstractions;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
@@ -9,7 +9,7 @@ namespace ChatAIze.GenerativeCS.Extensions;
 public static class GeminiClientExtension
 {
     public static IServiceCollection AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, Action<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>>? options = null)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
@@ -38,7 +38,7 @@ public static class GeminiClientExtension
     }
 
     public static IServiceCollection AddGeminiClient<TConversation, TMessage, TFunctionCall, TFunctionResult>(this IServiceCollection services, string apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? defaultCompletionOptions = null)
-        where TConversation : IChatConversation<TMessage, TFunctionCall, TFunctionResult>, new()
+        where TConversation : IChat<TMessage, TFunctionCall, TFunctionResult>, new()
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
