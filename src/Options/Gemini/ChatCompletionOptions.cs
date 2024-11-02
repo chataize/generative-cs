@@ -35,7 +35,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public Func<TMessage, ValueTask> AddMessageCallback { get; } = (_) => ValueTask.CompletedTask;
 
-    public Func<string, string, CancellationToken, Task<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
+    public Func<string, string, CancellationToken, ValueTask<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
     public List<IChatFunction> Functions { get; set; } = [];
 
