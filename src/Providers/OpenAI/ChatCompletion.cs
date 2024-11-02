@@ -489,6 +489,12 @@ internal static class ChatCompletion
             var toolsArray = new JsonArray();
             foreach (var function in options.Functions)
             {
+                var normalizedName = function.Name.ToSnakeLower();
+                if (string.IsNullOrWhiteSpace(normalizedName))
+                {
+                    continue;
+                }
+
                 var functionObject = SchemaSerializer.SerializeFunction(function, options.IsStrictFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
@@ -499,7 +505,10 @@ internal static class ChatCompletion
                 toolsArray.Add(toolObject);
             }
 
-            requestObject.Add("tools", toolsArray);
+            if (toolsArray.Count > 0)
+            {
+                requestObject.Add("tools", toolsArray);
+            }
         }
 
         return requestObject;

@@ -20,9 +20,15 @@ public static class SchemaSerializer
         {
             foreach (var parameter in function.Parameters)
             {
+                var normalizedName = parameter.Name.ToSnakeLower();
+                if (string.IsNullOrWhiteSpace(normalizedName))
+                {
+                    continue;
+                }
+
                 var propertyObject = SerializeProperty(parameter.Type);
 
-                if (parameter.Description != null)
+                if (!string.IsNullOrWhiteSpace(parameter.Description))
                 {
                     propertyObject.Add("description", parameter.Description);
                 }
@@ -40,11 +46,11 @@ public static class SchemaSerializer
                     propertyObject.Add("enum", enumValuesArray);
                 }
 
-                propertiesObject.Add(parameter.Name.ToSnakeLower(), propertyObject);
+                propertiesObject.Add(normalizedName, propertyObject);
 
                 if (parameter.IsRequired)
                 {
-                    requiredArray.Add(parameter.Name.ToSnakeLower());
+                    requiredArray.Add(normalizedName);
                 }
                 else
                 {
