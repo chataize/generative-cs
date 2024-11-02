@@ -67,7 +67,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
-    public void AddFunction(ChatFunction function)
+    public void AddFunction(IChatFunction function)
     {
         Functions.Add(function);
     }
