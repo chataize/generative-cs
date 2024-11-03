@@ -87,6 +87,6 @@
         Version="0.1.1" />
     <PackageReference
         Include="ChatAIze.Abstractions"
-        Version="0.2.2" />
+        Version="0.3.3" />
   </ItemGroup>
 </Project>
