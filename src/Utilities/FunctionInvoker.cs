@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using ChatAIze.Abstractions.Chat;
 using ChatAIze.Utilities;
 
 namespace ChatAIze.GenerativeCS.Utilities;
@@ -12,13 +13,19 @@ internal static class FunctionInvoker
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async ValueTask<string> InvokeAsync(Delegate callback, string? arguments, CancellationToken cancellationToken = default)
+    internal static async ValueTask<string> InvokeAsync(Delegate callback, string? arguments, IExecutionContext? executionContext = null, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
         using var argumentsDocument = arguments != null ? JsonDocument.Parse(arguments) : JsonDocument.Parse("{}");
 
         foreach (var parameter in callback.Method.GetParameters())
         {
+            if (parameter.ParameterType == typeof(IExecutionContext))
+            {
+                parsedArguments.Add(executionContext);
+                continue;
+            }
+
             if (parameter.ParameterType == typeof(CancellationToken))
             {
                 parsedArguments.Add(cancellationToken);

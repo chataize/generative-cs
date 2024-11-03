@@ -29,6 +29,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public bool IsDebugMode { get; set; }
 
+    public List<IChatFunction> Functions { get; set; } = [];
+
     public Func<string?>? SystemMessageCallback { get; set; } = null;
 
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
@@ -37,7 +39,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public Func<string, string, CancellationToken, ValueTask<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
-    public List<IChatFunction> Functions { get; set; } = [];
+    public IExecutionContext? ExecutionContext { get; set; }
 
     public void AddFunction(IChatFunction function)
     {

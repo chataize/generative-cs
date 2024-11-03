@@ -114,7 +114,7 @@ public static class ChatCompletion
                     {
                         if (function.Callback != null)
                         {
-                            var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, cancellationToken);
+                            var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, options.ExecutionContext, cancellationToken);
                             var message3 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = functionValue });
 
                             await options.AddMessageCallback(message3);
