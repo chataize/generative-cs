@@ -14,7 +14,7 @@ public static class GeminiClientExtension
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        if (options != null)
+        if (options is not null)
         {
             _ = services.Configure(options);
 
@@ -47,7 +47,7 @@ public static class GeminiClientExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultCompletionOptions != null)
+            if (defaultCompletionOptions is not null)
             {
                 o.DefaultCompletionOptions = defaultCompletionOptions;
             }

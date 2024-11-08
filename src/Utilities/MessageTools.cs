@@ -50,14 +50,14 @@ internal static class MessageTools
             var currentMessage = messages[i];
 
             var isUnsentProperty = currentMessage.GetType().GetProperty("IsUnsent");
-            if (isUnsentProperty != null && (isUnsentProperty.GetValue(currentMessage) as bool?) == true)
+            if (isUnsentProperty is not null && (isUnsentProperty.GetValue(currentMessage) as bool?) == true)
             {
                 messages.RemoveAt(i);
                 continue;
             }
 
             var isDeletedProperty = currentMessage.GetType().GetProperty("IsDeleted");
-            if (isDeletedProperty != null && (isDeletedProperty.GetValue(currentMessage) as bool?) == true)
+            if (isDeletedProperty is not null && (isDeletedProperty.GetValue(currentMessage) as bool?) == true)
             {
                 messages.RemoveAt(i);
                 continue;
@@ -99,7 +99,7 @@ internal static class MessageTools
                 messagesToRemove.Add(message);
 
                 // If message is a function call, remove paired function result:
-                if (message.FunctionCalls != null)
+                if (message.FunctionCalls is not null)
                 {
                     foreach (var functionCall in message.FunctionCalls)
                     {
@@ -141,7 +141,7 @@ internal static class MessageTools
         for (var i = lastNonFunctionMessageIndex - 1; i >= 0; i--)
         {
             var currentMessage = messages[i];
-            if (currentMessage.FunctionCalls.Count > 0 || currentMessage.FunctionResult != null)
+            if (currentMessage.FunctionCalls.Count > 0 || currentMessage.FunctionResult is not null)
             {
                 messages.RemoveAt(i);
             }

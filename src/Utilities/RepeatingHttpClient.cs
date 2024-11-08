@@ -37,7 +37,7 @@ internal static class RepeatingHttpClient
                     Content = new StringContent(requestContent, Encoding.UTF8, "application/json")
                 };
 
-                if (apiKey != null)
+                if (apiKey is not null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 }
@@ -78,7 +78,7 @@ internal static class RepeatingHttpClient
                     Content = new StringContent(requestContent, Encoding.UTF8, "application/json")
                 };
 
-                if (apiKey != null)
+                if (apiKey is not null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 }
@@ -118,7 +118,7 @@ internal static class RepeatingHttpClient
                     Content = content
                 };
 
-                if (apiKey != null)
+                if (apiKey is not null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                 }

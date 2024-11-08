@@ -16,7 +16,7 @@ public static class SchemaSerializer
         var requiredArray = new JsonArray();
         var allRequired = true;
 
-        if (function.Parameters != null)
+        if (function.Parameters is not null)
         {
             foreach (var parameter in function.Parameters)
             {
@@ -98,7 +98,7 @@ public static class SchemaSerializer
 
         var description = function.Description;
 
-        if (description is null && function.Callback != null)
+        if (description is null && function.Callback is not null)
         {
             description = GetDescription(function.Callback.Method);
         }
@@ -145,12 +145,12 @@ public static class SchemaSerializer
         var propertyObject = SerializeProperty(parameterType);
         var description = GetDescription(parameter);
 
-        if (description != null)
+        if (description is not null)
         {
             propertyObject.Add("description", description);
         }
 
-        if (parameter.IsOptional && parameter.DefaultValue != null)
+        if (parameter.IsOptional && parameter.DefaultValue is not null)
         {
             propertyObject.Add("default", parameter.DefaultValue.ToString());
         }
@@ -166,7 +166,7 @@ public static class SchemaSerializer
             { "type", typeName.ToSnakeLower() }
         };
 
-        if (typeDescription != null)
+        if (typeDescription is not null)
         {
             propertyObject.Add("description", typeDescription);
         }
@@ -218,7 +218,7 @@ public static class SchemaSerializer
 
     private static bool IsRequired(ParameterInfo parameter)
     {
-        return parameter.GetCustomAttribute<RequiredAttribute>() != null;
+        return parameter.GetCustomAttribute<RequiredAttribute>() is not null;
     }
 
     private static string? GetDescription(MemberInfo member)

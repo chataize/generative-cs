@@ -16,7 +16,7 @@ internal static class FunctionInvoker
     internal static async ValueTask<string> InvokeAsync(Delegate callback, string? arguments, IExecutionContext? executionContext = null, CancellationToken cancellationToken = default)
     {
         var parsedArguments = new List<object?>();
-        using var argumentsDocument = arguments != null ? JsonDocument.Parse(arguments) : JsonDocument.Parse("{}");
+        using var argumentsDocument = arguments is not null ? JsonDocument.Parse(arguments) : JsonDocument.Parse("{}");
 
         foreach (var parameter in callback.Method.GetParameters())
         {
@@ -76,7 +76,7 @@ internal static class FunctionInvoker
             await task.ConfigureAwait(false);
 
             var taskResultProperty = task.GetType().GetProperty("Result");
-            if (taskResultProperty != null)
+            if (taskResultProperty is not null)
             {
                 invocationResult = taskResultProperty.GetValue(task);
             }
@@ -86,7 +86,7 @@ internal static class FunctionInvoker
             await valueTask.ConfigureAwait(false);
 
             var taskResultProperty = valueTask.GetType().GetProperty("Result");
-            if (taskResultProperty != null)
+            if (taskResultProperty is not null)
             {
                 invocationResult = taskResultProperty.GetValue(valueTask);
             }

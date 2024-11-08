@@ -23,7 +23,7 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        if (usageTracker != null)
+        if (usageTracker is not null)
         {
             var usage = responseDocument.RootElement.GetProperty("usage");
             var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
@@ -56,7 +56,7 @@ internal static class Embeddings
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
-        if (usageTracker != null)
+        if (usageTracker is not null)
         {
             var usage = responseDocument.RootElement.GetProperty("usage");
             var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
@@ -85,7 +85,7 @@ internal static class Embeddings
             request.Add("dimensions", options.Dimensions);
         }
 
-        if (options.UserTrackingId != null)
+        if (options.UserTrackingId is not null)
         {
             request.Add("user", options.UserTrackingId);
         }

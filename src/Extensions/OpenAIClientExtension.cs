@@ -14,7 +14,7 @@ public static class OpenAIExtension
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        if (options != null)
+        if (options is not null)
         {
             _ = services.Configure(options);
 
@@ -64,7 +64,7 @@ public static class OpenAIExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultCompletionOptions != null)
+            if (defaultCompletionOptions is not null)
             {
                 o.DefaultCompletionOptions = defaultCompletionOptions;
             }
@@ -86,7 +86,7 @@ public static class OpenAIExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultEmbeddingOptions != null)
+            if (defaultEmbeddingOptions is not null)
             {
                 o.DefaultEmbeddingOptions = defaultEmbeddingOptions;
             }
@@ -108,7 +108,7 @@ public static class OpenAIExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultTextToSpeechOptions != null)
+            if (defaultTextToSpeechOptions is not null)
             {
                 o.DefaultTextToSpeechOptions = defaultTextToSpeechOptions;
             }
@@ -130,7 +130,7 @@ public static class OpenAIExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultTranscriptionOptions != null)
+            if (defaultTranscriptionOptions is not null)
             {
                 o.DefaultTranscriptionOptions = defaultTranscriptionOptions;
             }
@@ -152,7 +152,7 @@ public static class OpenAIExtension
         {
             o.ApiKey = apiKey;
 
-            if (defaultTranslationOptions != null)
+            if (defaultTranslationOptions is not null)
             {
                 o.DefaultTranslationOptions = defaultTranslationOptions;
             }

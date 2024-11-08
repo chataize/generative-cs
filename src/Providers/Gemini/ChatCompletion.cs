@@ -103,7 +103,7 @@ public static class ChatCompletion
                 await options.AddMessageCallback(message1);
 
                 var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
-                if (function != null)
+                if (function is not null)
                 {
                     if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
@@ -112,7 +112,7 @@ public static class ChatCompletion
                     }
                     else
                     {
-                        if (function.Callback != null)
+                        if (function.Callback is not null)
                         {
                             var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, options.ExecutionContext, cancellationToken);
                             var message3 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = functionValue });
@@ -193,7 +193,7 @@ public static class ChatCompletion
     {
         var messages = chat.Messages.ToList();
 
-        if (options.SystemMessageCallback != null)
+        if (options.SystemMessageCallback is not null)
         {
             MessageTools.AddDynamicSystemMessage<TMessage, TFunctionCall, TFunctionResult>(messages, options.SystemMessageCallback());
         }
@@ -214,21 +214,21 @@ public static class ChatCompletion
             var partObject = new JsonObject();
             var functionCall = message.FunctionCalls.FirstOrDefault();
 
-            if (functionCall != null)
+            if (functionCall is not null)
             {
                 var functionCallObject = new JsonObject
                 {
                     { "name", functionCall.Name }
                 };
 
-                if (functionCall.Arguments != null)
+                if (functionCall.Arguments is not null)
                 {
                     functionCallObject.Add("args", JsonNode.Parse(functionCall.Arguments)!.AsObject());
                 }
 
                 partObject.Add("functionCall", functionCallObject);
             }
-            else if (message.FunctionResult != null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
+            else if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
                 var responseObject = new JsonObject
                 {

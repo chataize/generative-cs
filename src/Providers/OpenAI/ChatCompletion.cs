@@ -52,7 +52,7 @@ internal static class ChatCompletion
             Debug.WriteLine(responseDocument.RootElement.ToString());
         }
 
-        if (usageTracker != null)
+        if (usageTracker is not null)
         {
             var usage = responseDocument.RootElement.GetProperty("usage");
             var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
@@ -80,7 +80,7 @@ internal static class ChatCompletion
                     await options.AddMessageCallback(message1);
 
                     var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
-                    if (function != null)
+                    if (function is not null)
                     {
                         if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
@@ -89,7 +89,7 @@ internal static class ChatCompletion
                         }
                         else
                         {
-                            if (function.Callback != null)
+                            if (function.Callback is not null)
                             {
                                 var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, options.ExecutionContext, cancellationToken);
                                 var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = functionValue });
@@ -152,7 +152,7 @@ internal static class ChatCompletion
         var request = CreateChatCompletionRequest(chat, options);
         request.Add("stream", true);
 
-        if (usageTracker != null)
+        if (usageTracker is not null)
         {
             request.Add("stream_options", new JsonObject
             {
@@ -201,7 +201,7 @@ internal static class ChatCompletion
                 Debug.WriteLine(chunkDocument.RootElement.ToString());
             }
 
-            if (usageTracker != null)
+            if (usageTracker is not null)
             {
                 var usage = chunkDocument.RootElement.GetProperty("usage");
                 if (usage.ValueKind != JsonValueKind.Null)
@@ -272,7 +272,7 @@ internal static class ChatCompletion
         foreach (var functionCall in functionCalls)
         {
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
-            if (function != null)
+            if (function is not null)
             {
                 if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
@@ -281,7 +281,7 @@ internal static class ChatCompletion
                 }
                 else
                 {
-                    if (function.Callback != null)
+                    if (function.Callback is not null)
                     {
                         var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, options.ExecutionContext, cancellationToken);
                         var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
@@ -334,7 +334,7 @@ internal static class ChatCompletion
     {
         var messages = chat.Messages.ToList();
 
-        if (options.SystemMessageCallback != null)
+        if (options.SystemMessageCallback is not null)
         {
             MessageTools.AddDynamicSystemMessage<TMessage, TFunctionCall, TFunctionResult>(messages, options.SystemMessageCallback());
         }
@@ -361,12 +361,12 @@ internal static class ChatCompletion
                 { "role", GetRoleName(message.Role) }
             };
 
-            if (message.UserName != null)
+            if (message.UserName is not null)
             {
                 messageObject.Add("name", message.UserName);
             }
 
-            if (message.Content != null)
+            if (message.Content is not null)
             {
                 messageObject.Add("content", message.Content);
             }
@@ -395,7 +395,7 @@ internal static class ChatCompletion
                 messageObject.Add("tool_calls", toolCallsArray);
             }
 
-            if (message.FunctionResult != null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
+            if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
                 messageObject.Add("content", message.FunctionResult.Value);
@@ -410,11 +410,11 @@ internal static class ChatCompletion
             { "messages", messagesArray }
         };
 
-        if (chat.UserTrackingId != null)
+        if (chat.UserTrackingId is not null)
         {
             requestObject.Add("user", chat.UserTrackingId);
         }
-        else if (options.UserTrackingId != null)
+        else if (options.UserTrackingId is not null)
         {
             requestObject.Add("user", options.UserTrackingId);
         }
@@ -449,7 +449,7 @@ internal static class ChatCompletion
             requestObject.Add("presence_penalty", options.PresencePenalty.Value);
         }
 
-        if (options.ResponseType != null)
+        if (options.ResponseType is not null)
         {
             requestObject.Add("response_format", SchemaSerializer.SerializeResponseFormat(options.ResponseType));
         }
@@ -473,7 +473,7 @@ internal static class ChatCompletion
             requestObject.Add("store", true);
         }
 
-        if (options.StopWords != null && options.StopWords.Count > 0)
+        if (options.StopWords is not null && options.StopWords.Count > 0)
         {
             var stopArray = new JsonArray();
             foreach (var stop in options.StopWords)
