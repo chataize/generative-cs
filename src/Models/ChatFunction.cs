@@ -134,7 +134,7 @@ public record ChatFunction : IChatFunction
 
     public bool RequiresDoubleCheck { get; set; }
 
-    public ICollection<IFunctionParameter> Parameters { get; set; } = [];
+    public ICollection<IFunctionParameter>? Parameters { get; set; }
 
     public Delegate? Callback { get; set; }
 }
