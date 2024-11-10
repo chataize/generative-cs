@@ -67,7 +67,7 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ChatAIze.Abstractions" Version="0.6.2" />
+    <PackageReference Include="ChatAIze.Abstractions" Version="0.7.1" />
     <PackageReference Include="ChatAIze.Utilities" Version="0.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
