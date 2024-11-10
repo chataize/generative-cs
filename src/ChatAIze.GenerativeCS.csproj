@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>Generative CS</Title>
     <Product>Generative CS</Product>
-    <Version>0.11.6</Version>
+    <Version>0.11.7</Version>
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2024</Copyright>
@@ -63,14 +63,30 @@
     </PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="icon.png" Pack="true" PackagePath="\" />
-    <None Include="../README.md" Pack="true" PackagePath="" />
+    <None
+        Include="icon.png"
+        Pack="true"
+        PackagePath="\" />
+    <None
+        Include="../README.md"
+        Pack="true"
+        PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ChatAIze.Abstractions" Version="0.7.1" />
-    <PackageReference Include="ChatAIze.Utilities" Version="0.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference
+        Include="ChatAIze.Abstractions"
+        Version="0.7.1" />
+    <PackageReference
+        Include="ChatAIze.Utilities"
+        Version="0.2.0" />
+    <PackageReference
+        Include="Microsoft.Extensions.DependencyInjection"
+        Version="8.0.1" />
+    <PackageReference
+        Include="Microsoft.Extensions.Http"
+        Version="8.0.1" />
+    <PackageReference
+        Include="Microsoft.Extensions.Options"
+        Version="8.0.2" />
   </ItemGroup>
 </Project>
