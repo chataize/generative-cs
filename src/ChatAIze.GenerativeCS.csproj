@@ -71,6 +71,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="ChatAIze.Utilities" Version="0.1.2" />
-    <PackageReference Include="ChatAIze.Abstractions" Version="0.5.5" />
+    <PackageReference Include="ChatAIze.Abstractions" Version="0.6.1" />
   </ItemGroup>
 </Project>
