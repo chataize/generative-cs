@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.Utilities;
+using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 

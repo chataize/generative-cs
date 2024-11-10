@@ -6,6 +6,7 @@ using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Options.Gemini;
 using ChatAIze.GenerativeCS.Utilities;
 using ChatAIze.Utilities;
+using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Providers.Gemini;
 

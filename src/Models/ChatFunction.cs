@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Utilities;
+using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Models;
 
@@ -28,7 +29,7 @@ public record ChatFunction : IChatFunction
     [SetsRequiredMembers]
     public ChatFunction(Delegate callback)
     {
-        Name = MethodNameNormalizer.NormalizeMethodName(callback.Method.Name);
+        Name = callback.GetNormalizedMethodName();
         Callback = callback;
     }
 
