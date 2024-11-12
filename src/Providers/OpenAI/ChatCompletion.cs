@@ -92,7 +92,7 @@ internal static class ChatCompletion
                         {
                             if (function.Callback is not null)
                             {
-                                var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionArguments, options.ExecutionContext, cancellationToken);
+                                var functionValue = await function.Callback.InvokeForStringResultAsync(functionArguments, options.ExecutionContext, cancellationToken);
                                 var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = functionValue });
 
                                 await options.AddMessageCallback(message3);
@@ -284,7 +284,7 @@ internal static class ChatCompletion
                 {
                     if (function.Callback is not null)
                     {
-                        var functionValue = await FunctionInvoker.InvokeAsync(function.Callback, functionCall.Arguments, options.ExecutionContext, cancellationToken);
+                        var functionValue = await function.Callback.InvokeForStringResultAsync(functionCall.Arguments, options.ExecutionContext, cancellationToken);
                         var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
 
                         await options.AddMessageCallback(message3);
