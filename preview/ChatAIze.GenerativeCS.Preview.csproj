@@ -21,7 +21,7 @@
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <Description>
-      Generative AI library for .NET 8.0 with built-in OpenAI ChatGPT and Google Gemini API clients
+      Generative AI library for .NET 9.0 with built-in OpenAI ChatGPT and Google Gemini API clients
       and support for C# function calling via reflection.
       Features:
       - Chat Completion
