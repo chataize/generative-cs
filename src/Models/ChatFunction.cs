@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using ChatAIze.Abstractions.Chat;
-using ChatAIze.GenerativeCS.Utilities;
 using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Models;
@@ -41,14 +40,7 @@ public record ChatFunction : IChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, ICollection<IFunctionParameter> parameters)
-    {
-        Name = name;
-        Parameters = parameters;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, params IFunctionParameter[] parameters)
+    public ChatFunction(string name, params ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Parameters = parameters;
@@ -63,15 +55,7 @@ public record ChatFunction : IChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, ICollection<IFunctionParameter> parameters)
-    {
-        Name = name;
-        Description = description;
-        Parameters = parameters;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, params FunctionParameter[] parameters)
+    public ChatFunction(string name, string? description, params ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Description = description;
@@ -87,15 +71,7 @@ public record ChatFunction : IChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
-    {
-        Name = name;
-        RequiresDoubleCheck = requiresDoubleCheck;
-        Parameters = parameters;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, bool requiresDoubleCheck, params FunctionParameter[] parameters)
+    public ChatFunction(string name, bool requiresDoubleCheck, params ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         RequiresDoubleCheck = requiresDoubleCheck;
@@ -112,16 +88,7 @@ public record ChatFunction : IChatFunction
     }
 
     [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresDoubleCheck, ICollection<IFunctionParameter> parameters)
-    {
-        Name = name;
-        Description = description;
-        RequiresDoubleCheck = requiresDoubleCheck;
-        Parameters = parameters;
-    }
-
-    [SetsRequiredMembers]
-    public ChatFunction(string name, string? description, bool requiresDoubleCheck, params FunctionParameter[] parameters)
+    public ChatFunction(string name, string? description, bool requiresDoubleCheck, params ICollection<IFunctionParameter> parameters)
     {
         Name = name;
         Description = description;
@@ -135,7 +102,9 @@ public record ChatFunction : IChatFunction
 
     public bool RequiresDoubleCheck { get; set; }
 
+    public Delegate? Callback { get; set; }
+
     public ICollection<IFunctionParameter>? Parameters { get; set; }
 
-    public Delegate? Callback { get; set; }
+    IReadOnlyCollection<IFunctionParameter>? IChatFunction.Parameters => (IReadOnlyCollection<IFunctionParameter>?)Parameters;
 }

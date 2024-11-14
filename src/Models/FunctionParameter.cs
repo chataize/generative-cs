@@ -8,20 +8,22 @@ public record FunctionParameter : IFunctionParameter
     public FunctionParameter() { }
 
     [SetsRequiredMembers]
-    public FunctionParameter(Type type, string name, bool IsRequired = true)
+    public FunctionParameter(Type type, string name, bool isRequired = true, params ICollection<string> enumValues)
     {
         Type = type;
         Name = name;
-        this.IsRequired = IsRequired;
+        IsRequired = isRequired;
+        EnumValues = enumValues;
     }
 
     [SetsRequiredMembers]
-    public FunctionParameter(Type type, string name, string? description, bool isRequired = true)
+    public FunctionParameter(Type type, string name, string? description, bool isRequired = true, params ICollection<string> enumValues)
     {
         Type = type;
         Name = name;
         Description = description;
         IsRequired = isRequired;
+        EnumValues = enumValues;
     }
 
     public required Type Type { get; set; }
@@ -30,7 +32,9 @@ public record FunctionParameter : IFunctionParameter
 
     public string? Description { get; set; }
 
+    public bool IsRequired { get; set; } = true;
+
     public ICollection<string> EnumValues { get; set; } = [];
 
-    public bool IsRequired { get; set; } = true;
+    IReadOnlyCollection<string> IFunctionParameter.EnumValues => (IReadOnlyCollection<string>)EnumValues;
 }
