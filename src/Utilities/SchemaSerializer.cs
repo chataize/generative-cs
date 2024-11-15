@@ -38,9 +38,11 @@ public static class SchemaSerializer
                     propertiesObject.Remove("enum");
 
                     var enumValuesArray = new JsonArray();
-                    foreach (var enumValue in parameter.EnumValues)
+                    var normalizedEnumValues = parameter.EnumValues.Select(v => v.ToSnakeLower()).Distinct();
+
+                    foreach (var enumValue in normalizedEnumValues)
                     {
-                        enumValuesArray.Add(enumValue.ToSnakeLower());
+                        enumValuesArray.Add(normalizedEnumValues);
                     }
 
                     propertyObject.Add("enum", enumValuesArray);
