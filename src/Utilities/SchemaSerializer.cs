@@ -42,7 +42,7 @@ public static class SchemaSerializer
 
                     foreach (var enumValue in normalizedEnumValues)
                     {
-                        enumValuesArray.Add(normalizedEnumValues);
+                        enumValuesArray.Add(enumValue);
                     }
 
                     propertyObject.Add("enum", enumValuesArray);
