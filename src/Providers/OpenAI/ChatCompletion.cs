@@ -451,7 +451,7 @@ internal static class ChatCompletion
 
         if (options.ResponseType is not null)
         {
-            requestObject.Add("response_format", SchemaSerializer.SerializeResponseFormat(options.ResponseType));
+            requestObject.Add("response_format", SchemaSerializer.SerializeResponseFormat(options.ResponseType, useOpenAIFeatures: true));
         }
         else if (options.IsJsonMode)
         {
@@ -495,7 +495,7 @@ internal static class ChatCompletion
                     continue;
                 }
 
-                var functionObject = SchemaSerializer.SerializeFunction(function, options.IsStrictFunctionCallingOn);
+                var functionObject = SchemaSerializer.SerializeFunction(function, useOpenAIFeatures: true, options.IsStrictFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
                     { "type", "function" },

@@ -10,7 +10,7 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 public static class SchemaSerializer
 {
-    internal static JsonObject SerializeFunction(IChatFunction function, bool isStrictModeOn = false)
+    internal static JsonObject SerializeFunction(IChatFunction function, bool useOpenAIFeatures, bool isStrictModeOn)
     {
         var propertiesObject = new JsonObject();
         var requiredArray = new JsonArray();
@@ -26,7 +26,7 @@ public static class SchemaSerializer
                     continue;
                 }
 
-                var propertyObject = SerializeProperty(parameter.Type);
+                var propertyObject = SerializeProperty(parameter.Type, useOpenAIFeatures);
 
                 if (!string.IsNullOrWhiteSpace(parameter.Description))
                 {
@@ -70,7 +70,7 @@ public static class SchemaSerializer
                 }
 
                 var parameterName = parameter.Name!.ToSnakeLower();
-                var propertyObject = SerializeParameter(parameter);
+                var propertyObject = SerializeParameter(parameter, useOpenAIFeatures);
 
                 propertiesObject.Add(parameterName, propertyObject);
 
@@ -84,9 +84,13 @@ public static class SchemaSerializer
         var parametersObject = new JsonObject
         {
             { "type", "object" },
-            { "properties", propertiesObject },
-            { "additionalProperties", false }
+            { "properties", propertiesObject }
         };
+
+        if (useOpenAIFeatures)
+        {
+            parametersObject.Add("additionalProperties", true);
+        }
 
         if (requiredArray.Count != 0)
         {
@@ -123,12 +127,12 @@ public static class SchemaSerializer
         return functionObject;
     }
 
-    public static JsonObject SerializeResponseFormat(Type type)
+    public static JsonObject SerializeResponseFormat(Type type, bool useOpenAIFeatures)
     {
         var jsonSchemaObject = new JsonObject
         {
             { "name", type.Name.ToSnakeLower() },
-            { "schema", SerializeProperty(type) },
+            { "schema", SerializeProperty(type, useOpenAIFeatures) },
             { "strict", true },
         };
 
@@ -141,10 +145,10 @@ public static class SchemaSerializer
         return formatObject;
     }
 
-    private static JsonObject SerializeParameter(ParameterInfo parameter)
+    private static JsonObject SerializeParameter(ParameterInfo parameter, bool useOpenAIFeatures)
     {
         var parameterType = parameter.ParameterType;
-        var propertyObject = SerializeProperty(parameterType);
+        var propertyObject = SerializeProperty(parameterType, useOpenAIFeatures);
         var description = GetDescription(parameter);
 
         if (description is not null)
@@ -160,7 +164,7 @@ public static class SchemaSerializer
         return propertyObject;
     }
 
-    private static JsonObject SerializeProperty(Type propertyType)
+    private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures)
     {
         var (typeName, typeDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
@@ -186,12 +190,12 @@ public static class SchemaSerializer
         else if (propertyType.IsArray && propertyType.HasElementType)
         {
             var itemType = propertyType.GetElementType()!;
-            propertyObject.Add("items", SerializeProperty(itemType));
+            propertyObject.Add("items", SerializeProperty(itemType, useOpenAIFeatures));
         }
         else if (typeof(IEnumerable).IsAssignableFrom(propertyType) && propertyType.GenericTypeArguments.Length == 1)
         {
             var itemType = propertyType.GenericTypeArguments[0];
-            propertyObject.Add("items", SerializeProperty(itemType));
+            propertyObject.Add("items", SerializeProperty(itemType, useOpenAIFeatures));
         }
         else if (propertyType.IsClass)
         {
@@ -205,13 +209,17 @@ public static class SchemaSerializer
                 {
                     var propertyName = property.Name.ToSnakeLower();
 
-                    propertiesObject.Add(propertyName, SerializeProperty(property.PropertyType));
+                    propertiesObject.Add(propertyName, SerializeProperty(property.PropertyType, useOpenAIFeatures));
                     requiredArray.Add(propertyName);
                 }
 
                 propertyObject.Add("properties", propertiesObject);
                 propertyObject.Add("required", requiredArray);
-                propertyObject.Add("additionalProperties", false);
+
+                if (useOpenAIFeatures)
+                {
+                    propertyObject.Add("additionalProperties", false);
+                }
             }
         }
 

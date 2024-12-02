@@ -274,7 +274,7 @@ public static class ChatCompletion
             var functionsArray = new JsonArray();
             foreach (var function in options.Functions)
             {
-                functionsArray.Add(SchemaSerializer.SerializeFunction(function));
+                functionsArray.Add(SchemaSerializer.SerializeFunction(function, useOpenAIFeatures: false, isStrictModeOn: false));
             }
 
             var functionsObject = new JsonObject
