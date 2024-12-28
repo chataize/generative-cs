@@ -1,5 +1,4 @@
 ﻿using ChatAIze.Abstractions.Chat;
-using ChatAIze.GenerativeCS.Enums;
 
 namespace ChatAIze.GenerativeCS.Models;
 

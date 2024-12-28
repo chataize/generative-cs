@@ -35,7 +35,7 @@ public static class SchemaSerializer
 
                 if (parameter.EnumValues.Count > 0)
                 {
-                    propertiesObject.Remove("enum");
+                    _ = propertiesObject.Remove("enum");
 
                     var enumValuesArray = new JsonArray();
                     var normalizedEnumValues = parameter.EnumValues.Select(v => v.ToSnakeLower()).Distinct();
