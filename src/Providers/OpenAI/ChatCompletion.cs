@@ -366,7 +366,35 @@ internal static class ChatCompletion
                 messageObject.Add("name", message.UserName);
             }
 
-            if (message.Content is not null)
+            if (message.Image is not null)
+            {
+                var contentArray = new JsonArray();
+                if (message.Content is not null)
+                {
+                    var textObject = new JsonObject
+                    {
+                        { "type", "text" },
+                        { "text", message.Content }
+                    };
+
+                    contentArray.Add(textObject);
+                }
+
+                var imageUrlObject = new JsonObject
+                {
+                    { "url", message.Image }
+                };
+
+                var imageObject = new JsonObject
+                {
+                    { "type", "image_url" },
+                    { "image_url", imageUrlObject }
+                };
+
+                contentArray.Add(imageObject);
+                messageObject.Add("content", contentArray);
+            }
+            else
             {
                 messageObject.Add("content", message.Content);
             }
