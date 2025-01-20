@@ -394,7 +394,7 @@ internal static class ChatCompletion
                 contentArray.Add(imageObject);
                 messageObject.Add("content", contentArray);
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(message.Content))
             {
                 messageObject.Add("content", message.Content);
             }
