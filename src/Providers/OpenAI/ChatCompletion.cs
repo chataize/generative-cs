@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ChatAIze.Abstractions.Chat;
+using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 using ChatAIze.GenerativeCS.Utilities;
 using ChatAIze.Utilities.Extensions;
@@ -475,6 +476,11 @@ internal static class ChatCompletion
         if (options.PresencePenalty.HasValue)
         {
             requestObject.Add("presence_penalty", options.PresencePenalty.Value);
+        }
+
+        if (options.ReasoningEffort != ReasoningEffort.Medium)
+        {
+            requestObject.Add("reasoning_effort", options.ReasoningEffort.ToString().ToSnakeLower());
         }
 
         if (options.ResponseType is not null)
