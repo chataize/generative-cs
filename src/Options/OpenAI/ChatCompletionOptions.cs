@@ -1,5 +1,6 @@
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Models;
 
 namespace ChatAIze.GenerativeCS.Options.OpenAI;
@@ -38,6 +39,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     public double? FrequencyPenalty { get; set; }
 
     public double? PresencePenalty { get; set; }
+
+    public ReasoningEffort ReasoningEffort { get; set; } = ReasoningEffort.Medium;
 
     public Type? ResponseType { get; set; }
 
