@@ -18,9 +18,17 @@ public static class ChatCompletionModels
 
         public const string GPT4oMini20240718 = "gpt-4o-mini-2024-07-18";
 
+        public const string O1 = "o1";
+
+        public const string O12024121 = "o1-2024-12-17";
+
         public const string O1Preview = "o1-preview";
 
         public const string O1Preview20240912 = "o1-preview-2024-09-12";
+
+        public const string O3Mini = "o3-mini";
+
+        public const string O3Mini20250131 = "o3-mini-2025-01-31";
 
         public const string O1Mini = "o1-mini";
 
