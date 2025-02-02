@@ -359,7 +359,7 @@ internal static class ChatCompletion
         {
             var messageObject = new JsonObject
             {
-                { "role", GetRoleName(message.Role) }
+                { "role", GetRoleName(message.Role, options.Model) }
             };
 
             if (message.UserName is not null)
@@ -548,11 +548,13 @@ internal static class ChatCompletion
         return requestObject;
     }
 
-    private static string GetRoleName(ChatRole role)
+    private static string GetRoleName(ChatRole role, string model)
     {
+        var usesDeveloperRole = model.StartsWith("o1") || model.StartsWith("o3");
+
         return role switch
         {
-            ChatRole.System => "system",
+            ChatRole.System => usesDeveloperRole ? "developer" : "system",
             ChatRole.User => "user",
             ChatRole.Chatbot => "assistant",
             ChatRole.Function => "tool",
