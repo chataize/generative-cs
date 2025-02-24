@@ -41,7 +41,7 @@ internal static class ChatCompletion
         var request = CreateChatCompletionRequest(chat, options);
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(request.ToString());
+            Console.WriteLine(request.ToString());
         }
 
         using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
@@ -50,7 +50,7 @@ internal static class ChatCompletion
 
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(responseDocument.RootElement.ToString());
+            Console.WriteLine(responseDocument.RootElement.ToString());
         }
 
         if (usageTracker is not null)
@@ -163,7 +163,7 @@ internal static class ChatCompletion
 
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(request.ToString());
+            Console.WriteLine(request.ToString());
         }
 
         using var response = await httpClient.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
@@ -199,7 +199,7 @@ internal static class ChatCompletion
             using var chunkDocument = JsonDocument.Parse(chunkData);
             if (options.IsDebugMode)
             {
-                Debug.WriteLine(chunkDocument.RootElement.ToString());
+                Console.WriteLine(chunkDocument.RootElement.ToString());
             }
 
             if (usageTracker is not null)

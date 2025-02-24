@@ -42,7 +42,7 @@ public static class ChatCompletion
         var request = CreateCompletionRequest(prompt);
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(request.ToString());
+            Console.WriteLine(request.ToString());
         }
 
         using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
@@ -51,7 +51,7 @@ public static class ChatCompletion
 
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(responseDocument.RootElement.ToString());
+            Console.WriteLine(responseDocument.RootElement.ToString());
         }
 
         var generatedMessage = responseDocument.RootElement.GetProperty("candidates")[0];
@@ -77,7 +77,7 @@ public static class ChatCompletion
         var request = CreateChatCompletionRequest(chat, options);
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(request.ToString());
+            Console.WriteLine(request.ToString());
         }
 
         using var response = await httpClient.RepeatPostAsJsonAsync($"https://generativelanguage.googleapis.com/v1beta/models/{options.Model}:generateContent?key={apiKey}", request, null, options.MaxAttempts, cancellationToken);
@@ -86,7 +86,7 @@ public static class ChatCompletion
 
         if (options.IsDebugMode)
         {
-            Debug.WriteLine(responseDocument.RootElement.ToString());
+            Console.WriteLine(responseDocument.RootElement.ToString());
         }
 
         var responseParts = responseDocument.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
