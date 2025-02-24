@@ -129,9 +129,15 @@ public static class SchemaSerializer
 
     public static JsonObject SerializeResponseFormat(Type type, bool useOpenAIFeatures)
     {
+        var name = type.Name.ToSnakeLower();
+        if (name.Length > 64)
+        {
+            name = name[..64];
+        }
+
         var jsonSchemaObject = new JsonObject
         {
-            { "name", type.Name.ToSnakeLower() },
+            { "name", name },
             { "schema", SerializeProperty(type, useOpenAIFeatures) },
             { "strict", true },
         };
