@@ -32,10 +32,10 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         PinLocation = pinLocation;
     }
 
-    public ChatMessage(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(ICollection<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         Role = ChatRole.Chatbot;
-        FunctionCalls = functionCalls.ToList();
+        FunctionCalls = functionCalls;
         PinLocation = pinLocation;
     }
 
@@ -87,7 +87,7 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         return new ChatMessage<TFunctionCall, TFunctionResult>(functionCall, pinLocation);
     }
 
-    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
+    public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(ICollection<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
         return new ChatMessage<TFunctionCall, TFunctionResult>(functionCalls, pinLocation);
     }
@@ -108,7 +108,7 @@ public record ChatMessage : ChatMessage<FunctionCall, FunctionResult>
 
     public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None) : base(functionCall, pinLocation) { }
 
-    public ChatMessage(IEnumerable<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None) : base(functionCalls, pinLocation) { }
+    public ChatMessage(ICollection<FunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None) : base(functionCalls, pinLocation) { }
 
     public ChatMessage(FunctionResult functionResult, PinLocation pinLocation = PinLocation.None) : base(functionResult, pinLocation) { }
 }
