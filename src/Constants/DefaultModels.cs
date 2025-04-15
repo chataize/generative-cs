@@ -8,7 +8,7 @@ public static class DefaultModels
 
         public const string Embedding = EmbeddingModels.OpenAI.TextEmbedding3Small;
 
-        public const string TextToSpeech = TextToSpeechModels.OpenAI.TTS1;
+        public const string TextToSpeech = TextToSpeechModels.OpenAI.GPT4oMiniTTS;
 
         public const string SpeechToText = SpeechRecognitionModels.OpenAI.Whisper1;
 
