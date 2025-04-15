@@ -10,7 +10,7 @@ public static class DefaultModels
 
         public const string TextToSpeech = TextToSpeechModels.OpenAI.GPT4oMiniTTS;
 
-        public const string SpeechToText = SpeechRecognitionModels.OpenAI.Whisper1;
+        public const string SpeechToText = SpeechRecognitionModels.OpenAI.GPT4oTranscribe;
 
         public const string Moderation = ModerationModels.OpenAI.OmniModerationLatest;
     }
