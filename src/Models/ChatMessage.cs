@@ -8,19 +8,21 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
 {
     public ChatMessage() { }
 
-    public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         Role = role;
         Content = content;
         PinLocation = pinLocation;
+        ImageUrls = imageUrls;
     }
 
-    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None)
+    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         Role = role;
         UserName = userName;
         Content = content;
         PinLocation = pinLocation;
+        ImageUrls = imageUrls;
     }
 
     public ChatMessage(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
