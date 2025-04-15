@@ -19,7 +19,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <OutputType>Exe</OutputType>
     <Description>
       Generative AI library for .NET 9.0 with built-in OpenAI ChatGPT and Google Gemini API clients
