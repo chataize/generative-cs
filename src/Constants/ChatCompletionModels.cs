@@ -8,6 +8,12 @@ public static class ChatCompletionModels
 
         public const string GPT45Preview20250227 = "gpt-4.5-preview-2025-02-27";
 
+        public const string GPT41 = "gpt-4.1";
+
+        public const string GPT41Mini = "gpt-4.1-mini";
+
+        public const string GPT41Nano = "gpt-4.1-nano";
+
         public const string GPT4o = "gpt-4o";
 
         public const string GPT4o20241120 = "gpt-4o-2024-11-20";
