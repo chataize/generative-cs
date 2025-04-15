@@ -43,41 +43,43 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
         _ = await FromSystemAsync(message, pinLocation);
     }
 
-    public ValueTask<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None)
+    public ValueTask<TMessage> FromUserAsync(string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         var chatMessage = new TMessage
         {
             Role = ChatRole.User,
             Content = message,
-            PinLocation = pinLocation
+            PinLocation = pinLocation,
+            ImageUrls = imageUrls
         };
 
         Messages.Add(chatMessage);
         return ValueTask.FromResult(chatMessage);
     }
 
-    public async void FromUser(string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
-        _ = await FromUserAsync(message, pinLocation);
+        _ = await FromUserAsync(message, pinLocation, imageUrls);
     }
 
-    public ValueTask<TMessage> FromUserAsync(string userName, string message, PinLocation pinLocation = PinLocation.None)
+    public ValueTask<TMessage> FromUserAsync(string userName, string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         var chatMessage = new TMessage
         {
             Role = ChatRole.User,
             UserName = userName,
             Content = message,
-            PinLocation = pinLocation
+            PinLocation = pinLocation,
+            ImageUrls = imageUrls
         };
 
         Messages.Add(chatMessage);
         return ValueTask.FromResult(chatMessage);
     }
 
-    public async void FromUser(string userName, string message, PinLocation pinLocation = PinLocation.None)
+    public async void FromUser(string userName, string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
-        _ = await FromUserAsync(userName, message, pinLocation);
+        _ = await FromUserAsync(userName, message, pinLocation, imageUrls);
     }
 
     public ValueTask<TMessage> FromChatbotAsync(string message, PinLocation pinLocation = PinLocation.None)
