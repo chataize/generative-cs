@@ -367,23 +367,24 @@ internal static class ChatCompletion
                 messageObject.Add("name", message.UserName);
             }
 
-            if (message.Image is not null)
+            var contentArray = new JsonArray();
+
+            if (message.Content is not null)
             {
-                var contentArray = new JsonArray();
-                if (message.Content is not null)
+                var textObject = new JsonObject
                 {
-                    var textObject = new JsonObject
-                    {
-                        { "type", "text" },
-                        { "text", message.Content }
-                    };
+                    { "type", "text" },
+                    { "text", message.Content }
+                };
 
-                    contentArray.Add(textObject);
-                }
+                contentArray.Add(textObject);
+            }
 
+            foreach (var imageUrl in message.ImageUrls)
+            {
                 var imageUrlObject = new JsonObject
                 {
-                    { "url", message.Image }
+                    { "url", imageUrl }
                 };
 
                 var imageObject = new JsonObject
@@ -393,12 +394,9 @@ internal static class ChatCompletion
                 };
 
                 contentArray.Add(imageObject);
-                messageObject.Add("content", contentArray);
             }
-            else if (!string.IsNullOrWhiteSpace(message.Content))
-            {
-                messageObject.Add("content", message.Content);
-            }
+
+            messageObject.Add("content", contentArray);
 
             var toolCallsArray = new JsonArray();
             foreach (var functionCall in message.FunctionCalls)

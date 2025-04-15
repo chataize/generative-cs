@@ -50,8 +50,6 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
 
     public string? Content { get; set; }
 
-    public string? Image { get; set; }
-
     public ICollection<TFunctionCall> FunctionCalls { get; set; } = [];
 
     public TFunctionResult? FunctionResult { get; set; }
@@ -59,6 +57,10 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
     public PinLocation PinLocation { get; set; }
 
     public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;
+
+    public List<string> ImageUrls { get; set; } = [];
+
+    ICollection<string> IChatMessage<TFunctionCall, TFunctionResult>.ImageUrls { get => ImageUrls; set => ImageUrls = [.. value]; }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromSystem(string content, PinLocation pinLocation = PinLocation.None)
     {
