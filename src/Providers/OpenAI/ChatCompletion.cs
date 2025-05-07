@@ -396,8 +396,6 @@ internal static class ChatCompletion
                 contentArray.Add(imageObject);
             }
 
-            messageObject.Add("content", contentArray);
-
             var toolCallsArray = new JsonArray();
             foreach (var functionCall in message.FunctionCalls)
             {
@@ -426,6 +424,10 @@ internal static class ChatCompletion
             {
                 messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
                 messageObject.Add("content", message.FunctionResult.Value);
+            }
+            else
+            {
+                messageObject.Add("content", contentArray);
             }
 
             messagesArray.Add(messageObject);
