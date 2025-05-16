@@ -2,6 +2,7 @@ using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Clients;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.Gemini;
+using ChatAIze.GenerativeCS.Providers.Gemini;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ChatAIze.GenerativeCS.Extensions;
@@ -28,6 +29,13 @@ public static class GeminiClientExtension
         _ = services.AddHttpClient<GeminiClient>();
         _ = services.AddSingleton<GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
         _ = services.AddSingleton<GeminiClient>();
+
+        // Register IFileService to be resolved from the GeminiClient's Files property
+        _ = services.AddSingleton<IFileService>(sp => 
+        {
+            var client = sp.GetRequiredService<GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
+            return client.Files; 
+        });
 
         return services;
     }

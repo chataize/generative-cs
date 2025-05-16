@@ -211,8 +211,11 @@ public static class ChatCompletion
         var contentsArray = new JsonArray();
         foreach (var message in messages)
         {
-            var partObject = new JsonObject();
-            var functionCall = message.FunctionCalls.FirstOrDefault();
+            var richMessage = message as Models.ChatMessage<TFunctionCall, TFunctionResult>;
+            if (richMessage == null) continue;
+
+            var partsArray = new JsonArray();
+            var functionCall = richMessage.FunctionCalls.FirstOrDefault();
 
             if (functionCall is not null)
             {
@@ -225,38 +228,57 @@ public static class ChatCompletion
                 {
                     functionCallObject.Add("args", JsonNode.Parse(functionCall.Arguments)!.AsObject());
                 }
-
-                partObject.Add("functionCall", functionCallObject);
+                partsArray.Add(new JsonObject { { "functionCall", functionCallObject } });
             }
-            else if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
+            else if (richMessage.FunctionResult is not null && !string.IsNullOrWhiteSpace(richMessage.FunctionResult.Name))
             {
                 var responseObject = new JsonObject
                 {
-                    { "name", message.FunctionResult.Name },
-                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Value, JsonOptions) }
+                    { "name", richMessage.FunctionResult.Name },
+                    { "content", JsonSerializer.SerializeToNode(richMessage.FunctionResult.Value, JsonOptions) }
                 };
 
                 var functionResponseObject = new JsonObject
                 {
-                    { "name", message.FunctionResult.Name },
+                    { "name", richMessage.FunctionResult.Name },
                     { "response", responseObject }
                 };
-
-                partObject.Add("functionResponse", functionResponseObject);
+                partsArray.Add(new JsonObject { { "functionResponse", functionResponseObject } });
             }
-            else
+            else if (richMessage.Parts != null && richMessage.Parts.Any())
             {
-                partObject.Add("text", message.Content);
+                foreach (var part in richMessage.Parts)
+                {
+                    if (part is Models.TextPart textPart)
+                    {
+                        partsArray.Add(new JsonObject { { "text", textPart.Text } });
+                    }
+                    else if (part is Models.FileDataPart fileDataPart)
+                    {
+                        var fileDataObject = new JsonObject
+                        {
+                            { "mime_type", fileDataPart.FileData.MimeType },
+                            { "file_uri", fileDataPart.FileData.FileUri }
+                        };
+                        partsArray.Add(new JsonObject { { "file_data", fileDataObject } });
+                    }
+                }
             }
-
-            var partsArray = new JsonArray
+            #pragma warning disable CS0618 // Type or member is obsolete
+            else if (!string.IsNullOrEmpty(richMessage.Content)) // Fallback to Content if Parts is empty but Content exists (legacy)
             {
-                partObject
-            };
+                partsArray.Add(new JsonObject { { "text", richMessage.Content } });
+            }
+            #pragma warning restore CS0618 // Type or member is obsolete
+            
+            if (partsArray.Count == 0) // Gemini requires at least one part. Add empty text if nothing else.
+            {
+                partsArray.Add(new JsonObject { { "text", "" } });
+            }
 
             var contentObject = new JsonObject
             {
-                { "role", GetRoleName(message.Role) },
+                { "role", GetRoleName(richMessage.Role) },
                 { "parts", partsArray }
             };
 

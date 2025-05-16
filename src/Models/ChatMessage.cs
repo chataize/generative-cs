@@ -1,4 +1,7 @@
 ﻿using ChatAIze.Abstractions.Chat;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace ChatAIze.GenerativeCS.Models;
 
@@ -6,23 +9,26 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
 {
-    public ChatMessage() { }
+    public ChatMessage() 
+    {
+        Parts = new List<IChatContentPart>();
+    }
 
     public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         Role = role;
-        Content = content;
         PinLocation = pinLocation;
         ImageUrls = imageUrls;
+        Parts = new List<IChatContentPart> { new TextPart(content) };
     }
 
     public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
         Role = role;
         UserName = userName;
-        Content = content;
         PinLocation = pinLocation;
         ImageUrls = imageUrls;
+        Parts = new List<IChatContentPart> { new TextPart(content) };
     }
 
     public ChatMessage(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
@@ -30,6 +36,7 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         Role = ChatRole.Chatbot;
         FunctionCalls = [functionCall];
         PinLocation = pinLocation;
+        Parts = new List<IChatContentPart>();
     }
 
     public ChatMessage(ICollection<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
@@ -37,6 +44,7 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         Role = ChatRole.Chatbot;
         FunctionCalls = functionCalls;
         PinLocation = pinLocation;
+        Parts = new List<IChatContentPart>();
     }
 
     public ChatMessage(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
@@ -44,13 +52,33 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
         Role = ChatRole.Function;
         FunctionResult = functionResult;
         PinLocation = pinLocation;
+        Parts = new List<IChatContentPart>();
     }
 
     public ChatRole Role { get; set; }
 
     public string? UserName { get; set; }
 
-    public string? Content { get; set; }
+    [Obsolete("Use Parts to support multimodal content. This property interacts with the first TextPart among the Parts collection.")]
+    public string? Content 
+    { 
+        get => Parts?.OfType<TextPart>().FirstOrDefault()?.Text;
+        set
+        {
+            Parts ??= new List<IChatContentPart>();
+            Parts.RemoveAll(p => p is TextPart);
+            if (value != null)
+            {
+                Parts.Insert(0, new TextPart(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents the collection of content parts for the message (e.g., text, image, file data).
+    /// For Gemini, this will be used to construct the 'parts' array.
+    /// </summary>
+    public List<IChatContentPart> Parts { get; set; }
 
     public ICollection<TFunctionCall> FunctionCalls { get; set; } = [];
 
@@ -64,22 +92,22 @@ public record ChatMessage<TFunctionCall, TFunctionResult> : IChatMessage<TFuncti
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromSystem(string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.System, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult> { Role = ChatRole.System, Parts = new List<IChatContentPart> { new TextPart(content) }, PinLocation = pinLocation };
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult> { Role = ChatRole.User, Parts = new List<IChatContentPart> { new TextPart(content) }, PinLocation = pinLocation };
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromUser(string userName, string content, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.User, userName, content, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult> { Role = ChatRole.User, UserName = userName, Parts = new List<IChatContentPart> { new TextPart(content) }, PinLocation = pinLocation };
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(string userName, PinLocation pinLocation = PinLocation.None)
     {
-        return new ChatMessage<TFunctionCall, TFunctionResult>(ChatRole.Chatbot, userName, pinLocation);
+        return new ChatMessage<TFunctionCall, TFunctionResult> { Role = ChatRole.Chatbot, UserName = userName, PinLocation = pinLocation, Parts = new List<IChatContentPart>() };
     }
 
     public static IChatMessage<TFunctionCall, TFunctionResult> FromChatbot(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
@@ -102,9 +130,22 @@ public record ChatMessage : ChatMessage<FunctionCall, FunctionResult>
 {
     public ChatMessage() : base() { }
 
-    public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None) : base(role, content, pinLocation) { }
+    public ChatMessage(ChatRole role, string content, PinLocation pinLocation = PinLocation.None) 
+        : base()
+    {
+        Role = role;
+        PinLocation = pinLocation;
+        Parts = new List<IChatContentPart> { new TextPart(content) };
+    }
 
-    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None) : base(role, userName, content, pinLocation) { }
+    public ChatMessage(ChatRole role, string userName, string content, PinLocation pinLocation = PinLocation.None) 
+        : base()
+    {
+        Role = role;
+        UserName = userName;
+        PinLocation = pinLocation;
+        Parts = new List<IChatContentPart> { new TextPart(content) };
+    }
 
     public ChatMessage(FunctionCall functionCall, PinLocation pinLocation = PinLocation.None) : base(functionCall, pinLocation) { }
 

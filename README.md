@@ -23,7 +23,7 @@ Generative AI library for .NET 9.0 with built-in OpenAI ChatGPT and Google Gemin
 - [ ] Text Embedding
 - [ ] Moderation
 - [ ] Response Streaming
-- [ ] Multi-Modal Requests
+- [x] Multi-Modal Requests
 ### Miscellaneous
 - [x] Dependency Injection
 - [x] Time Awareness
@@ -173,6 +173,130 @@ var client = new OpenAIClient("<OPENAI API KEY>");
 byte[] audio = await File.ReadAllBytesAsync("speech.mp3");
 string translation = await client.TranslateAsync(audio);
 ```
+
+## Multi-Modal Requests (Gemini)
+
+To send multi-modal requests with the Gemini client (e.g., text combined with uploaded files like PDFs, images, videos), you first need to upload the file using the `FileService` (exposed via `GeminiClient.Files`) and then reference it in your chat message.
+
+### 1. Accessing the File Service
+
+The `IFileService` is accessible via the `Files` property of your `GeminiClient` instance.
+
+**If using `GeminiClient` as a single instance:**
+
+```cs
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Models.Gemini; // For GeminiFile
+using ChatAIze.GenerativeCS.Providers.Gemini; // For IFileService
+using System.IO;
+
+var geminiClient = new GeminiClient("<GEMINI API KEY>");
+IFileService fileService = geminiClient.Files;
+
+// Example usage:
+// string filePath = "path/to/your/file.pdf";
+// string mimeType = "application/pdf"; // Adjust mime type accordingly
+// GeminiFile? uploadedFile = await fileService.UploadFileAsync(filePath, mimeType, Path.GetFileName(filePath));
+
+// if (uploadedFile != null)
+// {
+//    Console.WriteLine($"File uploaded: {uploadedFile.Name}, URI: {uploadedFile.Uri}");
+//    // Now use uploadedFile.Uri in a ChatMessage
+// }
+```
+
+**If using Dependency Injection:**
+
+You register `GeminiClient` (which includes `IFileService` registration) during setup. You can then inject `GeminiClient` and access its `Files` property, or inject `IFileService` directly if you only need the file operations.
+
+```cs
+// In your Startup.cs or Program.cs (service registration shown in previous DI examples)
+// builder.Services.AddGeminiClient("<GEMINI API KEY>");
+
+// In your class, Option 1: Inject GeminiClient
+// private readonly GeminiClient _geminiClient;
+// private readonly IFileService _fileService; // Derived from GeminiClient
+// public YourService(GeminiClient geminiClient)
+// {
+//     _geminiClient = geminiClient;
+//     _fileService = geminiClient.Files; 
+// }
+
+// In your class, Option 2: Inject IFileService directly (if preferred for just file ops)
+// private readonly IFileService _fileService;
+// public YourService(IFileService fileService) // Assumes IFileService is registered as shown previously
+// {
+//     _fileService = fileService;
+// }
+
+// async Task ProcessFile()
+// {
+//     string filePath = "path/to/your/file.pdf";
+//     string mimeType = "application/pdf";
+//     GeminiFile? uploadedFile = await _fileService.UploadFileAsync(filePath, mimeType, Path.GetFileName(filePath));
+//     // ...
+// }
+```
+
+### 2. Uploading a File
+
+Once you have an `IFileService` instance (e.g., from `geminiClient.Files`):
+
+```cs
+using ChatAIze.GenerativeCS.Clients;      // For GeminiClient
+using ChatAIze.GenerativeCS.Models.Gemini; // For GeminiFile
+using ChatAIze.GenerativeCS.Providers.Gemini; // For IFileService
+using System.IO;
+
+// Assuming 'geminiClient' is an initialized GeminiClient instance
+IFileService fileService = geminiClient.Files;
+
+string filePath = "path/to/your/document.pdf";
+string mimeType = "application/pdf"; // Change for other types e.g. "image/png", "video/mp4"
+string displayName = Path.GetFileName(filePath);
+
+GeminiFile? uploadedFile = await fileService.UploadFileAsync(filePath, mimeType, displayName);
+
+if (uploadedFile != null)
+{
+    Console.WriteLine($"File uploaded. Name: {uploadedFile.Name}, URI: {uploadedFile.Uri}");
+    // Store uploadedFile.Uri to use in a chat message
+}
+else
+{
+    Console.WriteLine("File upload failed.");
+}
+```
+
+### 3. Sending a Chat Message with the File
+
+After uploading the file, you use its `Uri` (which typically starts with `files/your-file-id`) and `MimeType` in a `ChatMessage` by adding a `FileDataPart`.
+
+```cs
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Models;
+using ChatAIze.Abstractions.Chat; // For ChatRole
+
+// Assuming 'geminiClient' is an initialized GeminiClient
+// Assuming 'uploadedFile' is the GeminiFile object from the successful upload
+
+if (uploadedFile != null && uploadedFile.Uri != null && uploadedFile.MimeType != null)
+{
+    var chat = new Chat();
+    var userMessage = new ChatMessage();
+    userMessage.Role = ChatRole.User;
+    userMessage.Parts.Add(new TextPart("Please summarize this document."));
+    userMessage.Parts.Add(new FileDataPart(new FileDataSource(uploadedFile.MimeType, uploadedFile.Uri)));
+    
+    chat.Messages.Add(userMessage);
+
+    // Using the existing CompleteAsync method which now supports parts
+    string response = await geminiClient.CompleteAsync(chat);
+    Console.WriteLine(response);
+}
+```
+
+Supported file types and their MIME types for Gemini include a wide range (PDF, common document formats, images, audio, video). Refer to the official Google Gemini API documentation for the most up-to-date list of supported MIME types.
 
 ## Moderation
 ```cs
