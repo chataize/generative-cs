@@ -15,6 +15,8 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     where TFunctionResult : IFunctionResult, new()
 {
     private readonly HttpClient _httpClient = new();
+    public string? ApiKey { get; set; }
+    public IFileService Files { get; }
 
     public GeminiClient()
     {
@@ -22,6 +24,8 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         {
             ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
         }
+        var geminiOptions = new GeminiOptions { ApiKey = this.ApiKey };
+        Files = new FileService(_httpClient, Microsoft.Extensions.Options.Options.Create(geminiOptions));
     }
 
     public GeminiClient(string apiKey)
@@ -32,6 +36,8 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         {
             ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
         }
+        var geminiOptions = new GeminiOptions { ApiKey = this.ApiKey };
+        Files = new FileService(_httpClient, Microsoft.Extensions.Options.Options.Create(geminiOptions));
     }
 
     public GeminiClient(GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult> options)
@@ -44,28 +50,40 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         }
 
         DefaultCompletionOptions = options.DefaultCompletionOptions;
+        var geminiOptions = new GeminiOptions { ApiKey = this.ApiKey };
+        Files = new FileService(_httpClient, Microsoft.Extensions.Options.Options.Create(geminiOptions));
     }
 
     [ActivatorUtilitiesConstructor]
-    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>> options)
+    public GeminiClient(HttpClient httpClient, IOptions<GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>> clientOptions)
     {
         _httpClient = httpClient;
-        ApiKey = options.Value.ApiKey;
+        ApiKey = clientOptions.Value.ApiKey;
 
         if (string.IsNullOrWhiteSpace(ApiKey))
         {
             ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
         }
 
-        DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
+        DefaultCompletionOptions = clientOptions.Value.DefaultCompletionOptions;
+
+        var fileServiceOptions = new GeminiOptions 
+        {
+            ApiKey = clientOptions.Value.ApiKey 
+        };
+        Files = new FileService(_httpClient, Microsoft.Extensions.Options.Options.Create(fileServiceOptions));
     }
 
     public GeminiClient(ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> defaultCompletionOptions)
     {
         DefaultCompletionOptions = defaultCompletionOptions;
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            ApiKey = EnvironmentVariableManager.GetGeminiAPIKey();
+        }
+        var geminiOptions = new GeminiOptions { ApiKey = this.ApiKey };
+        Files = new FileService(_httpClient, Microsoft.Extensions.Options.Options.Create(geminiOptions));
     }
-
-    public string? ApiKey { get; set; }
 
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 

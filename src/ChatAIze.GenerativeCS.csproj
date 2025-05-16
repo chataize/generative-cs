@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>Generative CS</Title>
     <Product>Generative CS</Product>
-    <Version>0.14.2</Version>
+    <Version>0.15.0</Version>
     <Company>ChatAIze</Company>
     <Authors>Marcel Kwiatkowski</Authors>
     <Copyright>© ChatAIze 2025</Copyright>
@@ -25,9 +25,12 @@
     <SuppressSymbolPackageFormatValidation>true</SuppressSymbolPackageFormatValidation>
     <Description>
       Generative AI library for .NET 9.0 with built-in OpenAI ChatGPT and Google Gemini API clients
-      and support for C# function calling via reflection.
+      and support for C# function calling via reflection. Now includes multimodal support for Gemini,
+      allowing text, PDF, DOC, video, audio, and image file processing.
       Features:
       - Chat Completion
+      - Gemini Multimodal Requests (text with files)
+      - Gemini File Management (upload, get, list, delete)
       - Response Streaming
       - Text Embedding
       - Text-to-Speech
@@ -49,21 +52,21 @@
       chatgpt-api client co co-pilot complete completion completion-generator completion-provider
       completions completions-generator completions-provider conversation conversational
       conversational-ai copilot cs csharp davinci dialog dotnet dotnet-core embedding
-      embedding-model embeddings embeddings-model function function-calling functional
+      embedding-model embeddings embeddings-model file-data file-upload file-uri function function-calling functional
       functional-gpt functions functions-calling gemini gemini-api gemini-api-client gemini-client
       gemini-pro gemini-pro-api gemini-pro-api-client gemini-pro-client generation generative-ai
       generative-cs generator google google-bard google-gemini google-gemini-pro
       google-gemini-pro-api google-gemini-pro-api-client google-gemini-pro-client gpt gpt-3 gpt-4
-      gpt-function gpt-functions gpt3 gpt4 kernel language language-model learning library llama llm
+      gpt-function gpt-functions gpt3 gpt4 image kernel language language-model learning library llama llm
       machine machine-learning method method-calling methods methods-calling microsot ml model
-      moderation natural natural-language-processing nlp open-ai open-ai-api open-ai-client openai
-      openai-api openai-api-client openai-client pilot pro processing prompt provider reflection
+      moderation multi-modal multimodal natural natural-language-processing nlp open-ai open-ai-api open-ai-client openai
+      openai-api openai-api-client openai-client pdf pilot pro processing prompt provider reflection
       respond response response-completion response-generation rest rest-api restful restful-api
       robot sdk search semantic sound speech speech-to-text stream streaming synthesis text
       text-completion text-embedding text-embeddings text-generation text-synthesis text-to-speech
       token transcript transcription transformer transformer-model transformers transformers-model
-      translation translator tts turbo vector vector-embedding vector-embeddings vector-search
-      vertex virtual virtual-assistant voice whisper whisper-api wrapper
+      translation translator tts txt turbo vector vector-embedding vector-embeddings vector-search
+      vertex video virtual virtual-assistant voice whisper whisper-api wrapper
     </PackageTags>
   </PropertyGroup>
   <ItemGroup>
