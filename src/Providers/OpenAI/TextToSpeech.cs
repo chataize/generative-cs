@@ -27,19 +27,19 @@ internal static class TextToSpeech
     {
         var requestObject = new JsonObject
         {
-            { "model", options.Model },
-            { "voice", options.Voice.ToString().ToLowerInvariant() },
-            { "input", text }
+            ["model"] = options.Model,
+            ["voice"] = options.Voice.ToString().ToLowerInvariant(),
+            ["input"] = text
         };
 
         if (options.Speed != 1.0)
         {
-            requestObject.Add("speed", options.Speed);
+            requestObject["speed"] = options.Speed;
         }
 
         if (options.ResponseFormat != VoiceResponseFormat.Default)
         {
-            requestObject.Add("response_format", options.ResponseFormat.ToString().ToLowerInvariant());
+            requestObject["response_format"] = options.ResponseFormat.ToString().ToLowerInvariant();
         }
 
         return requestObject;

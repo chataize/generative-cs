@@ -159,7 +159,7 @@ public static class ChatCompletion
     {
         var partObject = new JsonObject
         {
-            { "text", prompt }
+            ["text"] = prompt
         };
 
         var partsArray = new JsonArray
@@ -169,7 +169,7 @@ public static class ChatCompletion
 
         var contentObject = new JsonObject
         {
-            { "parts", partsArray}
+            ["parts"] = partsArray
         };
 
         var contentsArray = new JsonArray
@@ -179,7 +179,7 @@ public static class ChatCompletion
 
         var requestObject = new JsonObject
         {
-            { "contents", contentsArray }
+            ["contents"] = contentsArray
         };
 
         return requestObject;
@@ -218,35 +218,35 @@ public static class ChatCompletion
             {
                 var functionCallObject = new JsonObject
                 {
-                    { "name", functionCall.Name }
+                    ["name"] = functionCall.Name
                 };
 
                 if (functionCall.Arguments is not null)
                 {
-                    functionCallObject.Add("args", JsonNode.Parse(functionCall.Arguments)!.AsObject());
+                    functionCallObject["args"] = JsonNode.Parse(functionCall.Arguments)!.AsObject();
                 }
 
-                partObject.Add("functionCall", functionCallObject);
+                partObject["functionCall"] = functionCallObject;
             }
             else if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
                 var responseObject = new JsonObject
                 {
-                    { "name", message.FunctionResult.Name },
-                    { "content", JsonSerializer.SerializeToNode(message.FunctionResult.Value, JsonOptions) }
+                    ["name"] = message.FunctionResult.Name,
+                    ["content"] = JsonSerializer.SerializeToNode(message.FunctionResult.Value, JsonOptions)
                 };
 
                 var functionResponseObject = new JsonObject
                 {
-                    { "name", message.FunctionResult.Name },
-                    { "response", responseObject }
+                    ["name"] = message.FunctionResult.Name,
+                    ["response"] = responseObject
                 };
 
-                partObject.Add("functionResponse", functionResponseObject);
+                partObject["functionResponse"] = functionResponseObject;
             }
             else
             {
-                partObject.Add("text", message.Content);
+                partObject["text"] = message.Content;
             }
 
             var partsArray = new JsonArray
@@ -256,8 +256,8 @@ public static class ChatCompletion
 
             var contentObject = new JsonObject
             {
-                { "role", GetRoleName(message.Role) },
-                { "parts", partsArray }
+                ["role"] = GetRoleName(message.Role),
+                ["parts"] = partsArray
             };
 
             contentsArray.Add(contentObject);
@@ -265,7 +265,7 @@ public static class ChatCompletion
 
         var requestObject = new JsonObject
         {
-            { "contents", contentsArray },
+            ["contents"] = contentsArray
         };
 
         if (options.Functions.Count > 0)
@@ -278,7 +278,7 @@ public static class ChatCompletion
 
             var functionsObject = new JsonObject
             {
-                { "function_declarations", functionsArray }
+                ["function_declarations"] = functionsArray
             };
 
             var toolsArray = new JsonArray
@@ -286,7 +286,7 @@ public static class ChatCompletion
                 functionsObject
             };
 
-            requestObject.Add("tools", toolsArray);
+            requestObject["tools"] = toolsArray;
         }
 
         return requestObject;

@@ -19,7 +19,11 @@ internal static class ChatCompletion
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
+        TChat chat, string? apiKey,
+        ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
+        TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null,
+        int recursion = 0, CancellationToken cancellationToken = default)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -94,7 +98,6 @@ internal static class ChatCompletion
                             {
                                 var functionValue = await function.Callback.InvokeForStringResultAsync(functionArguments, options.FunctionContext, cancellationToken);
                                 var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = functionValue });
-
                                 await options.AddMessageCallback(message3);
                             }
                             else
@@ -131,7 +134,10 @@ internal static class ChatCompletion
         return messageContent;
     }
 
-    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal static async IAsyncEnumerable<string> StreamCompletionAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
+        TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
+        TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -151,14 +157,16 @@ internal static class ChatCompletion
         }
 
         var request = CreateChatCompletionRequest(chat, options);
-        request.Add("stream", true);
+        request["stream"] = true;
 
         if (usageTracker is not null)
         {
-            request.Add("stream_options", new JsonObject
+            var streamOptions = new JsonObject
             {
-                { "include_usage", true }
-            });
+                ["include_usage"] = true
+            };
+
+            request["stream_options"] = streamOptions;
         }
 
         if (options.IsDebugMode)
@@ -286,7 +294,7 @@ internal static class ChatCompletion
                     {
                         var functionValue = await function.Callback.InvokeForStringResultAsync(functionCall.Arguments, options.FunctionContext, cancellationToken);
                         var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
-
+                        
                         await options.AddMessageCallback(message3);
                     }
                     else
@@ -327,7 +335,8 @@ internal static class ChatCompletion
         }
     }
 
-    private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+    private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(
+        TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -359,12 +368,12 @@ internal static class ChatCompletion
         {
             var messageObject = new JsonObject
             {
-                { "role", GetRoleName(message.Role, options.Model) }
+                ["role"] = GetRoleName(message.Role, options.Model)
             };
 
             if (message.UserName is not null)
             {
-                messageObject.Add("name", message.UserName);
+                messageObject["name"] = message.UserName;
             }
 
             var contentArray = new JsonArray();
@@ -373,8 +382,8 @@ internal static class ChatCompletion
             {
                 var textObject = new JsonObject
                 {
-                    { "type", "text" },
-                    { "text", message.Content }
+                    ["type"] = "text",
+                    ["text"] = message.Content
                 };
 
                 contentArray.Add(textObject);
@@ -384,13 +393,13 @@ internal static class ChatCompletion
             {
                 var imageUrlObject = new JsonObject
                 {
-                    { "url", imageUrl }
+                    ["url"] = imageUrl
                 };
 
                 var imageObject = new JsonObject
                 {
-                    { "type", "image_url" },
-                    { "image_url", imageUrlObject }
+                    ["type"] = "image_url",
+                    ["image_url"] = imageUrlObject
                 };
 
                 contentArray.Add(imageObject);
@@ -401,33 +410,31 @@ internal static class ChatCompletion
             {
                 var functionObject = new JsonObject
                 {
-                    { "name", functionCall.Name },
-                    { "arguments", functionCall.Arguments }
+                    ["name"] = functionCall.Name,
+                    ["arguments"] = functionCall.Arguments
                 };
 
                 var toolCallObject = new JsonObject
                 {
-                    { "id", functionCall.ToolCallId },
-                    { "type", "function" },
-                    { "function", functionObject }
+                    ["id"] = functionCall.ToolCallId,
+                    ["type"] = "function",
+                    ["function"] = functionObject
                 };
 
                 toolCallsArray.Add(toolCallObject);
             }
 
             if (toolCallsArray.Count > 0)
-            {
-                messageObject.Add("tool_calls", toolCallsArray);
-            }
+                messageObject["tool_calls"] = toolCallsArray;
 
             if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
-                messageObject.Add("tool_call_id", message.FunctionResult.ToolCallId);
-                messageObject.Add("content", message.FunctionResult.Value);
+                messageObject["tool_call_id"] = message.FunctionResult.ToolCallId;
+                messageObject["content"] = message.FunctionResult.Value;
             }
             else
             {
-                messageObject.Add("content", contentArray);
+                messageObject["content"] = contentArray;
             }
 
             messagesArray.Add(messageObject);
@@ -435,76 +442,76 @@ internal static class ChatCompletion
 
         var requestObject = new JsonObject
         {
-            { "model", options.Model },
-            { "messages", messagesArray }
+            ["model"] = options.Model,
+            ["messages"] = messagesArray
         };
 
         if (chat.UserTrackingId is not null)
         {
-            requestObject.Add("user", chat.UserTrackingId);
+            requestObject["user"] = chat.UserTrackingId;
         }
         else if (options.UserTrackingId is not null)
         {
-            requestObject.Add("user", options.UserTrackingId);
+            requestObject["user"] = options.UserTrackingId;
         }
 
         if (options.MaxOutputTokens.HasValue)
         {
-            requestObject.Add("max_completion_tokens", options.MaxOutputTokens.Value);
+            requestObject["max_completion_tokens"] = options.MaxOutputTokens.Value;
         }
 
         if (options.Seed.HasValue)
         {
-            requestObject.Add("seed", options.Seed.Value);
+            requestObject["seed"] = options.Seed.Value;
         }
 
         if (options.Temperature.HasValue)
         {
-            requestObject.Add("temperature", options.Temperature.Value);
+            requestObject["temperature"] = options.Temperature.Value;
         }
 
         if (options.TopP.HasValue)
         {
-            requestObject.Add("top_p", options.TopP.Value);
+            requestObject["top_p"] = options.TopP.Value;
         }
 
         if (options.FrequencyPenalty.HasValue)
         {
-            requestObject.Add("frequency_penalty", options.FrequencyPenalty.Value);
+            requestObject["frequency_penalty"] = options.FrequencyPenalty.Value;
         }
 
         if (options.PresencePenalty.HasValue)
         {
-            requestObject.Add("presence_penalty", options.PresencePenalty.Value);
+            requestObject["presence_penalty"] = options.PresencePenalty.Value;
         }
 
         if (options.ReasoningEffort != ReasoningEffort.Medium)
         {
-            requestObject.Add("reasoning_effort", options.ReasoningEffort.ToString().ToSnakeLower());
+            requestObject["reasoning_effort"] = options.ReasoningEffort.ToString().ToSnakeLower();
         }
 
         if (options.ResponseType is not null)
         {
-            requestObject.Add("response_format", SchemaSerializer.SerializeResponseFormat(options.ResponseType, useOpenAIFeatures: true));
+            requestObject["response_format"] = SchemaSerializer.SerializeResponseFormat(options.ResponseType, useOpenAIFeatures: true);
         }
         else if (options.IsJsonMode)
         {
             var responseFormatObject = new JsonObject
             {
-               { "type", "json_object" }
+                ["type"] = "json_object"
             };
 
-            requestObject.Add("response_format", responseFormatObject);
+            requestObject["response_format"] = responseFormatObject;
         }
 
         if (options.Functions.Count > 0 && (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn))
         {
-            requestObject.Add("parallel_tool_calls", false);
+            requestObject["parallel_tool_calls"] = false;
         }
 
         if (options.IsStoringOutputs)
         {
-            requestObject.Add("store", true);
+            requestObject["store"] = true;
         }
 
         if (options.StopWords is not null && options.StopWords.Count > 0)
@@ -515,7 +522,7 @@ internal static class ChatCompletion
                 stopArray.Add(stop);
             }
 
-            requestObject.Add("stop", stopArray);
+            requestObject["stop"] = stopArray;
         }
 
         if (options.Functions.Count > 0)
@@ -532,17 +539,15 @@ internal static class ChatCompletion
                 var functionObject = SchemaSerializer.SerializeFunction(function, useOpenAIFeatures: true, options.IsStrictFunctionCallingOn);
                 var toolObject = new JsonObject
                 {
-                    { "type", "function" },
-                    { "function", functionObject }
+                    ["type"] = "function",
+                    ["function"] = functionObject
                 };
 
                 toolsArray.Add(toolObject);
             }
 
             if (toolsArray.Count > 0)
-            {
-                requestObject.Add("tools", toolsArray);
-            }
+                requestObject["tools"] = toolsArray;
         }
 
         return requestObject;
@@ -551,7 +556,6 @@ internal static class ChatCompletion
     private static string GetRoleName(ChatRole role, string model)
     {
         var usesDeveloperRole = model.StartsWith("o1") || model.StartsWith("o3");
-
         return role switch
         {
             ChatRole.System => usesDeveloperRole ? "developer" : "system",

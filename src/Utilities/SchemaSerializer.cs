@@ -30,7 +30,7 @@ public static class SchemaSerializer
 
                 if (!string.IsNullOrWhiteSpace(parameter.Description))
                 {
-                    propertyObject.Add("description", parameter.Description);
+                    propertyObject["description"] = parameter.Description;
                 }
 
                 if (parameter.EnumValues.Count > 0)
@@ -45,10 +45,10 @@ public static class SchemaSerializer
                         enumValuesArray.Add(enumValue);
                     }
 
-                    propertyObject.Add("enum", enumValuesArray);
+                    propertyObject["enum"] = enumValuesArray;
                 }
 
-                propertiesObject.Add(normalizedName, propertyObject);
+                propertiesObject[normalizedName] = propertyObject;
 
                 if (parameter.IsRequired)
                 {
@@ -72,7 +72,7 @@ public static class SchemaSerializer
                 var parameterName = parameter.Name!.ToSnakeLower();
                 var propertyObject = SerializeParameter(parameter, useOpenAIFeatures);
 
-                propertiesObject.Add(parameterName, propertyObject);
+                propertiesObject[parameterName] = propertyObject;
 
                 if (!parameter.IsOptional || isStrictModeOn || IsRequired(parameter))
                 {
@@ -83,23 +83,23 @@ public static class SchemaSerializer
 
         var parametersObject = new JsonObject
         {
-            { "type", "object" },
-            { "properties", propertiesObject }
+            ["type"] = "object",
+            ["properties"] = propertiesObject
         };
 
         if (useOpenAIFeatures)
         {
-            parametersObject.Add("additionalProperties", true);
+            parametersObject["additionalProperties"] = true;
         }
 
         if (requiredArray.Count != 0)
         {
-            parametersObject.Add("required", requiredArray);
+            parametersObject["required"] = requiredArray;
         }
 
         var functionObject = new JsonObject
         {
-            { "name", function.Name.ToSnakeLower() }
+            ["name"] = function.Name.ToSnakeLower()
         };
 
         var description = function.Description;
@@ -111,17 +111,17 @@ public static class SchemaSerializer
 
         if (!string.IsNullOrWhiteSpace(description))
         {
-            functionObject.Add("description", description);
+            functionObject["description"] = description;
         }
 
         if (allRequired && isStrictModeOn)
         {
-            functionObject.Add("strict", true);
+            functionObject["strict"] = true;
         }
 
         if (propertiesObject.Count > 0)
         {
-            functionObject.Add("parameters", parametersObject);
+            functionObject["parameters"] = parametersObject;
         }
 
         return functionObject;
@@ -137,15 +137,15 @@ public static class SchemaSerializer
 
         var jsonSchemaObject = new JsonObject
         {
-            { "name", name },
-            { "schema", SerializeProperty(type, useOpenAIFeatures) },
-            { "strict", true },
+            ["name"] = name,
+            ["schema"] = SerializeProperty(type, useOpenAIFeatures),
+            ["strict"] = true,
         };
 
         var formatObject = new JsonObject
         {
-            { "type", "json_schema" },
-            { "json_schema", jsonSchemaObject }
+            ["type"] = "json_schema",
+            ["json_schema"] = jsonSchemaObject
         };
 
         return formatObject;
@@ -159,12 +159,12 @@ public static class SchemaSerializer
 
         if (description is not null)
         {
-            propertyObject.Add("description", description);
+            propertyObject["description"] = description;
         }
 
         if (parameter.IsOptional && parameter.DefaultValue is not null)
         {
-            propertyObject.Add("default", parameter.DefaultValue.ToString());
+            propertyObject["default"] = parameter.DefaultValue.ToString();
         }
 
         return propertyObject;
@@ -175,12 +175,12 @@ public static class SchemaSerializer
         var (typeName, typeDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
         {
-            { "type", typeName.ToSnakeLower() }
+            ["type"] = typeName.ToSnakeLower()
         };
 
         if (typeDescription is not null)
         {
-            propertyObject.Add("description", typeDescription);
+            propertyObject["description"] = typeDescription;
         }
 
         if (propertyType.IsEnum)
@@ -191,17 +191,17 @@ public static class SchemaSerializer
                 membersArray.Add(enumMember.ToSnakeLower());
             }
 
-            propertyObject.Add("enum", membersArray);
+            propertyObject["enum"] = membersArray;
         }
         else if (propertyType.IsArray && propertyType.HasElementType)
         {
             var itemType = propertyType.GetElementType()!;
-            propertyObject.Add("items", SerializeProperty(itemType, useOpenAIFeatures));
+            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
         }
         else if (typeof(IEnumerable).IsAssignableFrom(propertyType) && propertyType.GenericTypeArguments.Length == 1)
         {
             var itemType = propertyType.GenericTypeArguments[0];
-            propertyObject.Add("items", SerializeProperty(itemType, useOpenAIFeatures));
+            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
         }
         else if (propertyType.IsClass)
         {
@@ -215,16 +215,16 @@ public static class SchemaSerializer
                 {
                     var propertyName = property.Name.ToSnakeLower();
 
-                    propertiesObject.Add(propertyName, SerializeProperty(property.PropertyType, useOpenAIFeatures));
+                    propertiesObject[propertyName] = SerializeProperty(property.PropertyType, useOpenAIFeatures);
                     requiredArray.Add(propertyName);
                 }
 
-                propertyObject.Add("properties", propertiesObject);
-                propertyObject.Add("required", requiredArray);
+                propertyObject["properties"] = propertiesObject;
+                propertyObject["required"] = requiredArray;
 
                 if (useOpenAIFeatures)
                 {
-                    propertyObject.Add("additionalProperties", false);
+                    propertyObject["additionalProperties"] = false;
                 }
             }
         }
