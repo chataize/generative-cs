@@ -74,7 +74,7 @@
     <PackageReference Include="ChatAIze.Abstractions" Version="0.12.17" />
     <PackageReference Include="ChatAIze.Utilities" Version="0.5.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4" />
   </ItemGroup>
 </Project>
