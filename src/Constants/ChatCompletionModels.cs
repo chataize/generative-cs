@@ -4,6 +4,18 @@ public static class ChatCompletionModels
 {
     public static class OpenAI
     {
+        public const string GPT5 = "gpt-5";
+
+        public const string GPT520250807 = "gpt-5-2025-08-07";
+
+        public const string GPT5Mini = "gpt-5-mini";
+
+        public const string GPT5Mini20250807 = "gpt-5-mini-2025-08-07";
+
+        public const string GPT5Nano = "gpt-5-nano";
+
+        public const string GPT5Nano20250807 = "gpt-5-nano-2025-08-07";
+
         public const string GPT45Preview = "gpt-4.5-preview";
 
         public const string GPT45Preview20250227 = "gpt-4.5-preview-2025-02-27";
