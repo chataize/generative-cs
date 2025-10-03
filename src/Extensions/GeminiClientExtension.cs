@@ -24,8 +24,8 @@ public static class GeminiClientExtension
             }
         }
 
-        _ = services.AddHttpClient<GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
-        _ = services.AddHttpClient<GeminiClient>();
+        _ = services.AddHttpClient<GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>>(c => c.Timeout = TimeSpan.FromMinutes(15));
+        _ = services.AddHttpClient<GeminiClient>(c => c.Timeout = TimeSpan.FromMinutes(15));
         _ = services.AddSingleton<GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
         _ = services.AddSingleton<GeminiClient>();
 

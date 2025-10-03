@@ -10,7 +10,10 @@ internal static class Embeddings
     internal static async Task<float[]> GetEmbeddingAsync(string text, string? apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {
@@ -43,7 +46,10 @@ internal static class Embeddings
     internal static async Task<string> GetBase64EmbeddingAsync(string text, string? apiKey = null, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {

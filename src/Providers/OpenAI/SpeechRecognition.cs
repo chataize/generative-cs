@@ -10,7 +10,10 @@ internal static class SpeechRecognition
     internal static async Task<string> TranscriptAsync(byte[] audio, string? apiKey, TranscriptionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {
@@ -26,7 +29,10 @@ internal static class SpeechRecognition
     internal static async Task<string> TranslateAsync(byte[] audio, string? apiKey, TranslationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {

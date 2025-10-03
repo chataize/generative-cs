@@ -24,8 +24,8 @@ public static class OpenAIExtension
             }
         }
 
-        _ = services.AddHttpClient<OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
-        _ = services.AddHttpClient<OpenAIClient>();
+        _ = services.AddHttpClient<OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>>(c => c.Timeout = TimeSpan.FromMinutes(15));
+        _ = services.AddHttpClient<OpenAIClient>(c => c.Timeout = TimeSpan.FromMinutes(15));
         _ = services.AddSingleton<OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>>();
         _ = services.AddSingleton<OpenAIClient>();
 

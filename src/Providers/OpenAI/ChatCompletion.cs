@@ -35,7 +35,10 @@ internal static class ChatCompletion
         }
 
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {
@@ -149,7 +152,10 @@ internal static class ChatCompletion
         }
 
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {

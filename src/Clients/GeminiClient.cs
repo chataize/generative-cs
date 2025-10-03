@@ -14,7 +14,10 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall, new()
     where TFunctionResult : IFunctionResult, new()
 {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = new()
+    {
+        Timeout = TimeSpan.FromMinutes(15)
+    };
 
     public GeminiClient()
     {

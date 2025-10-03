@@ -23,7 +23,11 @@ public static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
+        
         options ??= new();
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
@@ -66,7 +70,11 @@ public static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
+
         options ??= new();
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))

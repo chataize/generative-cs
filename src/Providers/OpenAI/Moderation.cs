@@ -12,7 +12,10 @@ internal static class Moderation
     internal static async Task<ModerationResult> ModerateAsync(string text, string? apiKey, ModerationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {

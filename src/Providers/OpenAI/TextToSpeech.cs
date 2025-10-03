@@ -10,7 +10,10 @@ internal static class TextToSpeech
     internal static async Task<byte[]> SynthesizeSpeechAsync(string text, string? apiKey, TextToSpeechOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
-        httpClient ??= new();
+        httpClient ??= new()
+        {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey))
         {
