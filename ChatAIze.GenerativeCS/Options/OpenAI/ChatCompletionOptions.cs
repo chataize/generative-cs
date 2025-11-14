@@ -40,7 +40,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public double? PresencePenalty { get; set; }
 
-    public ReasoningEffort ReasoningEffort { get; set; } = ReasoningEffort.Medium;
+    public ReasoningEffort ReasoningEffort { get; set; } = ReasoningEffort.None;
 
     public Verbosity Verbosity { get; set; } = Verbosity.Medium;
 
