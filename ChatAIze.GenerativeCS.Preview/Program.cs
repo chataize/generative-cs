@@ -1,4 +1,6 @@
 ﻿using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Models;
 using ChatAIze.GenerativeCS.Options.OpenAI;
 
@@ -7,11 +9,11 @@ var chat = new Chat();
 
 var options = new ChatCompletionOptions
 {
+    Model = ChatCompletionModels.OpenAI.GPT51,
     IsStoringOutputs = true,
-    IsTimeAware = true,
-    IsIgnoringPreviousFunctionCalls = true,
-    IsParallelFunctionCallingOn = false,
-    IsDebugMode = true
+    IsDebugMode = true,
+    ReasoningEffort = ReasoningEffort.None,
+    Verbosity = Verbosity.High
 };
 
 options.AddFunction("Check City Temperature", (string city) => Random.Shared.Next(0, 100));
