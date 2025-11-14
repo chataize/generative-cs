@@ -72,6 +72,6 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../src/ChatAIze.GenerativeCS.csproj" />
+    <ProjectReference Include="../ChatAIze.GenerativeCS/ChatAIze.GenerativeCS.csproj" />
   </ItemGroup>
 </Project>
