@@ -4,7 +4,7 @@ public static class DefaultModels
 {
     public static class OpenAI
     {
-        public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT5;
+        public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT51;
 
         public const string Embedding = EmbeddingModels.OpenAI.TextEmbedding3Small;
 
