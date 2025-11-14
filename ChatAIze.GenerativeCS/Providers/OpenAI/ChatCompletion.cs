@@ -491,7 +491,7 @@ internal static class ChatCompletion
             requestObject["presence_penalty"] = options.PresencePenalty.Value;
         }
 
-        if (options.ReasoningEffort != ReasoningEffort.Medium)
+        if (options.ReasoningEffort != ReasoningEffort.None)
         {
             requestObject["reasoning_effort"] = options.ReasoningEffort.ToString().ToSnakeLower();
         }
