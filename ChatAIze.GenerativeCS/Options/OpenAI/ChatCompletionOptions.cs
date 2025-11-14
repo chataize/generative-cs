@@ -42,6 +42,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
 
     public ReasoningEffort ReasoningEffort { get; set; } = ReasoningEffort.Medium;
 
+    public Verbosity Verbosity { get; set; } = Verbosity.Medium;
+
     public Type? ResponseType { get; set; }
 
     public bool IsJsonMode { get; set; }
