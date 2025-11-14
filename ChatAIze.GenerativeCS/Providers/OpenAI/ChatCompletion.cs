@@ -300,7 +300,7 @@ internal static class ChatCompletion
                     {
                         var functionValue = await function.Callback.InvokeForStringResultAsync(functionCall.Arguments, options.FunctionContext, cancellationToken);
                         var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
-                        
+
                         await options.AddMessageCallback(message3);
                     }
                     else
@@ -494,6 +494,11 @@ internal static class ChatCompletion
         if (options.ReasoningEffort != ReasoningEffort.Medium)
         {
             requestObject["reasoning_effort"] = options.ReasoningEffort.ToString().ToSnakeLower();
+        }
+
+        if (options.Verbosity != Verbosity.Medium)
+        {
+            requestObject["verbosity"] = options.Verbosity.ToString().ToSnakeLower();
         }
 
         if (options.ResponseType is not null)
