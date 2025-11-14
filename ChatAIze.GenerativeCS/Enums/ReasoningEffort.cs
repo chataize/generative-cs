@@ -4,6 +4,8 @@ public enum ReasoningEffort
 {
     None,
 
+    Minimal,
+
     Low,
 
     Medium,
