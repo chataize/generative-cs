@@ -190,9 +190,9 @@ internal static class ChatCompletion
         var currentFunctionArguments = string.Empty;
         var entireContent = string.Empty;
 
-        while (!responseReader.EndOfStream)
+        string? chunk;
+        while ((chunk = await responseReader.ReadLineAsync(cancellationToken)) is not null)
         {
-            var chunk = await responseReader.ReadLineAsync(cancellationToken);
             if (string.IsNullOrWhiteSpace(chunk))
             {
                 continue;
@@ -334,9 +334,9 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
-            await foreach (var chunk in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
+            await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
             {
-                yield return chunk;
+                yield return chunk2;
             }
         }
     }
