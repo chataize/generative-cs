@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ChatAIze.Abstractions" Version="0.12.19" />
-    <PackageReference Include="ChatAIze.Utilities" Version="0.5.10" />
+    <PackageReference Include="ChatAIze.Utilities" Version="0.5.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.9" />
