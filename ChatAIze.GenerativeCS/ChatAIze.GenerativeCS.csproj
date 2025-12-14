@@ -77,7 +77,7 @@
     <PackageReference Include="ChatAIze.Abstractions" Version="0.13.0" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
     <PackageReference Include="ChatAIze.Utilities" Version="0.5.12" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseLocalChataizeProjects)' == 'true'">
