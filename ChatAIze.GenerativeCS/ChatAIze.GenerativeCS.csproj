@@ -70,11 +70,18 @@
     <None Include="icon.png" Pack="true" PackagePath="\" />
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
+  <PropertyGroup>
+    <UseLocalChataizeProjects>false</UseLocalChataizeProjects>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ChatAIze.Abstractions" Version="0.12.19" />
-    <PackageReference Include="ChatAIze.Utilities" Version="0.5.12" />
+    <PackageReference Include="ChatAIze.Abstractions" Version="0.12.19" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
+    <PackageReference Include="ChatAIze.Utilities" Version="0.5.12" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseLocalChataizeProjects)' == 'true'">
+    <ProjectReference Include="..\..\abstractions\ChatAIze.Abstractions\ChatAIze.Abstractions.csproj" />
+    <ProjectReference Include="..\..\utilities\ChatAIze.Utilities\ChatAIze.Utilities.csproj" />
   </ItemGroup>
 </Project>
