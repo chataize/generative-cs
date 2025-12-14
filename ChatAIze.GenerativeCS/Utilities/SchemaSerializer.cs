@@ -215,7 +215,15 @@ public static class SchemaSerializer
                 {
                     var propertyName = property.Name.ToSnakeLower();
 
-                    propertiesObject[propertyName] = SerializeProperty(property.PropertyType, useOpenAIFeatures);
+                    var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures);
+                    var propertyDescription = GetDescription(property);
+
+                    if (!string.IsNullOrWhiteSpace(propertyDescription))
+                    {
+                        propertyJson["description"] = propertyDescription;
+                    }
+
+                    propertiesObject[propertyName] = propertyJson;
                     requiredArray.Add(propertyName);
                 }
 
