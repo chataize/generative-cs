@@ -174,11 +174,13 @@ public static class SchemaSerializer
 
     private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures)
     {
-        var (typeName, typeDescription) = GetTypeInfo(propertyType);
+        var (typeName, builtinDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
         {
             ["type"] = typeName.ToSnakeLower()
         };
+
+        var typeDescription = GetDescription(propertyType) ?? builtinDescription;
 
         if (typeDescription is not null)
         {
@@ -248,6 +250,11 @@ public static class SchemaSerializer
     private static string? GetDescription(MemberInfo member)
     {
         return member.GetCustomAttribute<DescriptionAttribute>()?.Description;
+    }
+
+    private static string? GetDescription(Type type)
+    {
+        return type.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
     private static string? GetDescription(ParameterInfo parameter)
