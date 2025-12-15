@@ -5,8 +5,20 @@ using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
+/// <summary>
+/// Handles OpenAI text-to-speech synthesis requests.
+/// </summary>
 internal static class TextToSpeech
 {
+    /// <summary>
+    /// Synthesizes speech audio bytes from text.
+    /// </summary>
+    /// <param name="text">Text to synthesize.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional text-to-speech options.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Raw audio bytes.</returns>
     internal static async Task<byte[]> SynthesizeSpeechAsync(string text, string? apiKey, TextToSpeechOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -26,6 +38,12 @@ internal static class TextToSpeech
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Builds the JSON payload for a speech synthesis request.
+    /// </summary>
+    /// <param name="text">Text to synthesize.</param>
+    /// <param name="options">Text-to-speech options.</param>
+    /// <returns>JSON request payload.</returns>
     private static JsonObject CreateSpeechSynthesisRequest(string text, TextToSpeechOptions options)
     {
         var requestObject = new JsonObject

@@ -5,8 +5,20 @@ using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
+/// <summary>
+/// Handles OpenAI speech recognition and translation requests.
+/// </summary>
 internal static class SpeechRecognition
 {
+    /// <summary>
+    /// Transcribes audio bytes to text.
+    /// </summary>
+    /// <param name="audio">Audio payload.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional transcription options.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Text transcript of the audio.</returns>
     internal static async Task<string> TranscriptAsync(byte[] audio, string? apiKey, TranscriptionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -26,6 +38,15 @@ internal static class SpeechRecognition
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Translates audio bytes to English text.
+    /// </summary>
+    /// <param name="audio">Audio payload.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional translation options.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Translated text.</returns>
     internal static async Task<string> TranslateAsync(byte[] audio, string? apiKey, TranslationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -45,6 +66,12 @@ internal static class SpeechRecognition
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Builds multipart form data content for a transcription request.
+    /// </summary>
+    /// <param name="audio">Audio payload.</param>
+    /// <param name="options">Transcription options.</param>
+    /// <returns>Multipart content ready to send.</returns>
     private static MultipartFormDataContent CreateTranscriptionRequest(byte[] audio, TranscriptionOptions options)
     {
         var fileContent = new ByteArrayContent(audio);
@@ -79,6 +106,12 @@ internal static class SpeechRecognition
         return content;
     }
 
+    /// <summary>
+    /// Builds multipart form data content for a translation request.
+    /// </summary>
+    /// <param name="audio">Audio payload.</param>
+    /// <param name="options">Translation options.</param>
+    /// <returns>Multipart content ready to send.</returns>
     private static MultipartFormDataContent CreateTranslationRequest(byte[] audio, TranslationOptions options)
     {
         var fileContent = new ByteArrayContent(audio);
@@ -108,6 +141,11 @@ internal static class SpeechRecognition
         return content;
     }
 
+    /// <summary>
+    /// Resolves the provider format name for a transcription response format.
+    /// </summary>
+    /// <param name="format">Format to convert.</param>
+    /// <returns>Provider format identifier.</returns>
     private static string GetResponseFormatName(TranscriptionResponseFormat format)
     {
         if (format == TranscriptionResponseFormat.VerboseJson)

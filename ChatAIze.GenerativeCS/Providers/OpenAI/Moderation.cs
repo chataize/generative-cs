@@ -7,8 +7,20 @@ using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
+/// <summary>
+/// Handles OpenAI content moderation requests.
+/// </summary>
 internal static class Moderation
 {
+    /// <summary>
+    /// Moderates a piece of text using the specified options.
+    /// </summary>
+    /// <param name="text">Text to moderate.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional moderation options.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Structured moderation result.</returns>
     internal static async Task<ModerationResult> ModerateAsync(string text, string? apiKey, ModerationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -31,6 +43,12 @@ internal static class Moderation
         return ParseModerationResponse(responseDocument);
     }
 
+    /// <summary>
+    /// Builds the JSON payload for a moderation request.
+    /// </summary>
+    /// <param name="text">Text to moderate.</param>
+    /// <param name="options">Moderation options.</param>
+    /// <returns>JSON request payload.</returns>
     private static JsonObject CreateModerationRequest(string text, ModerationOptions options)
     {
         var request = new JsonObject
@@ -46,6 +64,11 @@ internal static class Moderation
         return request;
     }
 
+    /// <summary>
+    /// Parses the moderation response into a <see cref="ModerationResult"/>.
+    /// </summary>
+    /// <param name="response">JSON document returned by the API.</param>
+    /// <returns>Structured moderation result.</returns>
     private static ModerationResult ParseModerationResponse(JsonDocument response)
     {
         var result = response.RootElement.GetProperty("results")[0];

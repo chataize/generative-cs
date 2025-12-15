@@ -5,8 +5,21 @@ using ChatAIze.GenerativeCS.Utilities;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
+/// <summary>
+/// Handles OpenAI embedding requests.
+/// </summary>
 internal static class Embeddings
 {
+    /// <summary>
+    /// Requests an embedding vector for the given text.
+    /// </summary>
+    /// <param name="text">Text to embed.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional embedding options.</param>
+    /// <param name="usageTracker">Optional tracker for prompt tokens.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Embedding vector as an array of floats.</returns>
     internal static async Task<float[]> GetEmbeddingAsync(string text, string? apiKey, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -43,6 +56,16 @@ internal static class Embeddings
         return [.. embedding];
     }
 
+    /// <summary>
+    /// Requests an embedding encoded as Base64 for the given text.
+    /// </summary>
+    /// <param name="text">Text to embed.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional embedding options.</param>
+    /// <param name="usageTracker">Optional tracker for prompt tokens.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Embedding encoded as a Base64 string.</returns>
     internal static async Task<string> GetBase64EmbeddingAsync(string text, string? apiKey = null, EmbeddingOptions? options = null, TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
@@ -73,6 +96,13 @@ internal static class Embeddings
         return responseDocument.RootElement.GetProperty("data")[0].GetProperty("embedding").GetString()!;
     }
 
+    /// <summary>
+    /// Builds the JSON payload for an embedding request.
+    /// </summary>
+    /// <param name="text">Text to embed.</param>
+    /// <param name="isBase64Format">True to request Base64 output.</param>
+    /// <param name="options">Embedding options.</param>
+    /// <returns>JSON request payload.</returns>
     private static JsonObject CreateEmbeddingRequest(string text, bool isBase64Format, EmbeddingOptions options)
     {
         var request = new JsonObject

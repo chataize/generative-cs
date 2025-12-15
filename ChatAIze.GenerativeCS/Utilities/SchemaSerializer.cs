@@ -11,10 +11,23 @@ using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
+/// <summary>
+/// Serializes function definitions and response schemas into provider-specific JSON representations.
+/// </summary>
 public static class SchemaSerializer
 {
+    /// <summary>
+    /// Nullability inspection context used to infer required properties.
+    /// </summary>
     private static readonly NullabilityInfoContext NullabilityContext = new();
 
+    /// <summary>
+    /// Serializes a function definition into a JSON schema payload.
+    /// </summary>
+    /// <param name="function">Function to serialize.</param>
+    /// <param name="useOpenAIFeatures">Indicates whether OpenAI-specific schema features should be enabled.</param>
+    /// <param name="isStrictModeOn">Indicates whether strict validation should be enforced.</param>
+    /// <returns>JSON object describing the function.</returns>
     internal static JsonObject SerializeFunction(IChatFunction function, bool useOpenAIFeatures, bool isStrictModeOn)
     {
         var propertiesObject = new JsonObject();
@@ -137,6 +150,12 @@ public static class SchemaSerializer
         return functionObject;
     }
 
+    /// <summary>
+    /// Serializes a response type into the expected response_format payload.
+    /// </summary>
+    /// <param name="type">Type to describe.</param>
+    /// <param name="useOpenAIFeatures">Indicates whether OpenAI-specific schema features should be enabled.</param>
+    /// <returns>JSON object describing the response format.</returns>
     public static JsonObject SerializeResponseFormat(Type type, bool useOpenAIFeatures)
     {
         var name = type.Name.ToSnakeLower();
@@ -160,6 +179,12 @@ public static class SchemaSerializer
         return formatObject;
     }
 
+    /// <summary>
+    /// Serializes a method parameter into a JSON schema property object.
+    /// </summary>
+    /// <param name="parameter">Parameter information to serialize.</param>
+    /// <param name="useOpenAIFeatures">Indicates whether OpenAI-specific schema features should be enabled.</param>
+    /// <returns>JSON object describing the parameter.</returns>
     private static JsonObject SerializeParameter(ParameterInfo parameter, bool useOpenAIFeatures)
     {
         var parameterType = parameter.ParameterType;
@@ -188,6 +213,14 @@ public static class SchemaSerializer
         return propertyObject;
     }
 
+    /// <summary>
+    /// Serializes a CLR type into a JSON schema property object.
+    /// </summary>
+    /// <param name="propertyType">Type to serialize.</param>
+    /// <param name="useOpenAIFeatures">Indicates whether OpenAI-specific schema features should be enabled.</param>
+    /// <param name="requireAllProperties">When true, marks all properties as required.</param>
+    /// <param name="member">Optional member information used to infer nullability and constraints.</param>
+    /// <returns>JSON object describing the property.</returns>
     private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures, bool requireAllProperties = false, ICustomAttributeProvider? member = null)
     {
         var actualType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
@@ -302,6 +335,11 @@ public static class SchemaSerializer
         return propertyObject;
     }
 
+    /// <summary>
+    /// Determines whether a method parameter should be marked as required.
+    /// </summary>
+    /// <param name="parameter">Parameter information to inspect.</param>
+    /// <returns>True when the parameter is required.</returns>
     private static bool IsRequired(ParameterInfo parameter)
     {
         if (parameter.GetCustomAttribute<RequiredAttribute>() is not null)
@@ -329,6 +367,11 @@ public static class SchemaSerializer
         return false;
     }
 
+    /// <summary>
+    /// Determines whether a property should be marked as required.
+    /// </summary>
+    /// <param name="property">Property information to inspect.</param>
+    /// <returns>True when the property is required.</returns>
     private static bool IsRequired(PropertyInfo property)
     {
         if (property.GetCustomAttribute<RequiredAttribute>() is not null)
@@ -351,21 +394,41 @@ public static class SchemaSerializer
         return false;
     }
 
+    /// <summary>
+    /// Attempts to read a description from a member attribute.
+    /// </summary>
+    /// <param name="member">Member to inspect.</param>
+    /// <returns>Description when present; otherwise null.</returns>
     private static string? GetDescription(MemberInfo member)
     {
         return member.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
+    /// <summary>
+    /// Attempts to read a description from a type attribute.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>Description when present; otherwise null.</returns>
     private static string? GetDescription(Type type)
     {
         return type.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
+    /// <summary>
+    /// Attempts to read a description from a parameter attribute.
+    /// </summary>
+    /// <param name="parameter">Parameter to inspect.</param>
+    /// <returns>Description when present; otherwise null.</returns>
     private static string? GetDescription(ParameterInfo parameter)
     {
         return parameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
+    /// <summary>
+    /// Resolves a JSON schema type name and built-in description for a CLR type.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>Tuple of type name and optional description.</returns>
     private static (string name, string? description) GetTypeInfo(Type type)
     {
         if (type == typeof(bool))
@@ -461,6 +524,12 @@ public static class SchemaSerializer
         return ("object", null);
     }
 
+    /// <summary>
+    /// Attempts to infer the element type of an enumerable.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <param name="itemType">Discovered item type when successful.</param>
+    /// <returns>True when the type represents a collection.</returns>
     private static bool TryGetEnumerableItemType(Type type, out Type itemType)
     {
         itemType = null!;
@@ -492,6 +561,13 @@ public static class SchemaSerializer
         return false;
     }
 
+    /// <summary>
+    /// Attempts to infer key and value types from a dictionary-like type.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <param name="keyType">Discovered key type.</param>
+    /// <param name="valueType">Discovered value type.</param>
+    /// <returns>True when the type represents a dictionary.</returns>
     private static bool TryGetDictionaryTypes(Type type, out Type keyType, out Type valueType)
     {
         keyType = null!;
@@ -522,6 +598,11 @@ public static class SchemaSerializer
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the supplied type is dictionary-like.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>True when the type is a dictionary.</returns>
     private static bool IsDictionaryType(Type type)
     {
         if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(IDictionary<,>) || type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)))
@@ -538,16 +619,32 @@ public static class SchemaSerializer
             (i.GetGenericTypeDefinition() == typeof(IDictionary<,>) || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
     }
 
+    /// <summary>
+    /// Determines whether the supplied type is a generic dictionary.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>True when the type is <see cref="IDictionary{TKey,TValue}"/> or <see cref="Dictionary{TKey,TValue}"/>.</returns>
     private static bool IsGenericDictionary(Type type)
     {
         return type.GetGenericTypeDefinition() == typeof(IDictionary<,>) || type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
     }
 
+    /// <summary>
+    /// Determines whether the supplied type is a generic read-only dictionary.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>True when the type is <see cref="IReadOnlyDictionary{TKey,TValue}"/> or <see cref="ReadOnlyDictionary{TKey,TValue}"/>.</returns>
     private static bool IsGenericReadOnlyDictionary(Type type)
     {
         return type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>) || type.GetGenericTypeDefinition() == typeof(ReadOnlyDictionary<,>);
     }
 
+    /// <summary>
+    /// Determines whether a member allows null values.
+    /// </summary>
+    /// <param name="originalType">Declared member type.</param>
+    /// <param name="member">Member metadata.</param>
+    /// <returns>True when the member is nullable.</returns>
     private static bool IsMemberNullable(Type originalType, ICustomAttributeProvider? member)
     {
         if (Nullable.GetUnderlyingType(originalType) is not null)
@@ -570,6 +667,13 @@ public static class SchemaSerializer
         return false;
     }
 
+    /// <summary>
+    /// Applies string length constraints derived from attributes.
+    /// </summary>
+    /// <param name="propertyJson">JSON schema object to update.</param>
+    /// <param name="targetType">Target CLR type.</param>
+    /// <param name="attributeProvider">Member that may contain length attributes.</param>
+    /// <param name="requiredMinLength">Optional minimum length enforced by the caller.</param>
     private static void ApplyStringLengthConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider attributeProvider, int? requiredMinLength)
     {
         if (targetType != typeof(string))
@@ -621,6 +725,12 @@ public static class SchemaSerializer
         }
     }
 
+    /// <summary>
+    /// Applies array length constraints derived from attributes.
+    /// </summary>
+    /// <param name="propertyJson">JSON schema object to update.</param>
+    /// <param name="targetType">Target CLR type.</param>
+    /// <param name="attributeProvider">Member that may contain length attributes.</param>
     private static void ApplyArrayLengthConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider? attributeProvider)
     {
         if (attributeProvider is null || targetType == typeof(string) || IsDictionaryType(targetType) || !typeof(IEnumerable).IsAssignableFrom(targetType))
@@ -652,6 +762,12 @@ public static class SchemaSerializer
         }
     }
 
+    /// <summary>
+    /// Applies numeric range constraints derived from attributes.
+    /// </summary>
+    /// <param name="propertyJson">JSON schema object to update.</param>
+    /// <param name="targetType">Target CLR type.</param>
+    /// <param name="attributeProvider">Member that may contain range attributes.</param>
     private static void ApplyNumericRangeConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider? attributeProvider)
     {
         if (attributeProvider is null || !IsNumericType(targetType))
@@ -675,6 +791,12 @@ public static class SchemaSerializer
         }
     }
 
+    /// <summary>
+    /// Attempts to convert an arbitrary value to a <see cref="double"/>.
+    /// </summary>
+    /// <param name="value">Value to convert.</param>
+    /// <param name="result">Converted result when successful.</param>
+    /// <returns>True when conversion succeeded.</returns>
     private static bool TryConvertToDouble(object value, out double result)
     {
         try
@@ -689,6 +811,11 @@ public static class SchemaSerializer
         }
     }
 
+    /// <summary>
+    /// Applies default value metadata when present.
+    /// </summary>
+    /// <param name="propertyJson">JSON schema object to update.</param>
+    /// <param name="attributeProvider">Member that may declare a default value.</param>
     private static void ApplyDefaultValue(JsonObject propertyJson, ICustomAttributeProvider? attributeProvider)
     {
         if (attributeProvider is null)
@@ -702,6 +829,11 @@ public static class SchemaSerializer
         }
     }
 
+    /// <summary>
+    /// Determines whether a type is numeric.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>True when the type is numeric.</returns>
     private static bool IsNumericType(Type type)
     {
         return type == typeof(byte) || type == typeof(sbyte) ||
@@ -713,6 +845,11 @@ public static class SchemaSerializer
                type == typeof(decimal);
     }
 
+    /// <summary>
+    /// Determines whether a type should be treated as a complex object when generating schemas.
+    /// </summary>
+    /// <param name="type">Type to inspect.</param>
+    /// <returns>True when the type should be serialized as an object.</returns>
     private static bool IsComplexObject(Type type)
     {
         // Treat structs with properties as objects as well (excluding primitives/enums)

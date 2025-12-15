@@ -2,8 +2,19 @@ using ChatAIze.Abstractions.Chat;
 
 namespace ChatAIze.GenerativeCS.Utilities;
 
+/// <summary>
+/// Helper utilities for preparing chat message payloads.
+/// </summary>
 internal static class MessageTools
 {
+    /// <summary>
+    /// Adds a system message to the beginning of the message list when provided.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Message list to modify.</param>
+    /// <param name="systemMessage">Optional system message.</param>
     internal static void AddDynamicSystemMessage<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, string? systemMessage)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -24,6 +35,14 @@ internal static class MessageTools
         messages.Insert(0, firstMessage);
     }
 
+    /// <summary>
+    /// Appends a time-aware system message to the end of the message list.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Message list to modify.</param>
+    /// <param name="currentTime">Current time supplied by the caller.</param>
     internal static void AddTimeInformation<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, DateTime currentTime)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -39,6 +58,13 @@ internal static class MessageTools
         messages.Add(timeMessage);
     }
 
+    /// <summary>
+    /// Removes messages flagged as unsent or deleted via reflection-based markers.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Messages to filter.</param>
     internal static void RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -64,6 +90,15 @@ internal static class MessageTools
         }
     }
 
+    /// <summary>
+    /// Reorders and trims messages according to the configured message and character limits.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Messages to mutate.</param>
+    /// <param name="messageLimit">Optional message count limit.</param>
+    /// <param name="characterLimit">Optional character count limit.</param>
     internal static void LimitTokens<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages, int? messageLimit, int? characterLimit)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
         where TFunctionCall : IFunctionCall
@@ -125,6 +160,13 @@ internal static class MessageTools
         _ = messages.RemoveAll(messagesToRemove.Contains);
     }
 
+    /// <summary>
+    /// Removes previous function calls that precede the last user message.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Messages to mutate.</param>
     internal static void RemovePreviousFunctionCalls<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages)
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
@@ -147,6 +189,13 @@ internal static class MessageTools
         }
     }
 
+    /// <summary>
+    /// Converts any system messages to user role messages while preserving content.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Messages to mutate.</param>
     internal static void ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -172,6 +221,13 @@ internal static class MessageTools
         }
     }
 
+    /// <summary>
+    /// Merges consecutive messages from the same sender into a single message.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="messages">Messages to mutate.</param>
     internal static void MergeMessages<TMessage, TFunctionCall, TFunctionResult>(IList<TMessage> messages)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall

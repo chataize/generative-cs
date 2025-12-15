@@ -11,14 +11,35 @@ using ChatAIze.Utilities.Extensions;
 
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
+/// <summary>
+/// Handles OpenAI chat completion requests, including streaming and function calling flows.
+/// </summary>
 internal static class ChatCompletion
 {
+    /// <summary>
+    /// Serializer options used for chat and function payloads.
+    /// </summary>
     private static JsonSerializerOptions JsonOptions { get; } = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
+    /// <summary>
+    /// Executes a chat completion request and returns the full response text.
+    /// </summary>
+    /// <typeparam name="TChat">Chat container type.</typeparam>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="chat">Chat transcript to send.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional completion options.</param>
+    /// <param name="usageTracker">Optional tracker for token usage.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="recursion">Internal recursion counter used to guard against loops.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>Model response text.</returns>
     internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey,
         ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
@@ -155,6 +176,21 @@ internal static class ChatCompletion
         return messageContent;
     }
 
+    /// <summary>
+    /// Streams a chat completion response, yielding tokens as they arrive.
+    /// </summary>
+    /// <typeparam name="TChat">Chat container type.</typeparam>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="chat">Chat transcript to send.</param>
+    /// <param name="apiKey">API key used for the request.</param>
+    /// <param name="options">Optional completion options.</param>
+    /// <param name="usageTracker">Optional tracker for token usage.</param>
+    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="recursion">Internal recursion counter used to guard against loops.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>An async sequence of streamed response chunks.</returns>
     internal static async IAsyncEnumerable<string> StreamCompletionAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
         TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0,
@@ -359,6 +395,16 @@ internal static class ChatCompletion
         }
     }
 
+    /// <summary>
+    /// Builds the JSON payload for a chat completion request.
+    /// </summary>
+    /// <typeparam name="TChat">Chat container type.</typeparam>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="chat">Chat transcript to send.</param>
+    /// <param name="options">Completion options.</param>
+    /// <returns>JSON request payload.</returns>
     private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
@@ -582,6 +628,12 @@ internal static class ChatCompletion
         return requestObject;
     }
 
+    /// <summary>
+    /// Converts a chat role into the provider-specific role name.
+    /// </summary>
+    /// <param name="role">Role to convert.</param>
+    /// <param name="model">Model identifier used to infer developer role names.</param>
+    /// <returns>Provider-specific role string.</returns>
     private static string GetRoleName(ChatRole role, string model)
     {
         var usesDeveloperRole = model.StartsWith("o1") || model.StartsWith("o3");
