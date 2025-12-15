@@ -166,6 +166,12 @@ public static class SchemaSerializer
         var propertyObject = SerializeProperty(parameterType, useOpenAIFeatures);
         var description = GetDescription(parameter);
 
+        if (parameterType == typeof(string) && parameter.GetCustomAttribute<RequiredAttribute>() is not null)
+        {
+            propertyObject["minLength"] = 1;
+            propertyObject["pattern"] = @"\S";
+        }
+
         if (description is not null)
         {
             propertyObject["description"] = description;
@@ -236,6 +242,11 @@ public static class SchemaSerializer
                     var propertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name.ToSnakeLower();
 
                     var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures, requireAllProperties);
+                    if (property.PropertyType == typeof(string) && property.GetCustomAttribute<RequiredAttribute>() is not null)
+                    {
+                        propertyJson["minLength"] = 1;
+                        propertyJson["pattern"] = @"\S";
+                    }
                     var propertyDescription = GetDescription(property);
 
                     if (!string.IsNullOrWhiteSpace(propertyDescription))
