@@ -209,6 +209,7 @@ public static class SchemaSerializer
         if (TryGetEnumerableItemType(actualType, out var itemType))
         {
             propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures, requireAllProperties);
+            ApplyArrayLengthConstraints(propertyObject, actualType, member);
         }
         else if (TryGetDictionaryTypes(actualType, out var _, out var valueType))
         {
@@ -290,6 +291,10 @@ public static class SchemaSerializer
                     propertyObject["additionalProperties"] = false;
                 }
             }
+        }
+        else if (IsNumericType(actualType))
+        {
+            ApplyNumericRangeConstraints(propertyObject, actualType, member);
         }
 
         return propertyObject;
@@ -612,6 +617,85 @@ public static class SchemaSerializer
         {
             propertyJson["maxLength"] = maxLength.Value;
         }
+    }
+
+    private static void ApplyArrayLengthConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider? attributeProvider)
+    {
+        if (attributeProvider is null || targetType == typeof(string) || IsDictionaryType(targetType) || !typeof(IEnumerable).IsAssignableFrom(targetType))
+        {
+            return;
+        }
+
+        int? minItems = null;
+        int? maxItems = null;
+
+        if (attributeProvider.GetCustomAttributes(typeof(MinLengthAttribute), true).OfType<MinLengthAttribute>().FirstOrDefault() is { } minLengthAttribute)
+        {
+            minItems = minLengthAttribute.Length;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(MaxLengthAttribute), true).OfType<MaxLengthAttribute>().FirstOrDefault() is { } maxLengthAttribute)
+        {
+            maxItems = maxLengthAttribute.Length;
+        }
+
+        if (minItems.HasValue)
+        {
+            propertyJson["minItems"] = minItems.Value;
+        }
+
+        if (maxItems.HasValue)
+        {
+            propertyJson["maxItems"] = maxItems.Value;
+        }
+    }
+
+    private static void ApplyNumericRangeConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider? attributeProvider)
+    {
+        if (attributeProvider is null || !IsNumericType(targetType))
+        {
+            return;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(RangeAttribute), true).OfType<RangeAttribute>().FirstOrDefault() is not { } rangeAttribute)
+        {
+            return;
+        }
+
+        if (TryConvertToDouble(rangeAttribute.Minimum, out var minimum))
+        {
+            propertyJson["minimum"] = minimum;
+        }
+
+        if (TryConvertToDouble(rangeAttribute.Maximum, out var maximum))
+        {
+            propertyJson["maximum"] = maximum;
+        }
+    }
+
+    private static bool TryConvertToDouble(object value, out double result)
+    {
+        try
+        {
+            result = Convert.ToDouble(value);
+            return true;
+        }
+        catch
+        {
+            result = 0;
+            return false;
+        }
+    }
+
+    private static bool IsNumericType(Type type)
+    {
+        return type == typeof(byte) || type == typeof(sbyte) ||
+               type == typeof(short) || type == typeof(ushort) ||
+               type == typeof(int) || type == typeof(uint) ||
+               type == typeof(long) || type == typeof(ulong) ||
+               type == typeof(nint) || type == typeof(nuint) ||
+               type == typeof(float) || type == typeof(double) ||
+               type == typeof(decimal);
     }
 
     private static bool IsComplexObject(Type type)
