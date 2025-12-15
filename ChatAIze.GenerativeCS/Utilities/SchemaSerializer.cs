@@ -174,7 +174,7 @@ public static class SchemaSerializer
 
         if (parameter.IsOptional && parameter.DefaultValue is not null)
         {
-            propertyObject["default"] = parameter.DefaultValue.ToString();
+            propertyObject["default"] = JsonValue.Create(parameter.DefaultValue);
         }
 
         return propertyObject;
