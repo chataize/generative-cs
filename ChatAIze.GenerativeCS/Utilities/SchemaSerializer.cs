@@ -249,7 +249,14 @@ public static class SchemaSerializer
                     var isDictionaryProperty = IsDictionaryType(property.PropertyType);
                     var isRequired = IsRequired(property);
 
-                    if (isRequired && !isDictionaryProperty)
+                    if (requireAllProperties)
+                    {
+                        if (!isDictionaryProperty)
+                        {
+                            requiredArray.Add(propertyName);
+                        }
+                    }
+                    else if (isRequired && !isDictionaryProperty)
                     {
                         requiredArray.Add(propertyName);
                     }
@@ -374,7 +381,7 @@ public static class SchemaSerializer
 
         if (type == typeof(float) || type == typeof(double) || type == typeof(decimal))
         {
-            return ("integer", "floating point number");
+            return ("number", "floating point number");
         }
 
         if (type == typeof(char))
