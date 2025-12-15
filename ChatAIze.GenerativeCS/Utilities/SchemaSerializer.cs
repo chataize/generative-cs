@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -187,6 +188,10 @@ public static class SchemaSerializer
         if (TryGetEnumerableItemType(propertyType, out var itemType))
         {
             propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
+        }
+        else if (TryGetDictionaryTypes(propertyType, out var _, out var valueType))
+        {
+            propertyObject["additionalProperties"] = SerializeProperty(valueType, useOpenAIFeatures);
         }
         else if (propertyType.IsEnum)
         {
@@ -376,8 +381,43 @@ public static class SchemaSerializer
         return false;
     }
 
+    private static bool TryGetDictionaryTypes(Type type, out Type keyType, out Type valueType)
+    {
+        keyType = null!;
+        valueType = null!;
+
+        if (type.IsGenericType && (IsGenericDictionary(type) || IsGenericReadOnlyDictionary(type)))
+        {
+            keyType = type.GenericTypeArguments[0];
+            valueType = type.GenericTypeArguments[1];
+            return true;
+        }
+
+        var dictionaryInterface = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && (IsGenericDictionary(i) || IsGenericReadOnlyDictionary(i)));
+        if (dictionaryInterface is not null)
+        {
+            keyType = dictionaryInterface.GenericTypeArguments[0];
+            valueType = dictionaryInterface.GenericTypeArguments[1];
+            return true;
+        }
+
+        if (typeof(IDictionary).IsAssignableFrom(type))
+        {
+            keyType = typeof(string);
+            valueType = typeof(object);
+            return true;
+        }
+
+        return false;
+    }
+
     private static bool IsDictionaryType(Type type)
     {
+        if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(IDictionary<,>) || type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)))
+        {
+            return true;
+        }
+
         if (typeof(IDictionary).IsAssignableFrom(type))
         {
             return true;
@@ -385,5 +425,15 @@ public static class SchemaSerializer
 
         return type.GetInterfaces().Any(i => i.IsGenericType &&
             (i.GetGenericTypeDefinition() == typeof(IDictionary<,>) || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
+    }
+
+    private static bool IsGenericDictionary(Type type)
+    {
+        return type.GetGenericTypeDefinition() == typeof(IDictionary<,>) || type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+    }
+
+    private static bool IsGenericReadOnlyDictionary(Type type)
+    {
+        return type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>) || type.GetGenericTypeDefinition() == typeof(ReadOnlyDictionary<,>);
     }
 }
