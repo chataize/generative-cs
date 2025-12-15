@@ -140,7 +140,7 @@ public static class SchemaSerializer
         var jsonSchemaObject = new JsonObject
         {
             ["name"] = name,
-            ["schema"] = SerializeProperty(type, useOpenAIFeatures),
+            ["schema"] = SerializeProperty(type, useOpenAIFeatures, requireAllProperties: true),
             ["strict"] = true,
         };
 
@@ -172,7 +172,7 @@ public static class SchemaSerializer
         return propertyObject;
     }
 
-    private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures)
+    private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures, bool requireAllProperties = false)
     {
         var (typeName, builtinDescription) = GetTypeInfo(propertyType);
         var propertyObject = new JsonObject
@@ -189,11 +189,11 @@ public static class SchemaSerializer
 
         if (TryGetEnumerableItemType(propertyType, out var itemType))
         {
-            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
+            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures, requireAllProperties);
         }
         else if (TryGetDictionaryTypes(propertyType, out var _, out var valueType))
         {
-            propertyObject["additionalProperties"] = SerializeProperty(valueType, useOpenAIFeatures);
+            propertyObject["additionalProperties"] = SerializeProperty(valueType, useOpenAIFeatures, requireAllProperties);
         }
         else if (propertyType.IsEnum)
         {
@@ -217,7 +217,7 @@ public static class SchemaSerializer
                 {
                     var propertyName = property.Name.ToSnakeLower();
 
-                    var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures);
+                    var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures, requireAllProperties);
                     var propertyDescription = GetDescription(property);
 
                     if (!string.IsNullOrWhiteSpace(propertyDescription))
@@ -226,11 +226,19 @@ public static class SchemaSerializer
                     }
 
                     propertiesObject[propertyName] = propertyJson;
-                    requiredArray.Add(propertyName);
+
+                    var isDictionaryProperty = IsDictionaryType(property.PropertyType);
+                    if ((requireAllProperties && !isDictionaryProperty) || (!requireAllProperties && IsRequired(property)))
+                    {
+                        requiredArray.Add(propertyName);
+                    }
                 }
 
                 propertyObject["properties"] = propertiesObject;
-                propertyObject["required"] = requiredArray;
+                if (requiredArray.Count > 0)
+                {
+                    propertyObject["required"] = requiredArray;
+                }
 
                 if (useOpenAIFeatures)
                 {
@@ -245,6 +253,17 @@ public static class SchemaSerializer
     private static bool IsRequired(ParameterInfo parameter)
     {
         return parameter.GetCustomAttribute<RequiredAttribute>() is not null;
+    }
+
+    private static bool IsRequired(PropertyInfo property)
+    {
+        if (property.GetCustomAttribute<RequiredAttribute>() is not null)
+        {
+            return true;
+        }
+
+        var propertyType = property.PropertyType;
+        return propertyType.IsValueType && Nullable.GetUnderlyingType(propertyType) is null;
     }
 
     private static string? GetDescription(MemberInfo member)
