@@ -75,6 +75,8 @@ internal static class ChatCompletion
         var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
+            var anySuccessfulToolCall = false;
+
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
             {
                 if (toolCallElement.GetProperty("type").GetString() == "function")
@@ -102,6 +104,10 @@ internal static class ChatCompletion
                                 var functionValue = await function.Callback.InvokeForStringResultAsync(functionArguments, options.FunctionContext, cancellationToken);
                                 var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = functionValue });
                                 await options.AddMessageCallback(message3);
+                                if (!functionValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    anySuccessfulToolCall = true;
+                                }
                             }
                             else
                             {
@@ -110,11 +116,16 @@ internal static class ChatCompletion
                                 {
                                     var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = stringValue });
                                     await options.AddMessageCallback(message4);
+                                    if (!stringValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        anySuccessfulToolCall = true;
+                                    }
                                 }
                                 else
                                 {
                                     var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
                                     await options.AddMessageCallback(message4);
+                                    anySuccessfulToolCall = true;
                                 }
                             }
                         }
@@ -125,6 +136,13 @@ internal static class ChatCompletion
                         await options.AddMessageCallback(message5);
                     }
                 }
+            }
+
+            if (!anySuccessfulToolCall)
+            {
+                var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+                await options.AddMessageCallback(fallback);
+                return fallback.Content ?? string.Empty;
             }
 
             return await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken);

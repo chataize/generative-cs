@@ -205,7 +205,7 @@ public static class SchemaSerializer
 
             propertyObject["enum"] = membersArray;
         }
-        else if (propertyType.IsClass)
+        else if (propertyType.IsClass || propertyType.IsInterface)
         {
             var properties = propertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite);
             if (properties.Any())
