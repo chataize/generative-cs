@@ -163,14 +163,16 @@ public static class SchemaSerializer
     private static JsonObject SerializeParameter(ParameterInfo parameter, bool useOpenAIFeatures)
     {
         var parameterType = parameter.ParameterType;
-        var propertyObject = SerializeProperty(parameterType, useOpenAIFeatures);
+        var propertyObject = SerializeProperty(parameterType, useOpenAIFeatures, requireAllProperties: false, member: parameter);
         var description = GetDescription(parameter);
 
-        if (parameterType == typeof(string) && parameter.GetCustomAttribute<RequiredAttribute>() is not null)
+        var isRequiredString = parameterType == typeof(string) && parameter.GetCustomAttribute<RequiredAttribute>() is not null;
+        if (isRequiredString)
         {
             propertyObject["minLength"] = 1;
             propertyObject["pattern"] = @"\S";
         }
+        ApplyStringLengthConstraints(propertyObject, parameterType, parameter, isRequiredString ? 1 : null);
 
         if (description is not null)
         {
@@ -185,13 +187,16 @@ public static class SchemaSerializer
         return propertyObject;
     }
 
-    private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures, bool requireAllProperties = false)
+    private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures, bool requireAllProperties = false, ICustomAttributeProvider? member = null)
     {
         var actualType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
         var (typeName, builtinDescription) = GetTypeInfo(actualType);
+        var typeNameNormalized = typeName.ToSnakeLower();
+        var isNullable = IsMemberNullable(propertyType, member);
+
         var propertyObject = new JsonObject
         {
-            ["type"] = typeName.ToSnakeLower()
+            ["type"] = isNullable ? new JsonArray { typeNameNormalized, "null" } : typeNameNormalized
         };
 
         var typeDescription = GetDescription(actualType) ?? builtinDescription;
@@ -241,12 +246,14 @@ public static class SchemaSerializer
                 {
                     var propertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name.ToSnakeLower();
 
-                    var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures, requireAllProperties);
-                    if (property.PropertyType == typeof(string) && property.GetCustomAttribute<RequiredAttribute>() is not null)
+                    var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures, requireAllProperties, property);
+                    var isRequiredString = property.PropertyType == typeof(string) && property.GetCustomAttribute<RequiredAttribute>() is not null;
+                    if (isRequiredString)
                     {
                         propertyJson["minLength"] = 1;
                         propertyJson["pattern"] = @"\S";
                     }
+                    ApplyStringLengthConstraints(propertyJson, property.PropertyType, property, isRequiredString ? 1 : null);
                     var propertyDescription = GetDescription(property);
 
                     if (!string.IsNullOrWhiteSpace(propertyDescription))
@@ -532,6 +539,79 @@ public static class SchemaSerializer
     private static bool IsGenericReadOnlyDictionary(Type type)
     {
         return type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>) || type.GetGenericTypeDefinition() == typeof(ReadOnlyDictionary<,>);
+    }
+
+    private static bool IsMemberNullable(Type originalType, ICustomAttributeProvider? member)
+    {
+        if (Nullable.GetUnderlyingType(originalType) is not null)
+        {
+            return true;
+        }
+
+        if (member is ParameterInfo parameterInfo)
+        {
+            var nullability = NullabilityContext.Create(parameterInfo);
+            return nullability.WriteState == NullabilityState.Nullable || nullability.ReadState == NullabilityState.Nullable;
+        }
+
+        if (member is PropertyInfo propertyInfo)
+        {
+            var nullability = NullabilityContext.Create(propertyInfo);
+            return nullability.WriteState == NullabilityState.Nullable || nullability.ReadState == NullabilityState.Nullable;
+        }
+
+        return false;
+    }
+
+    private static void ApplyStringLengthConstraints(JsonObject propertyJson, Type targetType, ICustomAttributeProvider attributeProvider, int? requiredMinLength)
+    {
+        if (targetType != typeof(string))
+        {
+            return;
+        }
+
+        int? minLength = requiredMinLength;
+        int? maxLength = null;
+
+        if (propertyJson.TryGetPropertyValue("minLength", out var minNode) && minNode is JsonValue minValue && minValue.TryGetValue<int>(out var existingMin))
+        {
+            minLength = minLength.HasValue ? Math.Max(minLength.Value, existingMin) : existingMin;
+        }
+
+        if (propertyJson.TryGetPropertyValue("maxLength", out var maxNode) && maxNode is JsonValue maxValue && maxValue.TryGetValue<int>(out var existingMax))
+        {
+            maxLength = existingMax;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(MinLengthAttribute), true).OfType<MinLengthAttribute>().FirstOrDefault() is { } minLengthAttribute)
+        {
+            minLength = minLength.HasValue ? Math.Max(minLength.Value, minLengthAttribute.Length) : minLengthAttribute.Length;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(StringLengthAttribute), true).OfType<StringLengthAttribute>().FirstOrDefault() is { } stringLengthAttribute)
+        {
+            if (stringLengthAttribute.MinimumLength > 0)
+            {
+                minLength = minLength.HasValue ? Math.Max(minLength.Value, stringLengthAttribute.MinimumLength) : stringLengthAttribute.MinimumLength;
+            }
+
+            maxLength = maxLength.HasValue ? Math.Min(maxLength.Value, stringLengthAttribute.MaximumLength) : stringLengthAttribute.MaximumLength;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(MaxLengthAttribute), true).OfType<MaxLengthAttribute>().FirstOrDefault() is { } maxLengthAttribute)
+        {
+            maxLength = maxLength.HasValue ? Math.Min(maxLength.Value, maxLengthAttribute.Length) : maxLengthAttribute.Length;
+        }
+
+        if (minLength.HasValue)
+        {
+            propertyJson["minLength"] = minLength.Value;
+        }
+
+        if (maxLength.HasValue)
+        {
+            propertyJson["maxLength"] = maxLength.Value;
+        }
     }
 
     private static bool IsComplexObject(Type type)
