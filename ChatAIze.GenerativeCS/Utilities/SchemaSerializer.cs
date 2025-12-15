@@ -148,8 +148,7 @@ public static class SchemaSerializer
         var jsonSchemaObject = new JsonObject
         {
             ["name"] = name,
-            ["schema"] = SerializeProperty(type, useOpenAIFeatures, requireAllProperties: true),
-            ["strict"] = true,
+            ["schema"] = SerializeProperty(type, useOpenAIFeatures, requireAllProperties: false)
         };
 
         var formatObject = new JsonObject
