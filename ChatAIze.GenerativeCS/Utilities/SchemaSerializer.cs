@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.Utilities.Extensions;
 
@@ -12,6 +13,8 @@ namespace ChatAIze.GenerativeCS.Utilities;
 
 public static class SchemaSerializer
 {
+    private static readonly NullabilityInfoContext NullabilityContext = new();
+
     internal static JsonObject SerializeFunction(IChatFunction function, bool useOpenAIFeatures, bool isStrictModeOn)
     {
         var propertiesObject = new JsonObject();
@@ -76,9 +79,14 @@ public static class SchemaSerializer
 
                 propertiesObject[parameterName] = propertyObject;
 
-                if (!parameter.IsOptional || isStrictModeOn || IsRequired(parameter))
+                var isRequired = IsRequired(parameter);
+                if (isRequired)
                 {
                     requiredArray.Add(parameterName);
+                }
+                else
+                {
+                    allRequired = false;
                 }
             }
         }
@@ -174,40 +182,51 @@ public static class SchemaSerializer
 
     private static JsonObject SerializeProperty(Type propertyType, bool useOpenAIFeatures, bool requireAllProperties = false)
     {
-        var (typeName, builtinDescription) = GetTypeInfo(propertyType);
+        var actualType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+        var (typeName, builtinDescription) = GetTypeInfo(actualType);
         var propertyObject = new JsonObject
         {
             ["type"] = typeName.ToSnakeLower()
         };
 
-        var typeDescription = GetDescription(propertyType) ?? builtinDescription;
+        var typeDescription = GetDescription(actualType) ?? builtinDescription;
 
         if (typeDescription is not null)
         {
             propertyObject["description"] = typeDescription;
         }
 
-        if (TryGetEnumerableItemType(propertyType, out var itemType))
+        if (TryGetEnumerableItemType(actualType, out var itemType))
         {
             propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures, requireAllProperties);
         }
-        else if (TryGetDictionaryTypes(propertyType, out var _, out var valueType))
+        else if (TryGetDictionaryTypes(actualType, out var _, out var valueType))
         {
             propertyObject["additionalProperties"] = SerializeProperty(valueType, useOpenAIFeatures, requireAllProperties);
         }
-        else if (propertyType.IsEnum)
+        else if (actualType.IsEnum)
         {
             var membersArray = new JsonArray();
-            foreach (var enumMember in Enum.GetNames(propertyType))
+            foreach (var enumMember in Enum.GetNames(actualType))
             {
                 membersArray.Add(enumMember.ToSnakeLower());
             }
 
             propertyObject["enum"] = membersArray;
         }
-        else if (propertyType.IsClass || propertyType.IsInterface)
+        else if (actualType.IsClass || actualType.IsInterface)
         {
-            var properties = propertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite);
+            var properties = actualType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(p =>
+                {
+                    if (p.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
+                        return false;
+
+                    var hasJsonInclude = p.GetCustomAttribute<JsonIncludeAttribute>() is not null;
+                    var canWrite = p.CanWrite && p.SetMethod is not null && p.SetMethod.IsPublic;
+
+                    return canWrite || hasJsonInclude;
+                });
             if (properties.Any())
             {
                 var propertiesObject = new JsonObject();
@@ -215,7 +234,7 @@ public static class SchemaSerializer
 
                 foreach (var property in properties)
                 {
-                    var propertyName = property.Name.ToSnakeLower();
+                    var propertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name.ToSnakeLower();
 
                     var propertyJson = SerializeProperty(property.PropertyType, useOpenAIFeatures, requireAllProperties);
                     var propertyDescription = GetDescription(property);
@@ -228,7 +247,9 @@ public static class SchemaSerializer
                     propertiesObject[propertyName] = propertyJson;
 
                     var isDictionaryProperty = IsDictionaryType(property.PropertyType);
-                    if ((requireAllProperties && !isDictionaryProperty) || (!requireAllProperties && IsRequired(property)))
+                    var isRequired = IsRequired(property);
+
+                    if (isRequired && !isDictionaryProperty)
                     {
                         requiredArray.Add(propertyName);
                     }
@@ -252,7 +273,29 @@ public static class SchemaSerializer
 
     private static bool IsRequired(ParameterInfo parameter)
     {
-        return parameter.GetCustomAttribute<RequiredAttribute>() is not null;
+        if (parameter.GetCustomAttribute<RequiredAttribute>() is not null)
+        {
+            return true;
+        }
+
+        if (parameter.IsOptional)
+        {
+            return false;
+        }
+
+        var parameterType = parameter.ParameterType;
+        if (parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null)
+        {
+            return true;
+        }
+
+        if (parameterType.IsClass || parameterType.IsInterface)
+        {
+            var nullabilityInfo = NullabilityContext.Create(parameter);
+            return nullabilityInfo.WriteState == NullabilityState.NotNull || nullabilityInfo.ReadState == NullabilityState.NotNull;
+        }
+
+        return false;
     }
 
     private static bool IsRequired(PropertyInfo property)
@@ -263,7 +306,18 @@ public static class SchemaSerializer
         }
 
         var propertyType = property.PropertyType;
-        return propertyType.IsValueType && Nullable.GetUnderlyingType(propertyType) is null;
+        if (propertyType.IsValueType && Nullable.GetUnderlyingType(propertyType) is null)
+        {
+            return true;
+        }
+
+        if (propertyType.IsClass || propertyType.IsInterface)
+        {
+            var nullabilityInfo = NullabilityContext.Create(property);
+            return nullabilityInfo.WriteState == NullabilityState.NotNull || nullabilityInfo.ReadState == NullabilityState.NotNull;
+        }
+
+        return false;
     }
 
     private static string? GetDescription(MemberInfo member)
