@@ -219,7 +219,7 @@ public static class SchemaSerializer
 
             propertyObject["enum"] = membersArray;
         }
-        else if (actualType.IsClass || actualType.IsInterface)
+        else if (IsComplexObject(actualType))
         {
             var properties = actualType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(p =>
@@ -532,5 +532,21 @@ public static class SchemaSerializer
     private static bool IsGenericReadOnlyDictionary(Type type)
     {
         return type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>) || type.GetGenericTypeDefinition() == typeof(ReadOnlyDictionary<,>);
+    }
+
+    private static bool IsComplexObject(Type type)
+    {
+        // Treat structs with properties as objects as well (excluding primitives/enums)
+        if (type.IsClass || type.IsInterface)
+        {
+            return true;
+        }
+
+        if (type.IsValueType && !type.IsPrimitive && !type.IsEnum)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
