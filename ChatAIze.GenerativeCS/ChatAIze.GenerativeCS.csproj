@@ -71,7 +71,7 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <PropertyGroup>
-    <UseLocalChataizeProjects>false</UseLocalChataizeProjects>
+    <UseLocalChataizeProjects>true</UseLocalChataizeProjects>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ChatAIze.Abstractions" Version="0.13.0" Condition="'$(UseLocalChataizeProjects)' != 'true'" />

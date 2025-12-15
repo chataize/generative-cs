@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -183,7 +184,11 @@ public static class SchemaSerializer
             propertyObject["description"] = typeDescription;
         }
 
-        if (propertyType.IsEnum)
+        if (TryGetEnumerableItemType(propertyType, out var itemType))
+        {
+            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
+        }
+        else if (propertyType.IsEnum)
         {
             var membersArray = new JsonArray();
             foreach (var enumMember in Enum.GetNames(propertyType))
@@ -192,16 +197,6 @@ public static class SchemaSerializer
             }
 
             propertyObject["enum"] = membersArray;
-        }
-        else if (propertyType.IsArray && propertyType.HasElementType)
-        {
-            var itemType = propertyType.GetElementType()!;
-            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
-        }
-        else if (typeof(IEnumerable).IsAssignableFrom(propertyType) && propertyType.GenericTypeArguments.Length == 1)
-        {
-            var itemType = propertyType.GenericTypeArguments[0];
-            propertyObject["items"] = SerializeProperty(itemType, useOpenAIFeatures);
         }
         else if (propertyType.IsClass)
         {
@@ -342,16 +337,53 @@ public static class SchemaSerializer
             return ("string", null);
         }
 
-        if (type.IsArray && type.HasElementType)
-        {
-            return ("array", null);
-        }
-
-        if (typeof(IEnumerable).IsAssignableFrom(type) && type.GenericTypeArguments.Length == 1)
+        if (TryGetEnumerableItemType(type, out _))
         {
             return ("array", null);
         }
 
         return ("object", null);
+    }
+
+    private static bool TryGetEnumerableItemType(Type type, out Type itemType)
+    {
+        itemType = null!;
+
+        if (type == typeof(string) || IsDictionaryType(type))
+        {
+            return false;
+        }
+
+        if (type.IsArray && type.HasElementType)
+        {
+            itemType = type.GetElementType()!;
+            return true;
+        }
+
+        if (type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type) && type.GenericTypeArguments.Length == 1)
+        {
+            itemType = type.GenericTypeArguments[0];
+            return true;
+        }
+
+        var enumerableInterface = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        if (enumerableInterface is not null)
+        {
+            itemType = enumerableInterface.GenericTypeArguments[0];
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsDictionaryType(Type type)
+    {
+        if (typeof(IDictionary).IsAssignableFrom(type))
+        {
+            return true;
+        }
+
+        return type.GetInterfaces().Any(i => i.IsGenericType &&
+            (i.GetGenericTypeDefinition() == typeof(IDictionary<,>) || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
     }
 }
