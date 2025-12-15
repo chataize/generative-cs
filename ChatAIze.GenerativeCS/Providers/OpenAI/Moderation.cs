@@ -8,17 +8,17 @@ using ChatAIze.GenerativeCS.Utilities;
 namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 
 /// <summary>
-/// Handles OpenAI content moderation requests.
+/// Handles OpenAI content moderation requests and converts responses into strongly typed results.
 /// </summary>
 internal static class Moderation
 {
     /// <summary>
     /// Moderates a piece of text using the specified options.
     /// </summary>
-    /// <param name="text">Text to moderate.</param>
-    /// <param name="apiKey">API key used for the request.</param>
-    /// <param name="options">Optional moderation options.</param>
-    /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="text">Raw text to evaluate for safety issues.</param>
+    /// <param name="apiKey">API key used for the request when not overridden by <paramref name="options"/>.</param>
+    /// <param name="options">Optional moderation options; defaults are applied when not provided.</param>
+    /// <param name="httpClient">HTTP client to use. When null, a client with a 15-minute timeout is created.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Structured moderation result.</returns>
     internal static async Task<ModerationResult> ModerateAsync(string text, string? apiKey, ModerationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
@@ -65,7 +65,7 @@ internal static class Moderation
     }
 
     /// <summary>
-    /// Parses the moderation response into a <see cref="ModerationResult"/>.
+    /// Parses the moderation response into a <see cref="ModerationResult"/>, reading the first result entry returned by the API.
     /// </summary>
     /// <param name="response">JSON document returned by the API.</param>
     /// <returns>Structured moderation result.</returns>

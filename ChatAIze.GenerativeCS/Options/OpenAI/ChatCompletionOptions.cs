@@ -19,8 +19,8 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     /// <summary>
     /// Initializes a new set of completion options.
     /// </summary>
-    /// <param name="model">Model identifier to target.</param>
-    /// <param name="apiKey">Optional API key overriding the client default.</param>
+    /// <param name="model">Model identifier to target (defaults to <see cref="DefaultModels.OpenAI.ChatCompletion"/>).</param>
+    /// <param name="apiKey">Optional API key overriding the client default for chat completions.</param>
     public ChatCompletionOptions(string model = DefaultModels.OpenAI.ChatCompletion, string? apiKey = null)
     {
         Model = model;
@@ -28,107 +28,107 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     }
 
     /// <summary>
-    /// Gets or sets the model identifier used for chat completions.
+    /// Gets or sets the model identifier used for chat completions (defaults to <see cref="DefaultModels.OpenAI.ChatCompletion"/>).
     /// </summary>
     public string Model { get; set; } = DefaultModels.OpenAI.ChatCompletion;
 
     /// <summary>
-    /// Gets or sets an optional API key that overrides the client-level key.
+    /// Gets or sets an optional API key that overrides the client-level key for chat completions.
     /// </summary>
     public string? ApiKey { get; set; }
 
     /// <summary>
-    /// Gets or sets an optional stable end-user identifier passed to the provider for safety, abuse, or rate limiting.
+    /// Gets or sets an optional stable end-user identifier passed to the provider when the chat instance does not supply one.
     /// </summary>
     public string? UserTrackingId { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of retry attempts for a failed request.
+    /// Gets or sets the maximum number of attempts (including the first call) before a request is treated as failed.
     /// </summary>
     public int MaxAttempts { get; set; } = 5;
 
     /// <summary>
-    /// Gets or sets the maximum number of tokens the model may generate.
+    /// Gets or sets the maximum number of tokens the assistant may generate; null uses the provider default.
     /// </summary>
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of non-system messages to include.
+    /// Gets or sets the maximum number of non-system messages to include; the oldest unpinned messages are trimmed first when exceeded.
     /// </summary>
     public int? MessageLimit { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum total character count across user and assistant messages.
+    /// Gets or sets the maximum total character count across non-system message content and function results; excess content is trimmed by dropping earlier unpinned messages.
     /// </summary>
     public int? CharacterLimit { get; set; }
 
     /// <summary>
-    /// Gets or sets an optional seed for deterministic responses.
+    /// Gets or sets an optional seed for deterministic responses when the selected model supports seeding.
     /// </summary>
     public int? Seed { get; set; }
 
     /// <summary>
-    /// Gets or sets the sampling temperature.
+    /// Gets or sets the sampling temperature; lower values make responses more deterministic.
     /// </summary>
     public double? Temperature { get; set; }
 
     /// <summary>
-    /// Gets or sets nucleus sampling probability mass.
+    /// Gets or sets nucleus sampling probability mass (use with or instead of temperature).
     /// </summary>
     public double? TopP { get; set; }
 
     /// <summary>
-    /// Gets or sets the frequency penalty applied to repeated tokens.
+    /// Gets or sets the frequency penalty applied to repeated tokens to reduce repetition.
     /// </summary>
     public double? FrequencyPenalty { get; set; }
 
     /// <summary>
-    /// Gets or sets the presence penalty applied to repeated tokens.
+    /// Gets or sets the presence penalty applied to repeated tokens to encourage new topics.
     /// </summary>
     public double? PresencePenalty { get; set; }
 
     /// <summary>
-    /// Gets or sets the desired reasoning effort for the response.
+    /// Gets or sets the desired reasoning effort for the response on models that support this control.
     /// </summary>
     public ReasoningEffort ReasoningEffort { get; set; } = ReasoningEffort.None;
 
     /// <summary>
-    /// Gets or sets the expected verbosity level for the response.
+    /// Gets or sets the expected verbosity level for the response on models that support this control.
     /// </summary>
     public Verbosity Verbosity { get; set; } = Verbosity.Medium;
 
     /// <summary>
-    /// Gets or sets an optional CLR type for JSON schema response formatting.
+    /// Gets or sets an optional CLR type to serialize into a JSON schema for response_format, enabling structured JSON responses.
     /// </summary>
     public Type? ResponseType { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the model should respond with JSON mode enabled.
+    /// Gets or sets a value indicating whether to force OpenAI's JSON object mode when no <see cref="ResponseType"/> is provided.
     /// </summary>
     public bool IsJsonMode { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the model may call multiple functions in parallel.
+    /// Gets or sets a value indicating whether the model may call multiple functions in parallel in a single turn.
     /// </summary>
     public bool IsParallelFunctionCallingOn { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the model must follow strict function schemas.
+    /// Gets or sets a value indicating whether function calling should enforce strict schemas and disable parallel tool calls.
     /// </summary>
     public bool IsStrictFunctionCallingOn { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether responses should be stored by the provider.
+    /// Gets or sets a value indicating whether responses should be stored by the provider (sends the store flag).
     /// </summary>
     public bool IsStoringOutputs { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether time metadata should be appended automatically.
+    /// Gets or sets a value indicating whether a system message with the current time should be appended automatically.
     /// </summary>
     public bool IsTimeAware { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether previous function calls should be removed before sending.
+    /// Gets or sets a value indicating whether function call and result messages before the latest user message should be removed.
     /// </summary>
     public bool IsIgnoringPreviousFunctionCalls { get; set; }
 
@@ -138,17 +138,17 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     public bool IsDebugMode { get; set; }
 
     /// <summary>
-    /// Gets or sets stop words that terminate generation.
+    /// Gets or sets stop sequences that terminate generation when produced.
     /// </summary>
     public List<string> StopWords { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets functions available to the model.
+    /// Gets or sets functions available to the model as OpenAI tool definitions.
     /// </summary>
     public List<IChatFunction> Functions { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets a callback used to dynamically supply a system message.
+    /// Gets or sets a callback used to dynamically supply a system message at request time.
     /// </summary>
     public Func<string?>? SystemMessageCallback { get; set; } = null;
 
@@ -158,12 +158,12 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     public Func<DateTime> TimeCallback { get; set; } = () => DateTime.Now;
 
     /// <summary>
-    /// Gets or sets a callback invoked whenever a message is added to the chat.
+    /// Gets or sets a callback invoked whenever a message is added to the chat during request processing.
     /// </summary>
     public Func<TMessage, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
 
     /// <summary>
-    /// Gets or sets the fallback function callback used when a function does not have an explicit delegate.
+    /// Gets or sets the fallback function callback used when a function does not have an explicit delegate; should return a string or serializable object.
     /// </summary>
     public Func<string, string, CancellationToken, ValueTask<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 

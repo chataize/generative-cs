@@ -4,7 +4,7 @@ using ChatAIze.Abstractions.Chat;
 namespace ChatAIze.GenerativeCS.Models;
 
 /// <summary>
-/// Represents the result returned after executing a function call.
+/// Represents the serialized value returned to the model after executing a function call.
 /// </summary>
 public record FunctionResult : IFunctionResult
 {
@@ -16,8 +16,8 @@ public record FunctionResult : IFunctionResult
     /// <summary>
     /// Initializes a function result with a name and value.
     /// </summary>
-    /// <param name="name">Function name.</param>
-    /// <param name="value">Serialized result value.</param>
+    /// <param name="name">Function name the model requested.</param>
+    /// <param name="value">Serialized result value (typically JSON or plain text the model can read).</param>
     [SetsRequiredMembers]
     public FunctionResult(string name, string value)
     {
@@ -28,9 +28,9 @@ public record FunctionResult : IFunctionResult
     /// <summary>
     /// Initializes a function result with a tool call identifier.
     /// </summary>
-    /// <param name="toolCallId">Provider-specific tool call identifier.</param>
+    /// <param name="toolCallId">Provider-specific tool call identifier that pairs the result with the originating tool call.</param>
     /// <param name="name">Function name.</param>
-    /// <param name="value">Serialized result value.</param>
+    /// <param name="value">Serialized result value (typically JSON or plain text the model can read).</param>
     [SetsRequiredMembers]
     public FunctionResult(string toolCallId, string name, string value)
     {
@@ -40,17 +40,17 @@ public record FunctionResult : IFunctionResult
     }
 
     /// <summary>
-    /// Gets or sets the provider-issued tool call identifier.
+    /// Gets or sets the provider-issued tool call identifier used to correlate the result with a prior tool call.
     /// </summary>
     public string? ToolCallId { get; set; }
 
     /// <summary>
-    /// Gets or sets the function name.
+    /// Gets or sets the function name requested by the model.
     /// </summary>
     public string Name { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the serialized result value.
+    /// Gets or sets the serialized result value returned to the model.
     /// </summary>
     public string Value { get; set; } = null!;
 }
