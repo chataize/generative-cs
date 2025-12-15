@@ -173,6 +173,7 @@ public static class SchemaSerializer
             propertyObject["pattern"] = @"\S";
         }
         ApplyStringLengthConstraints(propertyObject, parameterType, parameter, isRequiredString ? 1 : null);
+        ApplyDefaultValue(propertyObject, parameter);
 
         if (description is not null)
         {
@@ -261,6 +262,7 @@ public static class SchemaSerializer
                     {
                         propertyJson["description"] = propertyDescription;
                     }
+                    ApplyDefaultValue(propertyJson, property);
 
                     propertiesObject[propertyName] = propertyJson;
 
@@ -684,6 +686,19 @@ public static class SchemaSerializer
         {
             result = 0;
             return false;
+        }
+    }
+
+    private static void ApplyDefaultValue(JsonObject propertyJson, ICustomAttributeProvider? attributeProvider)
+    {
+        if (attributeProvider is null)
+        {
+            return;
+        }
+
+        if (attributeProvider.GetCustomAttributes(typeof(DefaultValueAttribute), true).OfType<DefaultValueAttribute>().FirstOrDefault() is { } defaultAttribute)
+        {
+            propertyJson["default"] = JsonValue.Create(defaultAttribute.Value);
         }
     }
 
