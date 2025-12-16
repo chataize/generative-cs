@@ -13,16 +13,19 @@ public static class DefaultModels
         /// <summary>
         /// Default chat completion model.
         /// </summary>
+        /// <remarks>Used when callers omit a model identifier to favor a generally capable, up-to-date model.</remarks>
         public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT51;
 
         /// <summary>
         /// Default embedding model.
         /// </summary>
+        /// <remarks>Balances cost and quality for general-purpose embeddings.</remarks>
         public const string Embedding = EmbeddingModels.OpenAI.TextEmbedding3Small;
 
         /// <summary>
         /// Default text-to-speech model.
         /// </summary>
+        /// <remarks>Chosen for latency and voice quality in typical scenarios.</remarks>
         public const string TextToSpeech = TextToSpeechModels.OpenAI.GPT4oMiniTTS;
 
         /// <summary>

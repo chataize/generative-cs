@@ -58,6 +58,7 @@ internal static class Moderation
 
         if (options.Model != ModerationModels.OpenAI.TextModerationLatest)
         {
+            // The latest model is implicit; only send when the caller selects a specific version.
             request.Add("model", options.Model);
         }
 
@@ -75,6 +76,7 @@ internal static class Moderation
         var categories = result.GetProperty("categories");
         var categoryScores = result.GetProperty("category_scores");
 
+        // API may return multiple results, but only the first entry is used here to mirror typical single-input usage.
         return new ModerationResult
         {
             IsFlagged = result.GetProperty("flagged").GetBoolean(),

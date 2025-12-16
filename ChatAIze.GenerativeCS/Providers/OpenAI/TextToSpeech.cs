@@ -60,6 +60,7 @@ internal static class TextToSpeech
 
         if (options.ResponseFormat != VoiceResponseFormat.Default)
         {
+            // Skip emitting response_format when using the provider default to keep payload minimal.
             requestObject["response_format"] = options.ResponseFormat.ToString().ToLowerInvariant();
         }
 

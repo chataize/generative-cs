@@ -42,6 +42,7 @@ public record FunctionCall : IFunctionCall
     /// <summary>
     /// Gets or sets the provider-issued tool call identifier.
     /// </summary>
+    /// <remarks>When present, this ties a function call to its matching tool result in later messages.</remarks>
     public string? ToolCallId { get; set; }
 
     /// <summary>

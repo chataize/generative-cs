@@ -130,6 +130,7 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     /// <summary>
     /// Gets or sets a value indicating whether function call and result messages before the latest user message should be removed.
     /// </summary>
+    /// <remarks>Use when continuing an existing chat but wanting the model to ignore earlier tool interactions and only consider the latest user turn.</remarks>
     public bool IsIgnoringPreviousFunctionCalls { get; set; }
 
     /// <summary>
@@ -160,11 +161,13 @@ public record ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>
     /// <summary>
     /// Gets or sets a callback invoked whenever a message is added to the chat during request processing.
     /// </summary>
+    /// <remarks>Useful for logging or persisting transcripts as tool calls and model replies are appended.</remarks>
     public Func<TMessage, Task> AddMessageCallback { get; set; } = (_) => Task.CompletedTask;
 
     /// <summary>
     /// Gets or sets the fallback function callback used when a function does not have an explicit delegate; should return a string or serializable object.
     /// </summary>
+    /// <remarks>Defaults to throwing to make the absence of a callback explicit.</remarks>
     public Func<string, string, CancellationToken, ValueTask<object?>> DefaultFunctionCallback { get; set; } = (_, _, _) => throw new NotImplementedException("Function callback has not been implemented.");
 
     /// <summary>

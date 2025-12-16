@@ -50,6 +50,7 @@ internal static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
+        // Function-calling paths re-enter this method after tool execution; guard against a runaway loop.
         if (recursion >= 5)
         {
             throw new InvalidOperationException("Recursion limit reached (infinite loop detected).");
@@ -113,6 +114,7 @@ internal static class ChatCompletion
                     var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
                     if (function is not null)
                     {
+                        // Every odd invocation of a double-check function asks the model to confirm before executing it.
                         if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                         {
                             var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
@@ -166,6 +168,7 @@ internal static class ChatCompletion
                 return fallback.Content ?? string.Empty;
             }
 
+            // Ask the model to continue now that function results have been appended to the chat.
             return await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken);
         }
 
@@ -242,6 +245,7 @@ internal static class ChatCompletion
         var currentToolCallId = string.Empty;
         var currentFunctionName = string.Empty;
         var currentFunctionArguments = string.Empty;
+        // Aggregate streamed text chunks so we can add a single chatbot message after the stream completes.
         var entireContent = string.Empty;
 
         string? chunk;
@@ -307,6 +311,8 @@ internal static class ChatCompletion
                 var toolCallProperty = toolCallsProperty[0];
                 if (toolCallProperty.TryGetProperty("function", out var functionProperty))
                 {
+                    // The streaming API sends tool call pieces incrementally; start a new call whenever
+                    // a name arrives and keep appending arguments until the next one shows up.
                     if (functionProperty.TryGetProperty("name", out var functionNameProperty))
                     {
                         if (!string.IsNullOrWhiteSpace(currentFunctionName))
@@ -329,6 +335,7 @@ internal static class ChatCompletion
 
         if (!string.IsNullOrWhiteSpace(currentFunctionName))
         {
+            // Flush the final in-progress function call that would not be pushed by the loop above.
             functionCalls.Add(new TFunctionCall { ToolCallId = currentToolCallId, Name = currentFunctionName, Arguments = currentFunctionArguments });
         }
 
@@ -343,6 +350,7 @@ internal static class ChatCompletion
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
             if (function is not null)
             {
+                // Every odd invocation of a double-check function asks the model to confirm before executing it.
                 if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionCall.Name)) % 2 != 0)
                 {
                     var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
@@ -388,6 +396,7 @@ internal static class ChatCompletion
 
         if (functionCalls.Count > 0)
         {
+            // Re-enter streaming once tool results are in the transcript so the model can continue its reply.
             await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
             {
                 yield return chunk2;
@@ -500,6 +509,7 @@ internal static class ChatCompletion
             if (message.FunctionResult is not null && !string.IsNullOrWhiteSpace(message.FunctionResult.Name))
             {
                 messageObject["tool_call_id"] = message.FunctionResult.ToolCallId;
+                // Tool results are sent as plain content fields, not as the rich content array used for user text/images.
                 messageObject["content"] = message.FunctionResult.Value;
             }
             else
@@ -581,6 +591,7 @@ internal static class ChatCompletion
 
         if (options.Functions.Count > 0 && (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn))
         {
+            // Force serial tool calls when caller disables parallelism or strict mode demands ordered execution.
             requestObject["parallel_tool_calls"] = false;
         }
 

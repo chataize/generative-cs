@@ -82,6 +82,7 @@ internal static class RepeatingHttpClient
                     throw;
                 }
 
+                // After we exhaust the predefined backoff windows, reuse the last delay value.
                 await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1], cancellationToken);
             }
         }

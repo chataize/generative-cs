@@ -39,6 +39,7 @@ public record TextToSpeechOptions
     /// <summary>
     /// Gets or sets the playback speed multiplier.
     /// </summary>
+    /// <remarks>Values outside provider limits will be rejected; 1.0 keeps natural speed.</remarks>
     public double Speed { get; set; } = 1.0;
 
     /// <summary>
@@ -49,5 +50,6 @@ public record TextToSpeechOptions
     /// <summary>
     /// Gets or sets the desired audio container format.
     /// </summary>
+    /// <remarks>Default provider format is used when left unset.</remarks>
     public VoiceResponseFormat ResponseFormat { get; set; }
 }

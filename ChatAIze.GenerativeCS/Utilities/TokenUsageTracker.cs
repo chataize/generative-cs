@@ -8,16 +8,19 @@ public sealed class TokenUsageTracker
     /// <summary>
     /// Gets the number of prompt tokens consumed.
     /// </summary>
+    /// <remarks>Increment-only; caller is responsible for external synchronization if used across threads.</remarks>
     public int PromptTokens { get; private set; }
 
     /// <summary>
     /// Gets the number of cached prompt tokens reused.
     /// </summary>
+    /// <remarks>Increment-only; caller is responsible for external synchronization if used across threads.</remarks>
     public int CachedTokens { get; private set; }
 
     /// <summary>
     /// Gets the number of completion tokens generated.
     /// </summary>
+    /// <remarks>Increment-only; caller is responsible for external synchronization if used across threads.</remarks>
     public int CompletionTokens { get; private set; }
 
     /// <summary>

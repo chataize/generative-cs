@@ -24,6 +24,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
 {
     private readonly HttpClient _httpClient = new()
     {
+        // Long timeout to accommodate streaming and large uploads.
         Timeout = TimeSpan.FromMinutes(15)
     };
 
@@ -32,6 +33,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     /// </summary>
     public OpenAIClient()
     {
+        // Allow environment variables to supply credentials when no explicit API key is provided.
         if (string.IsNullOrWhiteSpace(ApiKey))
         {
             ApiKey = EnvironmentVariableManager.GetOpenAIAPIKey();

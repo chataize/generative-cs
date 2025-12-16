@@ -267,6 +267,7 @@ public static class SchemaSerializer
                     if (p.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
                         return false;
 
+                    // Mirror System.Text.Json behavior: non-public setters are allowed only when JsonInclude is present.
                     var hasJsonInclude = p.GetCustomAttribute<JsonIncludeAttribute>() is not null;
                     var canWrite = p.CanWrite && p.SetMethod is not null && p.SetMethod.IsPublic;
 
@@ -360,6 +361,7 @@ public static class SchemaSerializer
 
         if (parameterType.IsClass || parameterType.IsInterface)
         {
+            // Respect C# nullable annotations: non-nullable reference types become required in the schema.
             var nullabilityInfo = NullabilityContext.Create(parameter);
             return nullabilityInfo.WriteState == NullabilityState.NotNull || nullabilityInfo.ReadState == NullabilityState.NotNull;
         }
@@ -387,6 +389,7 @@ public static class SchemaSerializer
 
         if (propertyType.IsClass || propertyType.IsInterface)
         {
+            // Respect C# nullable annotations: non-nullable reference types become required in the schema.
             var nullabilityInfo = NullabilityContext.Create(property);
             return nullabilityInfo.WriteState == NullabilityState.NotNull || nullabilityInfo.ReadState == NullabilityState.NotNull;
         }
@@ -536,6 +539,7 @@ public static class SchemaSerializer
 
         if (type == typeof(string) || IsDictionaryType(type))
         {
+            // Treat strings and dictionaries as scalars in this context to avoid being serialized as arrays.
             return false;
         }
 

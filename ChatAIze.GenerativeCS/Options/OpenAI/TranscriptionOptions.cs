@@ -37,6 +37,7 @@ public record TranscriptionOptions
     /// <summary>
     /// Gets or sets an optional prompt to guide transcription.
     /// </summary>
+    /// <remarks>Useful for adding vocabulary hints or formatting guidance.</remarks>
     public string? Prompt { get; set; }
 
     /// <summary>
@@ -52,5 +53,6 @@ public record TranscriptionOptions
     /// <summary>
     /// Gets or sets the desired transcription response format.
     /// </summary>
+    /// <remarks>Switch to JSON variants to retrieve timestamps and segment metadata.</remarks>
     public TranscriptionResponseFormat ResponseFormat { get; set; } = TranscriptionResponseFormat.Text;
 }

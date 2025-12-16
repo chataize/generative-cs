@@ -100,6 +100,7 @@ internal static class SpeechRecognition
 
         if (options.ResponseFormat != TranscriptionResponseFormat.Json)
         {
+            // Only send response_format when deviating from the default; provider defaults to json.
             content.Add(new StringContent(GetResponseFormatName(options.ResponseFormat)), "response_format");
         }
 

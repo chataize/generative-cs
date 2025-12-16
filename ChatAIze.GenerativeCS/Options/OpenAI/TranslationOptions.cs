@@ -32,6 +32,7 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets an optional prompt to guide translation.
     /// </summary>
+    /// <remarks>Useful for steering tone or providing glossary hints.</remarks>
     public string? Prompt { get; set; }
 
     /// <summary>
@@ -47,5 +48,6 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets the desired translation response format.
     /// </summary>
+    /// <remarks>Use JSON variants to retrieve richer metadata; text returns plain translated content.</remarks>
     public TranscriptionResponseFormat ResponseFormat { get; set; } = TranscriptionResponseFormat.Text;
 }

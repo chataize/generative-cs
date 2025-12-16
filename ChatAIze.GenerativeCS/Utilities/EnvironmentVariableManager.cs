@@ -13,6 +13,7 @@ internal static class EnvironmentVariableManager
     /// <returns>The configured API key or null.</returns>
     internal static string? GetOpenAIAPIKey()
     {
+        // Return null when the variable is unset so callers can supply explicit keys.
         return Environment.GetEnvironmentVariable(EnvironmentVariables.OpenAIAPIKey);
     }
 
@@ -22,6 +23,7 @@ internal static class EnvironmentVariableManager
     /// <returns>The configured API key or null.</returns>
     internal static string? GetGeminiAPIKey()
     {
+        // Return null when the variable is unset so callers can supply explicit keys.
         return Environment.GetEnvironmentVariable(EnvironmentVariables.GeminiAPIKey);
     }
 }

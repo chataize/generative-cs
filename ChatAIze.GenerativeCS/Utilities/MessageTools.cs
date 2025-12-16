@@ -77,6 +77,7 @@ internal static class MessageTools
             var isUnsentProperty = currentMessage.GetType().GetProperty("IsUnsent");
             if (isUnsentProperty is not null && (isUnsentProperty.GetValue(currentMessage) as bool?) == true)
             {
+                // Honor lightweight “soft delete” flags that may exist on provider-specific message types.
                 messages.RemoveAt(i);
                 continue;
             }
@@ -84,6 +85,7 @@ internal static class MessageTools
             var isDeletedProperty = currentMessage.GetType().GetProperty("IsDeleted");
             if (isDeletedProperty is not null && (isDeletedProperty.GetValue(currentMessage) as bool?) == true)
             {
+                // Honor lightweight “soft delete” flags that may exist on provider-specific message types.
                 messages.RemoveAt(i);
                 continue;
             }
@@ -104,6 +106,8 @@ internal static class MessageTools
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
     {
+        // Preserve the ordering contract: explicitly pinned messages stay at the ends and everything
+        // else keeps its relative order in the middle.
         var sortedMessages = messages.Where(m => m.PinLocation == PinLocation.Begin).ToList();
 
         sortedMessages.AddRange(messages.Where(m => m.PinLocation is PinLocation.None or PinLocation.Automatic));
@@ -113,6 +117,7 @@ internal static class MessageTools
         messages.AddRange(sortedMessages);
 
         var excessiveMessages = messageLimit.HasValue ? messages.Count(m => m.Role != ChatRole.System) - messageLimit : 0;
+        // Character trimming accounts for both user content and any function result payloads.
         var excessiveCharacters = characterLimit.HasValue ? messages.Where(m => m.Role != ChatRole.System).Sum(m => m.Content?.Length ?? 0 + m.FunctionResult?.Value.Length ?? 0) - characterLimit : 0;
 
         var messagesToRemove = new List<TMessage>();
@@ -184,6 +189,8 @@ internal static class MessageTools
             var currentMessage = messages[i];
             if (currentMessage.FunctionCalls.Count > 0 || currentMessage.FunctionResult is not null)
             {
+                // Drop tool calls/results that happened before the latest user input so the model
+                // does not see stale tool interactions when continuing the conversation.
                 messages.RemoveAt(i);
             }
         }

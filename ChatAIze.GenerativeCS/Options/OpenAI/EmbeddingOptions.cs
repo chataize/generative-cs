@@ -31,6 +31,7 @@ public record EmbeddingOptions
     /// <summary>
     /// Gets or sets optional output dimensions.
     /// </summary>
+    /// <remarks>Only supported by specific models; unsupported combinations will be rejected by the provider.</remarks>
     public int? Dimensions { get; set; }
 
     /// <summary>

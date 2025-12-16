@@ -42,6 +42,7 @@ public record FunctionResult : IFunctionResult
     /// <summary>
     /// Gets or sets the provider-issued tool call identifier used to correlate the result with a prior tool call.
     /// </summary>
+    /// <remarks>Providers like OpenAI expect this to mirror the tool call id emitted in the original function call.</remarks>
     public string? ToolCallId { get; set; }
 
     /// <summary>

@@ -77,6 +77,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="pinLocation">Optional pin location for message ordering.</param>
     public async void FromSystem(string message, PinLocation pinLocation = PinLocation.None)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromSystemAsync(message, pinLocation);
     }
 
@@ -109,6 +110,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="imageUrls">Optional set of image URLs attached to the message.</param>
     public async void FromUser(string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromUserAsync(message, pinLocation, imageUrls);
     }
 
@@ -144,6 +146,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="imageUrls">Optional set of image URLs attached to the message.</param>
     public async void FromUser(string userName, string message, PinLocation pinLocation = PinLocation.None, params ICollection<string> imageUrls)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromUserAsync(userName, message, pinLocation, imageUrls);
     }
 
@@ -173,6 +176,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="pinLocation">Optional pin location for message ordering.</param>
     public async void FromChatbot(string message, PinLocation pinLocation = PinLocation.None)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromChatbotAsync(message, pinLocation);
     }
 
@@ -202,6 +206,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="pinLocation">Optional pin location for message ordering.</param>
     public async void FromChatbot(TFunctionCall functionCall, PinLocation pinLocation = PinLocation.None)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromChatbotAsync(functionCall, pinLocation);
     }
 
@@ -231,6 +236,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="pinLocation">Optional pin location for message ordering.</param>
     public async void FromChatbot(IEnumerable<TFunctionCall> functionCalls, PinLocation pinLocation = PinLocation.None)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromChatbotAsync(functionCalls, pinLocation);
     }
 
@@ -260,6 +266,7 @@ public record Chat<TMessage, TFunctionCall, TFunctionResult> : IChat<TMessage, T
     /// <param name="pinLocation">Optional pin location for message ordering.</param>
     public async void FromFunction(TFunctionResult functionResult, PinLocation pinLocation = PinLocation.None)
     {
+        // Intentional fire-and-forget wrapper to keep API ergonomic for callers that don't await.
         _ = await FromFunctionAsync(functionResult, pinLocation);
     }
 }

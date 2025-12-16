@@ -31,5 +31,6 @@ public record ModerationOptions
     /// <summary>
     /// Gets or sets the maximum number of attempts (including the first call) before a moderation request is treated as failed.
     /// </summary>
+    /// <remarks>Used by the retry helper; does not retry on client-side validation errors.</remarks>
     public int MaxAttempts { get; set; } = 5;
 }

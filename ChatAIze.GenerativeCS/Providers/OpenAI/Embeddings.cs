@@ -126,6 +126,7 @@ internal static class Embeddings
             request.Add("user", options.UserTrackingId);
         }
 
+        // OpenAI expects encoding_format to be omitted unless explicitly requesting base64.
         return request;
     }
 }

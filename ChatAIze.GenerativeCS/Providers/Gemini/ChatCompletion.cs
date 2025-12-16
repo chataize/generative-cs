@@ -145,6 +145,7 @@ public static class ChatCompletion
                 var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionName));
                 if (function is not null)
                 {
+                    // Alternate between asking for confirmation and executing for functions that demand a double check.
                     if (function.RequiresDoubleCheck && chat.Messages.Count(m => m.FunctionCalls.Any(c => c.Name == functionName)) % 2 != 0)
                     {
                         var message2 = await chat.FromFunctionAsync(new TFunctionResult { Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
@@ -174,6 +175,7 @@ public static class ChatCompletion
                     await options.AddMessageCallback(message5);
                 }
 
+                // Try again now that the function response has been added to the transcript.
                 return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
             }
             else if (part.TryGetProperty("text", out var textElement))
@@ -188,6 +190,7 @@ public static class ChatCompletion
                 var message7 = await chat.FromFunctionAsync(new TFunctionResult { Name = "Error", Value = "Either call a function or respond with text." });
                 await options.AddMessageCallback(message7);
 
+                // Retry the completion with the synthetic tool result to coax the model into a valid response.
                 return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
             }
         }
@@ -260,7 +263,9 @@ public static class ChatCompletion
 
         MessageTools.RemoveDeletedMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
         MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
+        // Gemini does not support a system/developer role; fold those into the user role instead.
         MessageTools.ReplaceSystemRole<TMessage, TFunctionCall, TFunctionResult>(messages);
+        // Gemini expects contiguous text blocks; collapse sequential messages from the same speaker.
         MessageTools.MergeMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
 
         var contentsArray = new JsonArray();
@@ -278,6 +283,7 @@ public static class ChatCompletion
 
                 if (functionCall.Arguments is not null)
                 {
+                    // Gemini expects function arguments as structured JSON, not the raw string provided by OpenAI-style payloads.
                     functionCallObject["args"] = JsonNode.Parse(functionCall.Arguments)!.AsObject();
                 }
 
