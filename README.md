@@ -656,3 +656,9 @@ chat.FromUser("This will always be the first message", PinLocation.Begin);
 chat.FromSystem("This message will never be truncated due to limits.", PinLocation.Automatic);
 chat.FromUser("This will always be the last (most recent) message", PinLocation.End);
 ```
+
+## Links
+- GitHub: https://github.com/chataize/generative-cs
+- Chataize organization: https://github.com/chataize
+- Website: https://www.chataize.com
+
