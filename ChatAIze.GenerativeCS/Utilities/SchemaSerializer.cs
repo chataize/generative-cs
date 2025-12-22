@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using ChatAIze.Abstractions;
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.Utilities.Extensions;
 
@@ -38,6 +39,11 @@ public static class SchemaSerializer
         {
             foreach (var parameter in function.Parameters)
             {
+                if (IsInjectedParameter(parameter.Type))
+                {
+                    continue;
+                }
+
                 var normalizedName = parameter.Name.ToSnakeLower();
                 if (string.IsNullOrWhiteSpace(normalizedName))
                 {
@@ -82,7 +88,7 @@ public static class SchemaSerializer
         {
             foreach (var parameter in function.Callback!.Method.GetParameters())
             {
-                if (parameter.ParameterType == typeof(CancellationToken))
+                if (IsInjectedParameter(parameter.ParameterType))
                 {
                     continue;
                 }
@@ -148,6 +154,26 @@ public static class SchemaSerializer
         }
 
         return functionObject;
+    }
+
+    private static bool IsInjectedParameter(Type parameterType)
+    {
+        if (parameterType == typeof(CancellationToken))
+        {
+            return true;
+        }
+
+        if (typeof(IChatbotContext).IsAssignableFrom(parameterType))
+        {
+            return true;
+        }
+
+        if (typeof(IUserContext).IsAssignableFrom(parameterType))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
