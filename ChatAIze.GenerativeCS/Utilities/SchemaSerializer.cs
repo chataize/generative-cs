@@ -178,6 +178,7 @@ public static class SchemaSerializer
 
     /// <summary>
     /// Serializes a response type into the expected response_format payload.
+    /// Structured outputs always enable strict mode to enforce schema adherence.
     /// </summary>
     /// <param name="type">Type to describe.</param>
     /// <param name="useOpenAIFeatures">Indicates whether OpenAI-specific schema features should be enabled.</param>
@@ -193,7 +194,8 @@ public static class SchemaSerializer
         var jsonSchemaObject = new JsonObject
         {
             ["name"] = name,
-            ["schema"] = SerializeProperty(type, useOpenAIFeatures, requireAllProperties: false)
+            ["schema"] = SerializeProperty(type, useOpenAIFeatures, requireAllProperties: false),
+            ["strict"] = true
         };
 
         var formatObject = new JsonObject
