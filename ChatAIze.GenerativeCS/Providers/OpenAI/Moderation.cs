@@ -56,11 +56,7 @@ internal static class Moderation
             { "input", text }
         };
 
-        if (options.Model != ModerationModels.OpenAI.TextModerationLatest)
-        {
-            // The latest model is implicit; only send when the caller selects a specific version.
-            request.Add("model", options.Model);
-        }
+        request.Add("model", options.Model);
 
         return request;
     }

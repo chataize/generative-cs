@@ -24,5 +24,15 @@ public static class TextToSpeechModels
         /// GPT-4o-mini text-to-speech model identifier.
         /// </summary>
         public const string GPT4oMiniTTS = "gpt-4o-mini-tts";
+
+        /// <summary>
+        /// GPT-4o-mini text-to-speech model identifier dated 2025-12-15.
+        /// </summary>
+        public const string GPT4oMiniTTS20251215 = "gpt-4o-mini-tts-2025-12-15";
+
+        /// <summary>
+        /// GPT-4o-mini text-to-speech model identifier dated 2025-03-20.
+        /// </summary>
+        public const string GPT4oMiniTTS20250320 = "gpt-4o-mini-tts-2025-03-20";
     }
 }

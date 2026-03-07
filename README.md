@@ -416,7 +416,7 @@ using ChatAIze.GenerativeCS.Options.OpenAI;
 
 var options = new ModerationOptions
 {
-    Model = ModerationModels.OpenAI.TextModerationStable,
+    Model = ModerationModels.OpenAI.OmniModerationLatest,
     MaxAttempts = 5
 };
 
@@ -661,4 +661,3 @@ chat.FromUser("This will always be the last (most recent) message", PinLocation.
 - GitHub: https://github.com/chataize/generative-cs
 - Chataize organization: https://github.com/chataize
 - Website: https://www.chataize.com
-

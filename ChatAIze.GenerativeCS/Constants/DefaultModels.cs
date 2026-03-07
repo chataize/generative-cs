@@ -14,7 +14,7 @@ public static class DefaultModels
         /// Default chat completion model.
         /// </summary>
         /// <remarks>Used when callers omit a model identifier to favor a generally capable, up-to-date model.</remarks>
-        public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT51;
+        public const string ChatCompletion = ChatCompletionModels.OpenAI.GPT54;
 
         /// <summary>
         /// Default embedding model.

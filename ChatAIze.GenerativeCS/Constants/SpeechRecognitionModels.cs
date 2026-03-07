@@ -21,8 +21,33 @@ public static class SpeechRecognitionModels
         public const string GPT4oTranscribe = "gpt-4o-transcribe";
 
         /// <summary>
+        /// GPT-4o transcription model identifier dated 2025-12-15.
+        /// </summary>
+        public const string GPT4oTranscribe20251215 = "gpt-4o-transcribe-2025-12-15";
+
+        /// <summary>
+        /// GPT-4o transcription model identifier dated 2025-03-20.
+        /// </summary>
+        public const string GPT4oTranscribe20250320 = "gpt-4o-transcribe-2025-03-20";
+
+        /// <summary>
+        /// GPT-4o diarization transcription model identifier.
+        /// </summary>
+        public const string GPT4oTranscribeDiarize = "gpt-4o-transcribe-diarize";
+
+        /// <summary>
         /// GPT-4o-mini transcription model identifier.
         /// </summary>
         public const string GPT4oMiniTranscribe = "gpt-4o-mini-transcribe";
+
+        /// <summary>
+        /// GPT-4o-mini transcription model identifier dated 2025-12-15.
+        /// </summary>
+        public const string GPT4oMiniTranscribe20251215 = "gpt-4o-mini-transcribe-2025-12-15";
+
+        /// <summary>
+        /// GPT-4o-mini transcription model identifier dated 2025-03-20.
+        /// </summary>
+        public const string GPT4oMiniTranscribe20250320 = "gpt-4o-mini-transcribe-2025-03-20";
     }
 }

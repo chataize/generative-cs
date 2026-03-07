@@ -9,7 +9,7 @@ var chat = new Chat();
 
 var options = new ChatCompletionOptions
 {
-    Model = ChatCompletionModels.OpenAI.GPT51,
+    Model = ChatCompletionModels.OpenAI.GPT54,
     IsStoringOutputs = true,
     IsDebugMode = true,
     ReasoningEffort = ReasoningEffort.None,
