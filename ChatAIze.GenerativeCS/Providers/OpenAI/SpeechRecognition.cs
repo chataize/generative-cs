@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using ChatAIze.GenerativeCS.Enums;
 using ChatAIze.GenerativeCS.Options.OpenAI;
@@ -93,7 +94,7 @@ internal static class SpeechRecognition
 
         if (options.Temperature != 0)
         {
-            content.Add(new StringContent(options.Temperature.ToString()), "temperature");
+            content.Add(new StringContent(options.Temperature.ToString(CultureInfo.InvariantCulture)), "temperature");
         }
 
         if (options.ResponseFormat != TranscriptionResponseFormat.Json)
@@ -129,7 +130,7 @@ internal static class SpeechRecognition
 
         if (options.Temperature != 0)
         {
-            content.Add(new StringContent(options.Temperature.ToString()), "temperature");
+            content.Add(new StringContent(options.Temperature.ToString(CultureInfo.InvariantCulture)), "temperature");
         }
 
         if (options.ResponseFormat != TranscriptionResponseFormat.Json)
