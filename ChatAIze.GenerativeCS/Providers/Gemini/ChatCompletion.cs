@@ -59,7 +59,7 @@ public static class ChatCompletion
             var chat = new TChat();
             _ = await chat.FromUserAsync(prompt);
 
-            return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
+            return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken: cancellationToken);
         }
 
         var request = CreateCompletionRequest(prompt);
@@ -94,14 +94,20 @@ public static class ChatCompletion
     /// <param name="apiKey">API key used for the request.</param>
     /// <param name="options">Optional completion options.</param>
     /// <param name="httpClient">HTTP client to use.</param>
+    /// <param name="recursion">Internal recursion counter used to guard against loops.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Generated response text.</returns>
-    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, HttpClient? httpClient = null, int recursion = 0, CancellationToken cancellationToken = default)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
+        if (recursion >= 5)
+        {
+            throw new InvalidOperationException("Recursion limit reached (infinite loop detected).");
+        }
+
         httpClient ??= new()
         {
             Timeout = TimeSpan.FromMinutes(15)
@@ -176,7 +182,7 @@ public static class ChatCompletion
                 }
 
                 // Try again now that the function response has been added to the transcript.
-                return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
+                return await CompleteAsync(chat, apiKey, options, httpClient, recursion + 1, cancellationToken);
             }
             else if (part.TryGetProperty("text", out var textElement))
             {
@@ -191,7 +197,7 @@ public static class ChatCompletion
                 await options.AddMessageCallback(message7);
 
                 // Retry the completion with the synthetic tool result to coax the model into a valid response.
-                return await CompleteAsync(chat, apiKey, options, httpClient, cancellationToken);
+                return await CompleteAsync(chat, apiKey, options, httpClient, recursion + 1, cancellationToken);
             }
         }
 

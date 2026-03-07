@@ -128,7 +128,7 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     /// <returns>Generated text from the model.</returns>
     public async Task<string> CompleteAsync(TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null, CancellationToken cancellationToken = default)
     {
-        return await ChatCompletion.CompleteAsync(chat, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken);
+        return await ChatCompletion.CompleteAsync(chat, ApiKey, options ?? DefaultCompletionOptions, _httpClient, cancellationToken: cancellationToken);
     }
 
     /// <summary>
