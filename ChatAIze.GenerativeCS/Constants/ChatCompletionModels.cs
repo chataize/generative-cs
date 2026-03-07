@@ -11,6 +11,11 @@ public static class ChatCompletionModels
     public static class OpenAI
     {
         /// <summary>
+        /// Model identifier for gpt-5.4.
+        /// </summary>
+        public const string GPT54 = "gpt-5.4";
+
+        /// <summary>
         /// Model identifier for gpt-5.2.
         /// </summary>
         public const string GPT52 = "gpt-5.2";
