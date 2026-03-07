@@ -145,18 +145,19 @@ internal static class RepeatingHttpClient
     /// </summary>
     /// <param name="client">HTTP client used for the request.</param>
     /// <param name="requestUri">Target URI.</param>
-    /// <param name="content">Request content.</param>
+    /// <param name="contentFactory">Factory that creates fresh request content for each attempt.</param>
     /// <param name="apiKey">Optional bearer token.</param>
     /// <param name="maxAttempts">Maximum retry attempts.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>HTTP response message.</returns>
-    internal static async Task<HttpResponseMessage> RepeatPostAsync(this HttpClient client, [StringSyntax("Uri")] string requestUri, HttpContent content, string? apiKey = null, int maxAttempts = 5, CancellationToken cancellationToken = default)
+    internal static async Task<HttpResponseMessage> RepeatPostAsync(this HttpClient client, [StringSyntax("Uri")] string requestUri, Func<HttpContent> contentFactory, string? apiKey = null, int maxAttempts = 5, CancellationToken cancellationToken = default)
     {
         var attempts = 0;
         while (true)
         {
             try
             {
+                using var content = contentFactory();
                 using var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,

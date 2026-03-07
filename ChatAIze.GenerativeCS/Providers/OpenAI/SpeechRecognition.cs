@@ -32,8 +32,7 @@ internal static class SpeechRecognition
             apiKey = options.ApiKey;
         }
 
-        using var requestContent = CreateTranscriptionRequest(audio, options);
-        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", requestContent, apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", () => CreateTranscriptionRequest(audio, options), apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -60,8 +59,7 @@ internal static class SpeechRecognition
             apiKey = options.ApiKey;
         }
 
-        using var requestContent = CreateTranslationRequest(audio, options);
-        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", requestContent, apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", () => CreateTranslationRequest(audio, options), apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
