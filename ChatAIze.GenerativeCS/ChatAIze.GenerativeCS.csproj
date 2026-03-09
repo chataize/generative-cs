@@ -79,7 +79,7 @@
     <PackageReference Include="ChatAIze.Utilities" Version="0.6.0" Condition="'$(UseLocalChataizeProjects)' != 'true'" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseLocalChataizeProjects)' == 'true'">
     <ProjectReference Include="..\..\abstractions\ChatAIze.Abstractions\ChatAIze.Abstractions.csproj" />
