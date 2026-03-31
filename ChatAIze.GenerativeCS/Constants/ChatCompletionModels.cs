@@ -444,4 +444,65 @@ public static class ChatCompletionModels
         /// </summary>
         public const string Haiku45 = "claude-haiku-4-5";
     }
+
+    /// <summary>
+    /// xAI Grok chat completion model identifiers.
+    /// </summary>
+    public static class Grok
+    {
+        /// <summary>
+        /// Model identifier for grok-3.
+        /// </summary>
+        public const string Grok3 = "grok-3";
+
+        /// <summary>
+        /// Model identifier for grok-3-mini.
+        /// </summary>
+        public const string Grok3Mini = "grok-3-mini";
+
+        /// <summary>
+        /// Model identifier for grok-4-0709.
+        /// </summary>
+        public const string Grok40709 = "grok-4-0709";
+
+        /// <summary>
+        /// Model identifier for grok-4-1-fast-non-reasoning.
+        /// </summary>
+        public const string Grok41FastNonReasoning = "grok-4-1-fast-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-1-fast-reasoning.
+        /// </summary>
+        public const string Grok41FastReasoning = "grok-4-1-fast-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-fast-non-reasoning.
+        /// </summary>
+        public const string Grok4FastNonReasoning = "grok-4-fast-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-fast-reasoning.
+        /// </summary>
+        public const string Grok4FastReasoning = "grok-4-fast-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-0309-non-reasoning.
+        /// </summary>
+        public const string Grok4200309NonReasoning = "grok-4.20-0309-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-0309-reasoning.
+        /// </summary>
+        public const string Grok4200309Reasoning = "grok-4.20-0309-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-multi-agent-0309.
+        /// </summary>
+        public const string Grok420MultiAgent0309 = "grok-4.20-multi-agent-0309";
+
+        /// <summary>
+        /// Model identifier for grok-code-fast-1.
+        /// </summary>
+        public const string GrokCodeFast1 = "grok-code-fast-1";
+    }
 }

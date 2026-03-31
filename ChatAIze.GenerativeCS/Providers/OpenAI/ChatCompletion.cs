@@ -16,6 +16,8 @@ namespace ChatAIze.GenerativeCS.Providers.OpenAI;
 /// </summary>
 internal static class ChatCompletion
 {
+    private const string DefaultChatCompletionsEndpoint = "https://api.openai.com/v1/chat/completions";
+
     /// <summary>
     /// Serializer options used for chat and function payloads.
     /// </summary>
@@ -39,12 +41,15 @@ internal static class ChatCompletion
     /// <param name="httpClient">HTTP client to use.</param>
     /// <param name="recursion">Internal recursion counter used to guard against loops.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <param name="requestUri">Request URI used for OpenAI-compatible chat completion calls.</param>
+    /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
     /// <returns>Model response text.</returns>
     internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey,
         ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
         TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null,
-        int recursion = 0, CancellationToken cancellationToken = default)
+        int recursion = 0, CancellationToken cancellationToken = default,
+        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -67,13 +72,13 @@ internal static class ChatCompletion
             apiKey = options.ApiKey;
         }
 
-        var request = CreateChatCompletionRequest(chat, options);
+        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions);
         if (options.IsDebugMode)
         {
             Console.WriteLine(request.ToString());
         }
 
-        using var response = await httpClient.RepeatPostAsJsonAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsJsonAsync(requestUri, request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseDocument = await JsonDocument.ParseAsync(responseContent, cancellationToken: cancellationToken);
 
@@ -169,7 +174,7 @@ internal static class ChatCompletion
             }
 
             // Ask the model to continue now that function results have been appended to the chat.
-            return await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken);
+            return await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions);
         }
 
         var messageContent = generatedMessage.GetProperty("content").GetString()!;
@@ -193,11 +198,14 @@ internal static class ChatCompletion
     /// <param name="httpClient">HTTP client to use.</param>
     /// <param name="recursion">Internal recursion counter used to guard against loops.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <param name="requestUri">Request URI used for OpenAI-compatible chat completion calls.</param>
+    /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
     /// <returns>An async sequence of streamed response chunks.</returns>
     internal static async IAsyncEnumerable<string> StreamCompletionAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
         TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default,
+        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -219,7 +227,7 @@ internal static class ChatCompletion
             apiKey = options.ApiKey;
         }
 
-        var request = CreateChatCompletionRequest(chat, options);
+        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions);
         request["stream"] = true;
 
         if (usageTracker is not null)
@@ -237,7 +245,7 @@ internal static class ChatCompletion
             Console.WriteLine(request.ToString());
         }
 
-        using var response = await httpClient.RepeatPostAsJsonForStreamAsync("https://api.openai.com/v1/chat/completions", request, apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsJsonForStreamAsync(requestUri, request, apiKey, options.MaxAttempts, cancellationToken);
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 
@@ -274,9 +282,8 @@ internal static class ChatCompletion
                 Console.WriteLine(chunkDocument.RootElement.ToString());
             }
 
-            if (usageTracker is not null)
+            if (usageTracker is not null && chunkDocument.RootElement.TryGetProperty("usage", out var usage))
             {
-                var usage = chunkDocument.RootElement.GetProperty("usage");
                 if (usage.ValueKind != JsonValueKind.Null)
                 {
                     var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
@@ -397,7 +404,7 @@ internal static class ChatCompletion
         if (functionCalls.Count > 0)
         {
             // Re-enter streaming once tool results are in the transcript so the model can continue its reply.
-            await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
+            await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions))
             {
                 yield return chunk2;
             }
@@ -413,9 +420,10 @@ internal static class ChatCompletion
     /// <typeparam name="TFunctionResult">Function result type.</typeparam>
     /// <param name="chat">Chat transcript to send.</param>
     /// <param name="options">Completion options.</param>
+    /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
     /// <returns>JSON request payload.</returns>
     private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(
-        TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+        TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options, bool includeProviderExtensions)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -540,7 +548,7 @@ internal static class ChatCompletion
             requestObject["max_completion_tokens"] = options.MaxOutputTokens.Value;
         }
 
-        if (options.Seed.HasValue)
+        if (includeProviderExtensions && options.Seed.HasValue)
         {
             requestObject["seed"] = options.Seed.Value;
         }
@@ -565,12 +573,12 @@ internal static class ChatCompletion
             requestObject["presence_penalty"] = options.PresencePenalty.Value;
         }
 
-        if (options.ReasoningEffort != ReasoningEffort.None)
+        if (includeProviderExtensions && options.ReasoningEffort != ReasoningEffort.None)
         {
             requestObject["reasoning_effort"] = options.ReasoningEffort.ToString().ToSnakeLower();
         }
 
-        if (options.Verbosity != Verbosity.Medium)
+        if (includeProviderExtensions && options.Verbosity != Verbosity.Medium)
         {
             requestObject["verbosity"] = options.Verbosity.ToString().ToSnakeLower();
         }
@@ -595,7 +603,7 @@ internal static class ChatCompletion
             requestObject["parallel_tool_calls"] = false;
         }
 
-        if (options.IsStoringOutputs)
+        if (includeProviderExtensions && options.IsStoringOutputs)
         {
             requestObject["store"] = true;
         }

@@ -1,5 +1,5 @@
 # Generative CS
-Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT, Anthropic Claude, and Google Gemini API clients and support for C# function calling via reflection.
+Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT, xAI Grok, Anthropic Claude, and Google Gemini API clients and support for C# function calling via reflection.
 
 ![](https://github.com/chataize/generative-cs/assets/124832798/a0b46290-105d-487b-9145-6ce57a1879f7)
 
@@ -30,6 +30,13 @@ Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT, Anthropic Clau
 - [x] Response Streaming
 - [x] Multi-Modal Requests (image URLs)
 - [x] Structured Outputs
+### Grok
+- [x] Chat Completion
+- [x] Function Calling
+- [x] Response Streaming
+- [x] Multi-Modal Requests (image URLs)
+- [x] Structured Outputs
+- [x] Text-to-Speech
 ### Miscellaneous
 - [x] Dependency Injection
 - [x] Time Awareness
@@ -56,6 +63,7 @@ Install-Package ChatAIze.GenerativeCS
 using ChatAIze.GenerativeCS.Clients;
 
 var openAIClient = new OpenAIClient("<OPENAI API KEY>");
+var grokClient = new GrokClient("<XAI API KEY>");
 var claudeClient = new ClaudeClient("<ANTHROPIC API KEY>");
 var geminiClient = new GeminiClient("<GEMINI API KEY>");
 ```
@@ -64,11 +72,12 @@ var geminiClient = new GeminiClient("<GEMINI API KEY>");
 using ChatAIze.GenerativeCS.Extensions;
 
 builder.Services.AddOpenAIClient("<OPENAI API KEY>");
+builder.Services.AddGrokClient("<XAI API KEY>");
 builder.Services.AddClaudeClient("<ANTHROPIC API KEY>");
 builder.Services.AddGeminiClient("<GEMINI API KEY>");
 ```
 > [!NOTE]
-> By default, `OpenAIClient`, `ClaudeClient`, and `GeminiClient` services are registered as singleton. It's advised not to change global client options after the web application has already been launched. Use per-request options instead.
+> By default, `OpenAIClient`, `GrokClient`, `ClaudeClient`, and `GeminiClient` services are registered as singleton. It's advised not to change global client options after the web application has already been launched. Use per-request options instead.
 ## Chat Completion
 ### Simple Prompt
 ```cs
@@ -202,6 +211,10 @@ Console.WriteLine(result.ViolenceScore); // 0,908397912979126
 > If you use **OpenAI** client add:
 > ```cs
 > using ChatAIze.GenerativeCS.Options.OpenAI;
+> ```
+> If you use **Grok** client add:
+> ```cs
+> using ChatAIze.GenerativeCS.Options.Grok;
 > ```
 > If you use **Claude** client add:
 > ```cs

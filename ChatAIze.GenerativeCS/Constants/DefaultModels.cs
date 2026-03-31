@@ -72,4 +72,16 @@ public static class DefaultModels
         /// </summary>
         public const string Moderation = ModerationModels.Claude.Sonnet46;
     }
+
+    /// <summary>
+    /// Default Grok model identifiers.
+    /// </summary>
+    public static class Grok
+    {
+        /// <summary>
+        /// Default chat completion model.
+        /// </summary>
+        /// <remarks>Favours xAI's current fast non-reasoning Grok 4.1 variant for general-purpose assistant workloads.</remarks>
+        public const string ChatCompletion = ChatCompletionModels.Grok.Grok41FastNonReasoning;
+    }
 }

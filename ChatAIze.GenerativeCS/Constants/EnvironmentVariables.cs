@@ -24,4 +24,14 @@ internal static class EnvironmentVariables
     /// Optional alias accepted for convenience when callers prefer a Claude-specific variable name.
     /// </summary>
     internal const string ClaudeAPIKeyAlias = "CLAUDE_API_KEY";
+
+    /// <summary>
+    /// Official xAI environment variable that stores the Grok API key.
+    /// </summary>
+    internal const string GrokAPIKey = "XAI_API_KEY";
+
+    /// <summary>
+    /// Optional alias accepted for convenience when callers prefer a Grok-specific variable name.
+    /// </summary>
+    internal const string GrokAPIKeyAlias = "GROK_API_KEY";
 }
