@@ -271,6 +271,23 @@ static async Task RunOpenAISmokeTestsAsync()
         ExpectContains(response, "OPENAI_OK", "OpenAI simple completion did not return the expected marker.");
     });
 
+    await RunTestAsync("streaming completion", async () =>
+    {
+        var streamedBuilder = new StringBuilder();
+
+        await foreach (var chunk in client.StreamCompletionAsync("Reply with exactly OPENAI_STREAM_OK.", new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxOutputTokens = 64,
+            Temperature = 0
+        }))
+        {
+            _ = streamedBuilder.Append(chunk);
+        }
+
+        ExpectContains(streamedBuilder.ToString(), "OPENAI_STREAM_OK", "OpenAI streaming completion did not return the expected marker.");
+    });
+
     await RunTestAsync("function calling", async () =>
     {
         var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
@@ -319,6 +336,94 @@ static async Task RunOpenAISmokeTestsAsync()
 
         ExpectContains(result.City, "Warsaw", "OpenAI structured output returned the wrong city.");
         ExpectContains(result.Country, "Poland", "OpenAI structured output returned the wrong country.");
+    });
+
+    await RunTestAsync("embeddings", async () =>
+    {
+        var embedding = await client.GetEmbeddingAsync("OpenAI embedding smoke test.");
+        if (embedding.Length == 0)
+        {
+            throw new InvalidOperationException("OpenAI embedding request returned an empty vector.");
+        }
+
+        var base64Embedding = await client.GetBase64EmbeddingAsync("OpenAI base64 embedding smoke test.");
+        if (string.IsNullOrWhiteSpace(base64Embedding))
+        {
+            throw new InvalidOperationException("OpenAI base64 embedding request returned an empty payload.");
+        }
+
+        var decodedEmbedding = Convert.FromBase64String(base64Embedding);
+        if (decodedEmbedding.Length == 0)
+        {
+            throw new InvalidOperationException("OpenAI base64 embedding decoded to an empty byte array.");
+        }
+    });
+
+    await RunTestAsync("moderation", async () =>
+    {
+        var safeResult = await client.ModerateAsync("I enjoyed reading a book on a quiet afternoon.");
+        if (safeResult.IsFlagged)
+        {
+            throw new InvalidOperationException("OpenAI moderation incorrectly flagged clearly safe content.");
+        }
+
+        var unsafeResult = await client.ModerateAsync("I am going to kill you tonight and burn your house down.");
+        if (!unsafeResult.IsFlagged)
+        {
+            throw new InvalidOperationException("OpenAI moderation failed to flag explicit violent threats.");
+        }
+
+        if (!unsafeResult.IsViolence && !unsafeResult.IsHarassmentThreatening)
+        {
+            throw new InvalidOperationException("OpenAI moderation flagged the threat, but not in a violence- or threat-related category.");
+        }
+    });
+
+    await RunTestAsync("speech round-trip", async () =>
+    {
+        const string spanishText = "Hola mundo. El gato negro duerme en la silla.";
+        var tempAudioPath = Path.Combine(Path.GetTempPath(), $"openai-smoke-{Guid.NewGuid():N}.mp3");
+
+        try
+        {
+            var audio = await client.SynthesizeSpeechAsync(spanishText, new ChatAIze.GenerativeCS.Options.OpenAI.TextToSpeechOptions
+            {
+                ResponseFormat = VoiceResponseFormat.MP3
+            });
+
+            if (audio.Length == 0)
+            {
+                throw new InvalidOperationException("OpenAI text-to-speech returned an empty audio payload.");
+            }
+
+            await File.WriteAllBytesAsync(tempAudioPath, audio);
+
+            var transcript = await client.TranscriptAsync(tempAudioPath, new ChatAIze.GenerativeCS.Options.OpenAI.TranscriptionOptions(language: "es")
+            {
+                ResponseFormat = TranscriptionResponseFormat.Text
+            });
+
+            ExpectContains(transcript, "gato", "OpenAI transcription did not preserve the expected Spanish content.");
+
+            var translation = await client.TranslateAsync(tempAudioPath, new ChatAIze.GenerativeCS.Options.OpenAI.TranslationOptions
+            {
+                ResponseFormat = TranscriptionResponseFormat.Text
+            });
+
+            // Synthetic TTS clips are sufficient to verify the translation endpoint wiring,
+            // but they are not reliable for asserting provider-level translation quality.
+            if (string.IsNullOrWhiteSpace(translation))
+            {
+                throw new InvalidOperationException("OpenAI translation returned an empty response.");
+            }
+        }
+        finally
+        {
+            if (File.Exists(tempAudioPath))
+            {
+                File.Delete(tempAudioPath);
+            }
+        }
     });
 
     Console.WriteLine();

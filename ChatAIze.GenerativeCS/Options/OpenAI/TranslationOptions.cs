@@ -22,7 +22,8 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets the model identifier used for translation.
     /// </summary>
-    public string Model { get; set; } = DefaultModels.OpenAI.SpeechToText;
+    /// <remarks>The dedicated translation endpoint currently defaults to <see cref="SpeechRecognitionModels.OpenAI.Whisper1"/>.</remarks>
+    public string Model { get; set; } = DefaultModels.OpenAI.SpeechTranslation;
 
     /// <summary>
     /// Gets or sets an optional API key that overrides the client-level key.

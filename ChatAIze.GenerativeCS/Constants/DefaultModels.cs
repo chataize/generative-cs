@@ -34,6 +34,12 @@ public static class DefaultModels
         public const string SpeechToText = SpeechRecognitionModels.OpenAI.GPT4oTranscribe;
 
         /// <summary>
+        /// Default speech-translation model.
+        /// </summary>
+        /// <remarks>OpenAI currently only supports <c>whisper-1</c> on the dedicated translation endpoint.</remarks>
+        public const string SpeechTranslation = SpeechRecognitionModels.OpenAI.Whisper1;
+
+        /// <summary>
         /// Default moderation model.
         /// </summary>
         public const string Moderation = ModerationModels.OpenAI.OmniModerationLatest;

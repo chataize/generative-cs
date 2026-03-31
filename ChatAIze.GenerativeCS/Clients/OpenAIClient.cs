@@ -331,7 +331,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     /// <returns>Text transcript of the audio.</returns>
     public async Task<string> TranscriptAsync(byte[] audio, TranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, _httpClient, cancellationToken);
+        return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, httpClient: _httpClient, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -344,7 +344,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     public async Task<string> TranscriptAsync(string audioFilePath, TranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         var audio = await File.ReadAllBytesAsync(audioFilePath, cancellationToken);
-        return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, _httpClient, cancellationToken);
+        return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, Path.GetFileName(audioFilePath), _httpClient, cancellationToken);
     }
 
     /// <summary>
@@ -356,7 +356,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     /// <returns>Translated text.</returns>
     public async Task<string> TranslateAsync(byte[] audio, TranslationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, _httpClient, cancellationToken);
+        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, httpClient: _httpClient, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -369,7 +369,7 @@ public class OpenAIClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     public async Task<string> TranslateAsync(string audioFilePath, TranslationOptions? options = null, CancellationToken cancellationToken = default)
     {
         var audio = await File.ReadAllBytesAsync(audioFilePath, cancellationToken);
-        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, _httpClient, cancellationToken);
+        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, Path.GetFileName(audioFilePath), _httpClient, cancellationToken);
     }
 
     /// <summary>
