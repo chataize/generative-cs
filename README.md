@@ -1,5 +1,5 @@
 # Generative CS
-Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT and Google Gemini API clients and support for C# function calling via reflection.
+Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT, Anthropic Claude, and Google Gemini API clients and support for C# function calling via reflection.
 
 ![](https://github.com/chataize/generative-cs/assets/124832798/a0b46290-105d-487b-9145-6ce57a1879f7)
 
@@ -24,6 +24,12 @@ Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT and Google Gemi
 - [ ] Moderation
 - [ ] Response Streaming
 - [ ] Multi-Modal Requests
+### Claude
+- [x] Chat Completion
+- [x] Function Calling
+- [x] Response Streaming
+- [x] Multi-Modal Requests (image URLs)
+- [x] Structured Outputs
 ### Miscellaneous
 - [x] Dependency Injection
 - [x] Time Awareness
@@ -50,6 +56,7 @@ Install-Package ChatAIze.GenerativeCS
 using ChatAIze.GenerativeCS.Clients;
 
 var openAIClient = new OpenAIClient("<OPENAI API KEY>");
+var claudeClient = new ClaudeClient("<ANTHROPIC API KEY>");
 var geminiClient = new GeminiClient("<GEMINI API KEY>");
 ```
 ### Dependency Injection
@@ -57,10 +64,11 @@ var geminiClient = new GeminiClient("<GEMINI API KEY>");
 using ChatAIze.GenerativeCS.Extensions;
 
 builder.Services.AddOpenAIClient("<OPENAI API KEY>");
+builder.Services.AddClaudeClient("<ANTHROPIC API KEY>");
 builder.Services.AddGeminiClient("<GEMINI API KEY>");
 ```
 > [!NOTE]
-> By default, both `OpenAIClient` and `GeminiClient` services are registered as singleton. It's advised not to change global client options after the web application has already been launched. Use per-request options instead.
+> By default, `OpenAIClient`, `ClaudeClient`, and `GeminiClient` services are registered as singleton. It's advised not to change global client options after the web application has already been launched. Use per-request options instead.
 ## Chat Completion
 ### Simple Prompt
 ```cs
@@ -195,6 +203,10 @@ Console.WriteLine(result.ViolenceScore); // 0,908397912979126
 > ```cs
 > using ChatAIze.GenerativeCS.Options.OpenAI;
 > ```
+> If you use **Claude** client add:
+> ```cs
+> using ChatAIze.GenerativeCS.Options.Claude;
+> ```
 > If you use **Gemini** client add:
 > ```cs
 > using ChatAIze.GenerativeCS.Options.Gemini;
@@ -240,6 +252,23 @@ builder.Services.AddGeminiClient(configure =>
     // set other options here
 });
 ```
+#### Claude Client
+```cs
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Extensions;
+
+builder.Services.AddClaudeClient(configure =>
+{
+    configure.ApiKey = "<ANTHROPIC API KEY>";
+    configure.DefaultCompletionOptions = new ChatCompletionOptions()
+    {
+        Model = ChatCompletionModels.Claude.Sonnet46,
+        MaxOutputTokens = 4096,
+        MessageLimit = 10
+        // set other chat completion options here
+    };
+});
+```
 ### Chat Completion
 #### OpenAI Client
 ```cs
@@ -280,6 +309,41 @@ var options = new ChatCompletionOptions
 
 // Set for entire client:
 var client = new OpenAIClient("<OPENAI API KEY>", options); // via constructor
+client.DefaultCompletionOptions = options; // via property
+
+// Set for single request:
+string response = await client.CompleteAsync(prompt, options);
+string response = await client.CompleteAsync(chat, options);
+```
+#### Claude Client
+```cs
+using ChatAIze.GenerativeCS.Clients;
+using ChatAIze.GenerativeCS.Constants;
+using ChatAIze.GenerativeCS.Models;
+using ChatAIze.GenerativeCS.Options.Claude;
+
+var options = new ChatCompletionOptions
+{
+    Model = ChatCompletionModels.Claude.Sonnet46,
+    MaxAttempts = 5,
+    MaxOutputTokens = 4096,
+    MessageLimit = 10,
+    CharacterLimit = 20000,
+    Temperature = 1.0,
+    TopP = 0.9,
+    IsStrictFunctionCallingOn = true,
+    IsTimeAware = true,
+    Functions = [new ChatFunction("ToggleDarkMode")],
+    DefaultFunctionCallback = async (name, arguments, cancellationToken) =>
+    {
+        await Console.Out.WriteLineAsync($"Function {name} called with arguments {arguments}");
+        return new { Success = true, Property1 = "ABC", Property2 = 123 };
+    },
+    TimeCallback = () => DateTime.Now
+};
+
+// Set for entire client:
+var client = new ClaudeClient("<ANTHROPIC API KEY>");
 client.DefaultCompletionOptions = options; // via property
 
 // Set for single request:

@@ -25,7 +25,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <SuppressSymbolPackageFormatValidation>true</SuppressSymbolPackageFormatValidation>
     <Description>
-      Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT and Google Gemini API clients
+      Generative AI library for .NET 10.0 with built-in OpenAI ChatGPT, Anthropic Claude, and Google Gemini API clients
       and support for C# function calling via reflection.
       Features:
       - Chat Completion
@@ -55,6 +55,7 @@
       gemini-pro gemini-pro-api gemini-pro-api-client gemini-pro-client generation generative-ai
       generative-cs generator google google-bard google-gemini google-gemini-pro
       google-gemini-pro-api google-gemini-pro-api-client google-gemini-pro-client gpt gpt-3 gpt-4
+      anthropic claude claude-ai claude-api claude-api-client claude-client
       gpt-function gpt-functions gpt3 gpt4 kernel language language-model learning library llama llm
       machine machine-learning method method-calling methods methods-calling microsot ml model
       moderation natural natural-language-processing nlp open-ai open-ai-api open-ai-client openai

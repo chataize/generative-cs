@@ -49,4 +49,21 @@ public static class DefaultModels
         /// </summary>
         public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini15Flash;
     }
+
+    /// <summary>
+    /// Default Claude model identifiers.
+    /// </summary>
+    public static class Claude
+    {
+        /// <summary>
+        /// Default chat completion model.
+        /// </summary>
+        /// <remarks>Favours Anthropic's current speed and capability balance for general-purpose chat workloads.</remarks>
+        public const string ChatCompletion = ChatCompletionModels.Claude.Sonnet46;
+
+        /// <summary>
+        /// Default moderation model.
+        /// </summary>
+        public const string Moderation = ModerationModels.Claude.Sonnet46;
+    }
 }

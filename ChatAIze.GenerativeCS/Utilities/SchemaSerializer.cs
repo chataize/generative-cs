@@ -208,6 +208,72 @@ public static class SchemaSerializer
     }
 
     /// <summary>
+    /// Serializes a response type into Anthropic's <c>output_config.format</c> shape.
+    /// </summary>
+    /// <param name="type">Type to describe.</param>
+    /// <returns>JSON object describing the structured output format.</returns>
+    public static JsonObject SerializeClaudeResponseFormat(Type type)
+    {
+        var schema = SerializeProperty(type, useOpenAIFeatures: true, requireAllProperties: false);
+        SanitizeForClaudeStructuredOutputs(schema);
+
+        var formatObject = new JsonObject
+        {
+            ["type"] = "json_schema",
+            ["schema"] = schema
+        };
+
+        return formatObject;
+    }
+
+    /// <summary>
+    /// Removes JSON Schema keywords Anthropic does not support for structured outputs and strict tool schemas.
+    /// </summary>
+    /// <param name="node">Schema node to normalize in place.</param>
+    internal static void SanitizeForClaudeStructuredOutputs(JsonNode? node)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            _ = jsonObject.Remove("minimum");
+            _ = jsonObject.Remove("maximum");
+            _ = jsonObject.Remove("exclusiveMinimum");
+            _ = jsonObject.Remove("exclusiveMaximum");
+            _ = jsonObject.Remove("minLength");
+            _ = jsonObject.Remove("maxLength");
+            _ = jsonObject.Remove("default");
+
+            foreach (var child in jsonObject.ToList())
+            {
+                SanitizeForClaudeStructuredOutputs(child.Value);
+            }
+
+            var typeNode = jsonObject["type"];
+            var isObjectSchema = typeNode switch
+            {
+                JsonValue typeValue => string.Equals(typeValue.GetValue<string>(), "object", StringComparison.OrdinalIgnoreCase),
+                JsonArray typeArray => typeArray.Any(item => item is JsonValue itemValue && string.Equals(itemValue.GetValue<string>(), "object", StringComparison.OrdinalIgnoreCase)),
+                _ => false
+            };
+
+            if (isObjectSchema && jsonObject["properties"] is JsonObject && jsonObject["additionalProperties"] is null)
+            {
+                // Anthropic recommends closed object schemas for structured outputs to reduce ambiguity.
+                jsonObject["additionalProperties"] = false;
+            }
+
+            return;
+        }
+
+        if (node is JsonArray jsonArray)
+        {
+            foreach (var child in jsonArray)
+            {
+                SanitizeForClaudeStructuredOutputs(child);
+            }
+        }
+    }
+
+    /// <summary>
     /// Serializes a method parameter into a JSON schema property object.
     /// </summary>
     /// <param name="parameter">Parameter information to serialize.</param>

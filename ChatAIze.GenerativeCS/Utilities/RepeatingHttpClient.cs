@@ -190,4 +190,52 @@ internal static class RepeatingHttpClient
             }
         }
     }
+
+    /// <summary>
+    /// Sends a fully customized HTTP request with retries and surfaces non-success responses with their bodies.
+    /// </summary>
+    /// <param name="client">HTTP client used for the request.</param>
+    /// <param name="requestFactory">Factory that creates a fresh request for each attempt.</param>
+    /// <param name="responseHeadersRead">True to return after headers for streaming scenarios.</param>
+    /// <param name="maxAttempts">Maximum retry attempts.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The successful HTTP response.</returns>
+    internal static async Task<HttpResponseMessage> RepeatSendAsync(this HttpClient client, Func<HttpRequestMessage> requestFactory, bool responseHeadersRead = false, int maxAttempts = 5, CancellationToken cancellationToken = default)
+    {
+        var attempts = 0;
+        while (true)
+        {
+            try
+            {
+                using var request = requestFactory();
+
+                var result = await client.SendAsync(
+                    request,
+                    responseHeadersRead ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead,
+                    cancellationToken);
+
+                if (!result.IsSuccessStatusCode)
+                {
+                    var errorContent = await result.Content.ReadAsStringAsync(cancellationToken);
+                    result.Dispose();
+                    throw new HttpRequestException($"StatusCode {(int)result.StatusCode}: {errorContent}");
+                }
+
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                if (++attempts >= maxAttempts)
+                {
+                    throw;
+                }
+
+                await Task.Delay(Delays[attempts < Delays.Length ? attempts : Delays.Length - 1], cancellationToken);
+            }
+        }
+    }
 }

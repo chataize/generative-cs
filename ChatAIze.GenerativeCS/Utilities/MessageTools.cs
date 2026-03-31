@@ -117,8 +117,10 @@ internal static class MessageTools
         messages.AddRange(sortedMessages);
 
         var excessiveMessages = messageLimit.HasValue ? messages.Count(m => m.Role != ChatRole.System) - messageLimit : 0;
-        // Character trimming accounts for both user content and any function result payloads.
-        var excessiveCharacters = characterLimit.HasValue ? messages.Where(m => m.Role != ChatRole.System).Sum(m => m.Content?.Length ?? 0 + m.FunctionResult?.Value.Length ?? 0) - characterLimit : 0;
+        // Character trimming accounts for both message text and any function result payloads.
+        var excessiveCharacters = characterLimit.HasValue
+            ? messages.Where(m => m.Role != ChatRole.System).Sum(m => GetMessageCharacterCount<TMessage, TFunctionCall, TFunctionResult>(m)) - characterLimit
+            : 0;
 
         var messagesToRemove = new List<TMessage>();
         foreach (var message in messages)
@@ -158,11 +160,27 @@ internal static class MessageTools
                 }
 
                 excessiveMessages--;
-                excessiveCharacters -= message.Content?.Length ?? 0 + message.FunctionResult?.Value.Length ?? 0;
+                excessiveCharacters -= GetMessageCharacterCount<TMessage, TFunctionCall, TFunctionResult>(message);
             }
         }
 
         _ = messages.RemoveAll(messagesToRemove.Contains);
+    }
+
+    /// <summary>
+    /// Calculates the number of characters contributed by a single message, including any tool result payload.
+    /// </summary>
+    /// <typeparam name="TMessage">Message type.</typeparam>
+    /// <typeparam name="TFunctionCall">Function call type.</typeparam>
+    /// <typeparam name="TFunctionResult">Function result type.</typeparam>
+    /// <param name="message">Message to inspect.</param>
+    /// <returns>Total character count for the message.</returns>
+    private static int GetMessageCharacterCount<TMessage, TFunctionCall, TFunctionResult>(TMessage message)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
+    {
+        return (message.Content?.Length ?? 0) + (message.FunctionResult?.Value?.Length ?? 0);
     }
 
     /// <summary>

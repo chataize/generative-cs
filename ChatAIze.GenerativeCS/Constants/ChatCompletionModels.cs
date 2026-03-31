@@ -418,4 +418,30 @@ public static class ChatCompletionModels
         /// </summary>
         public const string Gemini10Pro = "gemini-1.0-pro";
     }
+
+    /// <summary>
+    /// Claude chat completion model identifiers.
+    /// </summary>
+    public static class Claude
+    {
+        /// <summary>
+        /// Model identifier for claude-opus-4-6.
+        /// </summary>
+        public const string Opus46 = "claude-opus-4-6";
+
+        /// <summary>
+        /// Model identifier for claude-sonnet-4-6.
+        /// </summary>
+        public const string Sonnet46 = "claude-sonnet-4-6";
+
+        /// <summary>
+        /// Snapshot model identifier for claude-haiku-4-5-20251001.
+        /// </summary>
+        public const string Haiku4520251001 = "claude-haiku-4-5-20251001";
+
+        /// <summary>
+        /// Alias model identifier for claude-haiku-4-5.
+        /// </summary>
+        public const string Haiku45 = "claude-haiku-4-5";
+    }
 }
