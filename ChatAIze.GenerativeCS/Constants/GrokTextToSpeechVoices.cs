@@ -31,7 +31,7 @@ public static class GrokTextToSpeechVoices
     public const string Sal = "sal";
 
     /// <summary>
-    /// Voice identifier for Una.
+    /// Legacy compatibility alias that maps the unsupported Una preset to Eve.
     /// </summary>
-    public const string Una = "una";
+    public const string Una = Eve;
 }

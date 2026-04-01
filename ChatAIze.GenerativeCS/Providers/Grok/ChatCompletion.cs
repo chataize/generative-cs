@@ -25,7 +25,18 @@ internal static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        return await OpenAI.ChatCompletion.CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion, cancellationToken, GrokChatCompletionsEndpoint, includeProviderExtensions: false);
+        return await OpenAI.ChatCompletion.CompleteAsync(
+            chat,
+            apiKey,
+            options,
+            usageTracker,
+            httpClient,
+            recursion,
+            cancellationToken,
+            GrokChatCompletionsEndpoint,
+            includeProviderExtensions: false,
+            maxTokensPropertyName: "max_tokens",
+            mergeSystemMessages: true);
     }
 
     /// <summary>
@@ -40,7 +51,18 @@ internal static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
-        await foreach (var chunk in OpenAI.ChatCompletion.StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion, cancellationToken, GrokChatCompletionsEndpoint, includeProviderExtensions: false))
+        await foreach (var chunk in OpenAI.ChatCompletion.StreamCompletionAsync(
+            chat,
+            apiKey,
+            options,
+            usageTracker,
+            httpClient,
+            recursion,
+            cancellationToken,
+            GrokChatCompletionsEndpoint,
+            includeProviderExtensions: false,
+            maxTokensPropertyName: "max_tokens",
+            mergeSystemMessages: true))
         {
             yield return chunk;
         }

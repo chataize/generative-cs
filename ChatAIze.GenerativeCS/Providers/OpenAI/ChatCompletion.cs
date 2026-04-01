@@ -44,13 +44,16 @@ internal static class ChatCompletion
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <param name="requestUri">Request URI used for OpenAI-compatible chat completion calls.</param>
     /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
+    /// <param name="maxTokensPropertyName">Provider-specific request field used for output token limits.</param>
+    /// <param name="mergeSystemMessages">True to collapse multiple system messages into a single leading system message.</param>
     /// <returns>Model response text.</returns>
     internal static async Task<string> CompleteAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey,
         ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
         TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null,
         int recursion = 0, CancellationToken cancellationToken = default,
-        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true)
+        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true,
+        string maxTokensPropertyName = "max_completion_tokens", bool mergeSystemMessages = false)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -73,7 +76,7 @@ internal static class ChatCompletion
             apiKey = options.ApiKey;
         }
 
-        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions);
+        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions, maxTokensPropertyName, mergeSystemMessages);
         if (options.IsDebugMode)
         {
             Console.WriteLine(request.ToString());
@@ -174,7 +177,7 @@ internal static class ChatCompletion
             }
 
             // Ask the model to continue now that function results have been appended to the chat.
-            return initialText + await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions);
+            return initialText + await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions, maxTokensPropertyName, mergeSystemMessages);
         }
 
         if (string.IsNullOrWhiteSpace(initialText))
@@ -201,12 +204,15 @@ internal static class ChatCompletion
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <param name="requestUri">Request URI used for OpenAI-compatible chat completion calls.</param>
     /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
+    /// <param name="maxTokensPropertyName">Provider-specific request field used for output token limits.</param>
+    /// <param name="mergeSystemMessages">True to collapse multiple system messages into a single leading system message.</param>
     /// <returns>An async sequence of streamed response chunks.</returns>
     internal static async IAsyncEnumerable<string> StreamCompletionAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat, string? apiKey, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult>? options = null,
         TokenUsageTracker? usageTracker = null, HttpClient? httpClient = null, int recursion = 0,
         [EnumeratorCancellation] CancellationToken cancellationToken = default,
-        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true)
+        string requestUri = DefaultChatCompletionsEndpoint, bool includeProviderExtensions = true,
+        string maxTokensPropertyName = "max_completion_tokens", bool mergeSystemMessages = false)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall, new()
@@ -228,7 +234,7 @@ internal static class ChatCompletion
             apiKey = options.ApiKey;
         }
 
-        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions);
+        var request = CreateChatCompletionRequest(chat, options, includeProviderExtensions, maxTokensPropertyName, mergeSystemMessages);
         request["stream"] = true;
 
         if (usageTracker is not null)
@@ -457,7 +463,7 @@ internal static class ChatCompletion
         if (functionCalls.Count > 0)
         {
             // Re-enter streaming once tool results are in the transcript so the model can continue its reply.
-            await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions))
+            await foreach (var chunk2 in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions, maxTokensPropertyName, mergeSystemMessages))
             {
                 yield return chunk2;
             }
@@ -481,9 +487,15 @@ internal static class ChatCompletion
     /// <param name="chat">Chat transcript to send.</param>
     /// <param name="options">Completion options.</param>
     /// <param name="includeProviderExtensions">True to emit OpenAI-only fields such as store, seed, reasoning effort, and verbosity.</param>
+    /// <param name="maxTokensPropertyName">Provider-specific request field used for output token limits.</param>
+    /// <param name="mergeSystemMessages">True to collapse multiple system messages into a single leading system message.</param>
     /// <returns>JSON request payload.</returns>
     private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(
-        TChat chat, ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options, bool includeProviderExtensions)
+        TChat chat,
+        ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options,
+        bool includeProviderExtensions,
+        string maxTokensPropertyName,
+        bool mergeSystemMessages)
         where TChat : IChat<TMessage, TFunctionCall, TFunctionResult>
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
         where TFunctionCall : IFunctionCall
@@ -509,6 +521,11 @@ internal static class ChatCompletion
         }
 
         MessageTools.LimitTokens<TMessage, TFunctionCall, TFunctionResult>(messages, options.MessageLimit, options.CharacterLimit);
+
+        if (mergeSystemMessages)
+        {
+            MergeSystemMessages<TMessage, TFunctionCall, TFunctionResult>(messages);
+        }
 
         var messagesArray = new JsonArray();
         foreach (var message in messages)
@@ -605,7 +622,7 @@ internal static class ChatCompletion
 
         if (options.MaxOutputTokens.HasValue)
         {
-            requestObject["max_completion_tokens"] = options.MaxOutputTokens.Value;
+            requestObject[maxTokensPropertyName] = options.MaxOutputTokens.Value;
         }
 
         if (includeProviderExtensions && options.Seed.HasValue)
@@ -723,6 +740,33 @@ internal static class ChatCompletion
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
+    }
+
+    /// <summary>
+    /// Collapses all system messages into a single leading system message for providers that only accept one.
+    /// </summary>
+    private static void MergeSystemMessages<TMessage, TFunctionCall, TFunctionResult>(List<TMessage> messages)
+        where TMessage : IChatMessage<TFunctionCall, TFunctionResult>, new()
+        where TFunctionCall : IFunctionCall
+        where TFunctionResult : IFunctionResult
+    {
+        var systemMessages = messages
+            .Where(message => message.Role == ChatRole.System && !string.IsNullOrWhiteSpace(message.Content))
+            .ToList();
+
+        if (systemMessages.Count <= 1)
+        {
+            return;
+        }
+
+        var mergedContent = string.Join("\n\n", systemMessages.Select(message => message.Content!.Trim()));
+        _ = messages.RemoveAll(message => message.Role == ChatRole.System);
+        messages.Insert(0, new TMessage
+        {
+            Role = ChatRole.System,
+            Content = mergedContent,
+            PinLocation = PinLocation.Begin
+        });
     }
 
     /// <summary>

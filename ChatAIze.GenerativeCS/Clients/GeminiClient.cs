@@ -183,6 +183,11 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, httpClient: _httpClient, cancellationToken: cancellationToken);
     }
 
+    public async Task<string> TranscriptAsync(byte[] audio, string fileName, TranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return await SpeechRecognition.TranscriptAsync(audio, ApiKey, options ?? DefaultTranscriptionOptions, fileName, _httpClient, cancellationToken);
+    }
+
     public async Task<string> TranscriptAsync(string audioFilePath, TranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         var audio = await File.ReadAllBytesAsync(audioFilePath, cancellationToken);
@@ -192,6 +197,11 @@ public class GeminiClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     public async Task<string> TranslateAsync(byte[] audio, TranslationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, httpClient: _httpClient, cancellationToken: cancellationToken);
+    }
+
+    public async Task<string> TranslateAsync(byte[] audio, string fileName, TranslationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return await SpeechRecognition.TranslateAsync(audio, ApiKey, options ?? DefaultTranslationOptions, fileName, _httpClient, cancellationToken);
     }
 
     public async Task<string> TranslateAsync(string audioFilePath, TranslationOptions? options = null, CancellationToken cancellationToken = default)

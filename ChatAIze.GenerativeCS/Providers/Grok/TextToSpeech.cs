@@ -87,7 +87,9 @@ internal static class TextToSpeech
             TextToSpeechVoice.Fable => GrokTextToSpeechVoices.Ara,
             TextToSpeechVoice.Onyx => GrokTextToSpeechVoices.Leo,
             TextToSpeechVoice.Nova => GrokTextToSpeechVoices.Sal,
-            TextToSpeechVoice.Shimmer => GrokTextToSpeechVoices.Una,
+            // xAI currently documents only eve, ara, rex, sal, and leo.
+            // Map the OpenAI-compatible shimmer preset to a supported voice.
+            TextToSpeechVoice.Shimmer => GrokTextToSpeechVoices.Eve,
             _ => GrokTextToSpeechVoices.Eve
         };
     }

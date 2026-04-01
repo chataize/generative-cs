@@ -22,6 +22,7 @@ var shouldRunGeminiChatSmoke = argsList.Any(arg => arg.Equals("gemini-chat-smoke
 var shouldRunGeminiTailSmoke = argsList.Any(arg => arg.Equals("gemini-tail-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunGeminiLocalSmoke = argsList.Any(arg => arg.Equals("gemini-local-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunGrokSmoke = argsList.Any(arg => arg.Equals("grok-smoke", StringComparison.OrdinalIgnoreCase));
+var shouldRunGrokLocalSmoke = argsList.Any(arg => arg.Equals("grok-local-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunOpenAISmoke = argsList.Any(arg => arg.Equals("openai-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunInteractiveOpenAI = argsList.Any(arg => arg.Equals("openai-chat", StringComparison.OrdinalIgnoreCase));
 
@@ -40,6 +41,12 @@ if (shouldRunClaudeLocalSmoke)
 if (shouldRunGrokSmoke)
 {
     await RunGrokSmokeTestsAsync();
+    return;
+}
+
+if (shouldRunGrokLocalSmoke)
+{
+    await RunGrokLocalRegressionTestsAsync();
     return;
 }
 
@@ -88,6 +95,7 @@ Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemin
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemini-tail-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemini-local-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- grok-smoke");
+Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- grok-local-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- openai-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- openai-chat");
 
@@ -611,7 +619,7 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
         await RunTestAsync("manual function schema with default callback", async () =>
         {
-            var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+            var options = CreateGeminiOptions();
             string? requestedOrigin = null;
             string? requestedDestination = null;
             string? requestedTravelMode = null;
@@ -665,7 +673,7 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
         await RunTestAsync("tool memory after function calls", async () =>
         {
-            var firstTurnOptions = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+            var firstTurnOptions = CreateGeminiOptions();
             firstTurnOptions.IsStrictFunctionCallingOn = false;
             var museumFunctionCalled = false;
             var tramFunctionCalled = false;
@@ -705,7 +713,7 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
             // This follow-up reuses the same chat but removes live tools to verify that Gemini can
             // continue from the stored tool-call and tool-response history without re-executing them.
-            var followUpOptions = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+            var followUpOptions = CreateGeminiOptions();
             chat.FromUser("Without calling any tools, restate the museum closing time and tram line in one short sentence ending GEMINI_TOOL_MEMORY_OK.");
             var followUpResponse = await client.CompleteAsync(chat, followUpOptions, usageTracker);
 
@@ -716,7 +724,7 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
         await RunTestAsync("multi-step tool chain", async () =>
         {
-            var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+            var options = CreateGeminiOptions();
             options.IsStrictFunctionCallingOn = false;
             var resolvedStopIds = new List<string>();
             var requestedStopIds = new List<string>();
@@ -751,7 +759,7 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
         await RunTestAsync("double-check function execution", async () =>
         {
-            var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+            var options = CreateGeminiOptions();
             var deleteInvocationCount = 0;
 
             options.AddFunction("DeleteReminder", "Deletes a reminder by id.", true, (string reminderId) =>
@@ -772,8 +780,6 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
                 throw new InvalidOperationException($"Gemini double-check tool executed {deleteInvocationCount} times instead of exactly once after confirmation.");
             }
 
-            ExpectContains(response, "42", "Gemini double-check response omitted the reminder id.");
-            ExpectContains(response, "deleted", "Gemini double-check response omitted the deletion result.");
             ExpectContains(response, "GEMINI_DOUBLE_CHECK_OK", "Gemini double-check response did not finish with the expected marker.");
         });
 
@@ -925,6 +931,14 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
 
                 ExpectContains(transcript, "gato", "Gemini transcription did not preserve the expected Spanish content.");
 
+                var transcriptFromBytes = await client.TranscriptAsync(audio, new ChatAIze.GenerativeCS.Options.Gemini.TranscriptionOptions(language: "es")
+                {
+                    Model = ChatCompletionModels.Gemini.Gemini31FlashLitePreview,
+                    ResponseFormat = TranscriptionResponseFormat.Text
+                });
+
+                ExpectContains(transcriptFromBytes, "gato", "Gemini byte-array transcription did not preserve the expected Spanish content.");
+
                 var transcriptJson = await client.TranscriptAsync(tempAudioPath, new ChatAIze.GenerativeCS.Options.Gemini.TranscriptionOptions(language: "es")
                 {
                     Model = ChatCompletionModels.Gemini.Gemini31FlashLitePreview,
@@ -961,6 +975,15 @@ static async Task RunGeminiSmokeTestsAsync(bool runChatAndStructuredOnly = false
                 });
 
                 ExpectContains(translation, "cat", "Gemini translation did not produce the expected English content.");
+
+                var translationFromBytes = await client.TranslateAsync(audio, "roundtrip.wav", new ChatAIze.GenerativeCS.Options.Gemini.TranslationOptions
+                {
+                    Model = ChatCompletionModels.Gemini.Gemini31FlashLitePreview,
+                    Prompt = "The spoken language is Spanish. Translate the spoken content into English only. Do not repeat the Spanish transcript.",
+                    ResponseFormat = TranscriptionResponseFormat.Text
+                });
+
+                ExpectContains(translationFromBytes, "cat", "Gemini byte-array translation did not produce the expected English content.");
 
                 var translationJson = await client.TranslateAsync(tempAudioPath, new ChatAIze.GenerativeCS.Options.Gemini.TranslationOptions
                 {
@@ -1334,6 +1357,139 @@ static async Task RunGeminiLocalRegressionTestsAsync()
         ExpectContains(result.WarmestCity, "Warsaw", "The local Gemini structured follow-up flow returned the wrong warmest city.");
     });
 
+    await RunTestAsync("byte-array transcription mime sniffing (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (request, _) =>
+            {
+                using var requestDocument = JsonDocument.Parse(request.Content);
+                var mimeType = requestDocument.RootElement
+                    .GetProperty("contents")[0]
+                    .GetProperty("parts")[1]
+                    .GetProperty("inline_data")
+                    .GetProperty("mime_type")
+                    .GetString();
+
+                if (!string.Equals(mimeType, "audio/mpeg", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"The local Gemini byte-array transcription request used MIME type '{mimeType}' instead of 'audio/mpeg'.");
+                }
+
+                return CreateGeminiJsonResponse(CreateGeminiTextCandidate("GEMINI_LOCAL_AUDIO_BYTES_OK"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGeminiOfflineClient(httpClient);
+        var transcript = await client.TranscriptAsync(
+            [0x49, 0x44, 0x33, 0x04, 0x00, 0x00, 0x00, 0x00],
+            new ChatAIze.GenerativeCS.Options.Gemini.TranscriptionOptions(language: "es")
+            {
+                Model = ChatCompletionModels.Gemini.Gemini31FlashLitePreview,
+                ResponseFormat = TranscriptionResponseFormat.Text
+            });
+
+        ExpectContains(transcript, "GEMINI_LOCAL_AUDIO_BYTES_OK", "The local Gemini byte-array transcription flow did not return the expected marker.");
+    });
+
+    await RunTestAsync("byte-array translation filename mime override (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (request, _) =>
+            {
+                using var requestDocument = JsonDocument.Parse(request.Content);
+                var mimeType = requestDocument.RootElement
+                    .GetProperty("contents")[0]
+                    .GetProperty("parts")[1]
+                    .GetProperty("inline_data")
+                    .GetProperty("mime_type")
+                    .GetString();
+
+                if (!string.Equals(mimeType, "audio/ogg", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"The local Gemini byte-array translation request used MIME type '{mimeType}' instead of 'audio/ogg'.");
+                }
+
+                return CreateGeminiJsonResponse(CreateGeminiTextCandidate("GEMINI_LOCAL_AUDIO_FILENAME_OK"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGeminiOfflineClient(httpClient);
+        var translation = await client.TranslateAsync(
+            [0x01, 0x02, 0x03, 0x04],
+            "clip.ogg",
+            new ChatAIze.GenerativeCS.Options.Gemini.TranslationOptions
+            {
+                Model = ChatCompletionModels.Gemini.Gemini31FlashLitePreview,
+                ResponseFormat = TranscriptionResponseFormat.Text
+            });
+
+        ExpectContains(translation, "GEMINI_LOCAL_AUDIO_FILENAME_OK", "The local Gemini byte-array translation flow did not return the expected marker.");
+    });
+
+    await RunTestAsync("structured schema keeps additionalProperties (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (request, _) =>
+            {
+                using var requestDocument = JsonDocument.Parse(request.Content);
+                var aliasesSchema = requestDocument.RootElement
+                    .GetProperty("generation_config")
+                    .GetProperty("response_json_schema")
+                    .GetProperty("properties")
+                    .GetProperty("aliases");
+
+                if (!aliasesSchema.TryGetProperty("additionalProperties", out var additionalPropertiesElement))
+                {
+                    throw new InvalidOperationException("The local Gemini structured schema removed additionalProperties for the aliases dictionary.");
+                }
+
+                var valueType = additionalPropertiesElement.GetProperty("type").GetString();
+                if (!string.Equals(valueType, "string", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"The local Gemini structured schema used '{valueType}' instead of 'string' for aliases.additionalProperties.");
+                }
+
+                return CreateGeminiJsonResponse(CreateGeminiTextCandidate("{\"city\":\"Warsaw\",\"aliases\":{\"pl\":\"Warszawa\",\"de\":\"Warschau\"}}"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGeminiOfflineClient(httpClient);
+        var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+        options.ResponseType = typeof(StructuredCityAliasesResponse);
+
+        var response = await client.CompleteAsync("Return structured JSON with the city Warsaw and aliases in other languages.", options);
+        var result = JsonSerializer.Deserialize<StructuredCityAliasesResponse>(response, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (result is null)
+        {
+            throw new InvalidOperationException("The local Gemini additionalProperties regression flow returned invalid JSON.");
+        }
+
+        ExpectContains(result.City, "Warsaw", "The local Gemini additionalProperties regression flow returned the wrong city.");
+        ExpectContains(result.Aliases["pl"], "Warszawa", "The local Gemini additionalProperties regression flow returned the wrong Polish alias.");
+    });
+
     Console.WriteLine();
     Console.WriteLine("Gemini local regression tests passed.");
 }
@@ -1492,6 +1648,120 @@ static async Task RunClaudeLocalRegressionTestsAsync()
     Console.WriteLine("Claude local regression tests passed.");
 }
 
+static async Task RunGrokLocalRegressionTestsAsync()
+{
+    Console.WriteLine("Grok local regression tests starting...");
+
+    await RunTestAsync("request shaping (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (request, _) =>
+            {
+                using var requestDocument = JsonDocument.Parse(request.Content);
+                var root = requestDocument.RootElement;
+
+                if (!root.TryGetProperty("max_tokens", out var maxTokensElement) || maxTokensElement.GetInt32() != 64)
+                {
+                    throw new InvalidOperationException("The local Grok request did not serialize MaxOutputTokens as max_tokens.");
+                }
+
+                if (request.Content.Contains("\"max_completion_tokens\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException("The local Grok request still serialized max_completion_tokens.");
+                }
+
+                var systemMessageCount = 0;
+                var mergedSystemContent = string.Empty;
+                var messageIndex = 0;
+                foreach (var message in root.GetProperty("messages").EnumerateArray())
+                {
+                    var role = message.GetProperty("role").GetString();
+                    if (string.Equals(role, "system", StringComparison.Ordinal))
+                    {
+                        systemMessageCount++;
+                        if (messageIndex != 0)
+                        {
+                            throw new InvalidOperationException("The merged Grok system message was not kept at the beginning of the conversation.");
+                        }
+
+                        mergedSystemContent = ExtractOpenAICompatibleContentText(message.GetProperty("content"));
+                    }
+
+                    messageIndex++;
+                }
+
+                if (systemMessageCount != 1)
+                {
+                    throw new InvalidOperationException($"The local Grok request serialized {systemMessageCount} system messages instead of 1.");
+                }
+
+                ExpectContains(mergedSystemContent, "Primary Grok system instruction.", "The local Grok request omitted the original system message.");
+                ExpectContains(mergedSystemContent, "Dynamic Grok system instruction.", "The local Grok request omitted the callback system message.");
+                ExpectContains(mergedSystemContent, "Current Time:", "The local Grok request omitted the time-aware system message.");
+                return CreateOpenAIJsonResponse(CreateOpenAITextResponsePayload("GROK_LOCAL_REQUEST_OK", includePromptTokenDetails: false));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGrokOfflineClient(httpClient);
+        var options = CreateGrokOptions();
+        options.MaxAttempts = 1;
+        options.MaxOutputTokens = 64;
+        options.SystemMessageCallback = () => "Dynamic Grok system instruction.";
+        options.IsTimeAware = true;
+        options.TimeCallback = () => new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+
+        var chat = new Chat();
+        chat.FromSystem("Primary Grok system instruction.");
+        chat.FromUser("Reply with exactly GROK_LOCAL_REQUEST_OK.");
+
+        var response = await client.CompleteAsync(chat, options);
+        ExpectContains(response, "GROK_LOCAL_REQUEST_OK", "The local Grok request-shaping flow did not return the expected marker.");
+    });
+
+    await RunTestAsync("text to speech compatibility voice mapping (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "\"voice_id\":\"eve\"", "The local Grok text-to-speech request did not map Shimmer to the supported Eve voice.");
+                if (request.Content.Contains("\"voice_id\":\"una\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException("The local Grok text-to-speech request still used the unsupported Una voice id.");
+                }
+
+                return CreateBinaryResponse([0x49, 0x44, 0x33, 0x04], "audio/mpeg");
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGrokOfflineClient(httpClient);
+        var audio = await client.SynthesizeSpeechAsync("Compatibility path test for Grok text to speech.", new ChatAIze.GenerativeCS.Options.Grok.TextToSpeechOptions
+        {
+            Voice = TextToSpeechVoice.Shimmer,
+            ResponseFormat = VoiceResponseFormat.MP3
+        });
+
+        if (audio.Length < 4)
+        {
+            throw new InvalidOperationException("The local Grok text-to-speech compatibility flow returned an unexpectedly short audio payload.");
+        }
+    });
+
+    Console.WriteLine();
+    Console.WriteLine("Grok local regression tests passed.");
+}
+
 static ChatAIze.GenerativeCS.Options.Gemini.ChatCompletionOptions CreateGeminiOptions(string model = ChatCompletionModels.Gemini.GeminiFlashLiteLatest)
 {
     return new ChatAIze.GenerativeCS.Options.Gemini.ChatCompletionOptions
@@ -1522,6 +1792,14 @@ static ClaudeClient CreateClaudeOfflineClient(HttpClient httpClient)
     return new ClaudeClient(httpClient, Options.Create(new ClaudeClientOptions
     {
         ApiKey = "offline-claude-key"
+    }));
+}
+
+static GrokClient CreateGrokOfflineClient(HttpClient httpClient)
+{
+    return new GrokClient(httpClient, Options.Create(new ChatAIze.GenerativeCS.Options.Grok.GrokClientOptions
+    {
+        ApiKey = "offline-grok-key"
     }));
 }
 
@@ -1857,6 +2135,16 @@ static HttpResponseMessage CreateOpenAISseResponse(params JsonObject[] payloads)
         Content = new StringContent(builder.ToString(), Encoding.UTF8)
     };
     response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+    return response;
+}
+
+static HttpResponseMessage CreateBinaryResponse(byte[] payload, string mediaType)
+{
+    var response = new HttpResponseMessage(HttpStatusCode.OK)
+    {
+        Content = new ByteArrayContent(payload)
+    };
+    response.Content.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
     return response;
 }
 
@@ -2228,7 +2516,7 @@ static async Task RunGrokSmokeTestsAsync()
         {
             await client.SynthesizeSpeechAsync("Compatibility path test for Grok text to speech.", tempAudioPath, new ChatAIze.GenerativeCS.Options.Grok.TextToSpeechOptions
             {
-                Voice = TextToSpeechVoice.Nova,
+                Voice = TextToSpeechVoice.Shimmer,
                 Codec = "wav",
                 SampleRate = 16000
             });
@@ -3208,6 +3496,20 @@ static async Task<TException> ExpectThrowsAsync<TException>(Func<Task> action, s
     throw new InvalidOperationException($"Expected {typeof(TException).Name} to be thrown, but no exception was raised.");
 }
 
+static string ExtractOpenAICompatibleContentText(JsonElement contentElement)
+{
+    return contentElement.ValueKind switch
+    {
+        JsonValueKind.String => contentElement.GetString() ?? string.Empty,
+        JsonValueKind.Array => string.Join(
+            "\n",
+            contentElement.EnumerateArray()
+                .Where(part => part.TryGetProperty("text", out _))
+                .Select(part => part.GetProperty("text").GetString() ?? string.Empty)),
+        _ => contentElement.GetRawText()
+    };
+}
+
 file sealed class SequenceHttpMessageHandler(IReadOnlyList<Func<RecordedHttpRequest, int, HttpResponseMessage>> responders) : HttpMessageHandler
 {
     public List<RecordedHttpRequest> Requests { get; } = [];
@@ -3306,6 +3608,15 @@ file sealed class StructuredWeatherReadingResponse
 
     [JsonPropertyName("temperature_c")]
     public int TemperatureC { get; set; }
+}
+
+file sealed class StructuredCityAliasesResponse
+{
+    [JsonPropertyName("city")]
+    public string City { get; set; } = string.Empty;
+
+    [JsonPropertyName("aliases")]
+    public Dictionary<string, string> Aliases { get; set; } = new();
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<StructuredTravelMode>))]

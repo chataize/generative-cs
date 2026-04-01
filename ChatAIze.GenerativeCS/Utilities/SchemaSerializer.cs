@@ -300,7 +300,6 @@ public static class SchemaSerializer
             _ = jsonObject.Remove("exclusiveMinimum");
             _ = jsonObject.Remove("exclusiveMaximum");
             _ = jsonObject.Remove("strict");
-            _ = jsonObject.Remove("additionalProperties");
 
             foreach (var child in jsonObject.ToList())
             {

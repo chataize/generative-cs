@@ -16,7 +16,7 @@ internal static class SpeechRecognition
         byte[] audio,
         string? apiKey,
         GeminiTranscriptionOptions? options = null,
-        string fileName = "audio.wav",
+        string fileName = "",
         HttpClient? httpClient = null,
         CancellationToken cancellationToken = default)
     {
@@ -39,7 +39,7 @@ internal static class SpeechRecognition
         byte[] audio,
         string? apiKey,
         GeminiTranslationOptions? options = null,
-        string fileName = "audio.wav",
+        string fileName = "",
         HttpClient? httpClient = null,
         CancellationToken cancellationToken = default)
     {
@@ -103,7 +103,7 @@ internal static class SpeechRecognition
                         {
                             ["inline_data"] = new JsonObject
                             {
-                                ["mime_type"] = GetAudioContentType(fileName),
+                                ["mime_type"] = GetAudioContentType(fileName, audio),
                                 ["data"] = Convert.ToBase64String(audio)
                             }
                         }
@@ -220,7 +220,7 @@ internal static class SpeechRecognition
         }
     }
 
-    private static string GetAudioContentType(string fileName)
+    private static string GetAudioContentType(string fileName, byte[] audio)
     {
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
         return extension switch
@@ -232,7 +232,79 @@ internal static class SpeechRecognition
             ".webm" => "audio/webm",
             ".ogg" => "audio/ogg",
             ".flac" => "audio/flac",
-            _ => "audio/wav"
+            _ => DetectAudioContentType(audio)
         };
+    }
+
+    /// <summary>
+    /// Best-effort audio content-type detection for raw byte-array overloads that do not carry a file name.
+    /// </summary>
+    private static string DetectAudioContentType(byte[] audio)
+    {
+        if (audio.Length >= 12
+            && audio[0] == (byte)'R'
+            && audio[1] == (byte)'I'
+            && audio[2] == (byte)'F'
+            && audio[3] == (byte)'F'
+            && audio[8] == (byte)'W'
+            && audio[9] == (byte)'A'
+            && audio[10] == (byte)'V'
+            && audio[11] == (byte)'E')
+        {
+            return "audio/wav";
+        }
+
+        if (audio.Length >= 4
+            && audio[0] == (byte)'f'
+            && audio[1] == (byte)'L'
+            && audio[2] == (byte)'a'
+            && audio[3] == (byte)'C')
+        {
+            return "audio/flac";
+        }
+
+        if (audio.Length >= 4
+            && audio[0] == (byte)'O'
+            && audio[1] == (byte)'g'
+            && audio[2] == (byte)'g'
+            && audio[3] == (byte)'S')
+        {
+            return "audio/ogg";
+        }
+
+        if (audio.Length >= 3
+            && audio[0] == (byte)'I'
+            && audio[1] == (byte)'D'
+            && audio[2] == (byte)'3')
+        {
+            return "audio/mpeg";
+        }
+
+        if (audio.Length >= 2
+            && audio[0] == 0xFF
+            && (audio[1] & 0xE0) == 0xE0)
+        {
+            return "audio/mpeg";
+        }
+
+        if (audio.Length >= 12
+            && audio[4] == (byte)'f'
+            && audio[5] == (byte)'t'
+            && audio[6] == (byte)'y'
+            && audio[7] == (byte)'p')
+        {
+            return "audio/mp4";
+        }
+
+        if (audio.Length >= 4
+            && audio[0] == 0x1A
+            && audio[1] == 0x45
+            && audio[2] == 0xDF
+            && audio[3] == 0xA3)
+        {
+            return "audio/webm";
+        }
+
+        return "application/octet-stream";
     }
 }
