@@ -6,6 +6,22 @@ namespace ChatAIze.GenerativeCS.Constants;
 public static class TextToSpeechModels
 {
     /// <summary>
+    /// Gemini text-to-speech models.
+    /// </summary>
+    public static class Gemini
+    {
+        /// <summary>
+        /// Preview text-to-speech model <c>gemini-2.5-flash-preview-tts</c>.
+        /// </summary>
+        public const string Gemini25FlashPreviewTTS = "gemini-2.5-flash-preview-tts";
+
+        /// <summary>
+        /// Preview text-to-speech model <c>gemini-2.5-pro-preview-tts</c>.
+        /// </summary>
+        public const string Gemini25ProPreviewTTS = "gemini-2.5-pro-preview-tts";
+    }
+
+    /// <summary>
     /// OpenAI text-to-speech models.
     /// </summary>
     public static class OpenAI

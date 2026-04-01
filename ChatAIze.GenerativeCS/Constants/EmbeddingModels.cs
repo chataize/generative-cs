@@ -6,6 +6,22 @@ namespace ChatAIze.GenerativeCS.Constants;
 public static class EmbeddingModels
 {
     /// <summary>
+    /// Gemini embedding models.
+    /// </summary>
+    public static class Gemini
+    {
+        /// <summary>
+        /// Stable embedding model <c>gemini-embedding-001</c>.
+        /// </summary>
+        public const string GeminiEmbedding001 = "gemini-embedding-001";
+
+        /// <summary>
+        /// Preview embedding model <c>gemini-embedding-2-preview</c>.
+        /// </summary>
+        public const string GeminiEmbedding2Preview = "gemini-embedding-2-preview";
+    }
+
+    /// <summary>
     /// OpenAI embedding models.
     /// </summary>
     public static class OpenAI

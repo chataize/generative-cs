@@ -37,11 +37,6 @@ public record ClaudeClientOptions<TMessage, TFunctionCall, TFunctionResult>
     /// Gets or sets the default chat completion options.
     /// </summary>
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the shared moderation defaults used whenever a request omits explicit options.
-    /// </summary>
-    public ModerationOptions DefaultModerationOptions { get; set; } = new();
 }
 
 /// <summary>

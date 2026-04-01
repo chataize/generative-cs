@@ -227,6 +227,18 @@ public static class SchemaSerializer
     }
 
     /// <summary>
+    /// Serializes a response type into Gemini's <c>generation_config.response_schema</c> shape.
+    /// </summary>
+    /// <param name="type">Type to describe.</param>
+    /// <returns>JSON object describing the structured output schema.</returns>
+    public static JsonObject SerializeGeminiResponseSchema(Type type)
+    {
+        var schema = SerializeProperty(type, useOpenAIFeatures: true, requireAllProperties: false);
+        SanitizeForGeminiStructuredOutputs(schema);
+        return schema;
+    }
+
+    /// <summary>
     /// Removes JSON Schema keywords Anthropic does not support for structured outputs and strict tool schemas.
     /// </summary>
     /// <param name="node">Schema node to normalize in place.</param>
@@ -269,6 +281,40 @@ public static class SchemaSerializer
             foreach (var child in jsonArray)
             {
                 SanitizeForClaudeStructuredOutputs(child);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes JSON Schema keywords Gemini's structured outputs do not currently document as supported.
+    /// </summary>
+    /// <param name="node">Schema node to normalize in place.</param>
+    internal static void SanitizeForGeminiStructuredOutputs(JsonNode? node)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            _ = jsonObject.Remove("default");
+            _ = jsonObject.Remove("pattern");
+            _ = jsonObject.Remove("minLength");
+            _ = jsonObject.Remove("maxLength");
+            _ = jsonObject.Remove("exclusiveMinimum");
+            _ = jsonObject.Remove("exclusiveMaximum");
+            _ = jsonObject.Remove("strict");
+            _ = jsonObject.Remove("additionalProperties");
+
+            foreach (var child in jsonObject.ToList())
+            {
+                SanitizeForGeminiStructuredOutputs(child.Value);
+            }
+
+            return;
+        }
+
+        if (node is JsonArray jsonArray)
+        {
+            foreach (var child in jsonArray)
+            {
+                SanitizeForGeminiStructuredOutputs(child);
             }
         }
     }

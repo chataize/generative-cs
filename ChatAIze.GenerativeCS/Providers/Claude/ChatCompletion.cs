@@ -429,7 +429,7 @@ internal static class ChatCompletion
                     continue;
                 }
 
-                var fallbackValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
+                var fallbackValue = await options.DefaultFunctionCallback(function.Name, functionCall.Arguments, cancellationToken);
                 var serializedValue = fallbackValue is string stringValue
                     ? stringValue
                     : JsonSerializer.Serialize(fallbackValue, JsonOptions);
@@ -465,6 +465,7 @@ internal static class ChatCompletion
         where TFunctionResult : IFunctionResult
     {
         var messages = chat.Messages.ToList();
+        var hasExistingToolTranscript = messages.Any(m => m.FunctionCalls.Count > 0 || m.FunctionResult is not null);
 
         if (options.SystemMessageCallback is not null)
         {
@@ -634,13 +635,24 @@ internal static class ChatCompletion
                 requestObject["tools"] = toolsArray;
             }
 
-            if (!options.IsParallelFunctionCallingOn || options.IsStrictFunctionCallingOn)
+            var shouldForceInitialToolUse = options.IsStrictFunctionCallingOn && !hasExistingToolTranscript;
+            if (!options.IsParallelFunctionCallingOn || shouldForceInitialToolUse)
             {
-                requestObject["tool_choice"] = new JsonObject
+                var toolChoice = new JsonObject
                 {
-                    ["type"] = "auto",
-                    ["disable_parallel_tool_use"] = true
+                    // Anthropic's "any" mode forces at least one tool use, which is the closest
+                    // provider-native behavior to the library's strict function-calling intent.
+                    // Once tool calls/results are already in the transcript, switch back to auto so
+                    // Claude can synthesize a final answer instead of being forced into another tool loop.
+                    ["type"] = shouldForceInitialToolUse ? "any" : "auto"
                 };
+
+                if (!options.IsParallelFunctionCallingOn)
+                {
+                    toolChoice["disable_parallel_tool_use"] = true;
+                }
+
+                requestObject["tool_choice"] = toolChoice;
             }
         }
 

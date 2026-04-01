@@ -374,7 +374,7 @@ internal static class ChatCompletion
                     }
                     else
                     {
-                        var functionValue = await options.DefaultFunctionCallback(functionCall.Name, functionCall.Arguments, cancellationToken);
+                        var functionValue = await options.DefaultFunctionCallback(function.Name, functionCall.Arguments, cancellationToken);
                         if (functionValue is string stringValue)
                         {
                             var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = stringValue });

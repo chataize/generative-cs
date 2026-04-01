@@ -359,6 +359,81 @@ public static class ChatCompletionModels
     public static class Gemini
     {
         /// <summary>
+        /// Stable model identifier for gemini-2.5-flash.
+        /// </summary>
+        public const string Gemini25Flash = "gemini-2.5-flash";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.5-pro.
+        /// </summary>
+        public const string Gemini25Pro = "gemini-2.5-pro";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash.
+        /// </summary>
+        public const string Gemini20Flash = "gemini-2.0-flash";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-001.
+        /// </summary>
+        public const string Gemini20Flash001 = "gemini-2.0-flash-001";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-lite.
+        /// </summary>
+        public const string Gemini20FlashLite = "gemini-2.0-flash-lite";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-lite-001.
+        /// </summary>
+        public const string Gemini20FlashLite001 = "gemini-2.0-flash-lite-001";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.5-flash-lite.
+        /// </summary>
+        public const string Gemini25FlashLite = "gemini-2.5-flash-lite";
+
+        /// <summary>
+        /// Alias model identifier for gemini-flash-latest.
+        /// </summary>
+        public const string GeminiFlashLatest = "gemini-flash-latest";
+
+        /// <summary>
+        /// Alias model identifier for gemini-flash-lite-latest.
+        /// </summary>
+        public const string GeminiFlashLiteLatest = "gemini-flash-lite-latest";
+
+        /// <summary>
+        /// Alias model identifier for gemini-pro-latest.
+        /// </summary>
+        public const string GeminiProLatest = "gemini-pro-latest";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3-flash-preview.
+        /// </summary>
+        public const string Gemini3FlashPreview = "gemini-3-flash-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3-pro-preview.
+        /// </summary>
+        public const string Gemini3ProPreview = "gemini-3-pro-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-pro-preview.
+        /// </summary>
+        public const string Gemini31ProPreview = "gemini-3.1-pro-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-pro-preview-customtools.
+        /// </summary>
+        public const string Gemini31ProPreviewCustomTools = "gemini-3.1-pro-preview-customtools";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-flash-lite-preview.
+        /// </summary>
+        public const string Gemini31FlashLitePreview = "gemini-3.1-flash-lite-preview";
+
+        /// <summary>
         /// Model identifier for gemini-1.5-pro-002.
         /// </summary>
         public const string Gemini15Pro002 = "gemini-1.5-pro-002";

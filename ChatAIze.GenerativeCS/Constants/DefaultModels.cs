@@ -53,7 +53,27 @@ public static class DefaultModels
         /// <summary>
         /// Default chat completion model.
         /// </summary>
-        public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini15Flash;
+        public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini25Flash;
+
+        /// <summary>
+        /// Default embedding model.
+        /// </summary>
+        public const string Embedding = EmbeddingModels.Gemini.GeminiEmbedding001;
+
+        /// <summary>
+        /// Default text-to-speech model.
+        /// </summary>
+        public const string TextToSpeech = TextToSpeechModels.Gemini.Gemini25FlashPreviewTTS;
+
+        /// <summary>
+        /// Default speech-to-text model.
+        /// </summary>
+        public const string SpeechToText = SpeechRecognitionModels.Gemini.Gemini25Flash;
+
+        /// <summary>
+        /// Default speech-translation model.
+        /// </summary>
+        public const string SpeechTranslation = SpeechRecognitionModels.Gemini.Gemini25Flash;
     }
 
     /// <summary>
@@ -67,10 +87,6 @@ public static class DefaultModels
         /// <remarks>Favours Anthropic's current speed and capability balance for general-purpose chat workloads.</remarks>
         public const string ChatCompletion = ChatCompletionModels.Claude.Sonnet46;
 
-        /// <summary>
-        /// Default moderation model.
-        /// </summary>
-        public const string Moderation = ModerationModels.Claude.Sonnet46;
     }
 
     /// <summary>

@@ -37,6 +37,26 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
     /// Gets or sets the default chat completion options.
     /// </summary>
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the default embedding options.
+    /// </summary>
+    public EmbeddingOptions DefaultEmbeddingOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the default text-to-speech options.
+    /// </summary>
+    public TextToSpeechOptions DefaultTextToSpeechOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the default transcription options.
+    /// </summary>
+    public TranscriptionOptions DefaultTranscriptionOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the default translation options.
+    /// </summary>
+    public TranslationOptions DefaultTranslationOptions { get; set; } = new();
 }
 
 /// <summary>

@@ -67,7 +67,6 @@ public class ClaudeClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         }
 
         DefaultCompletionOptions = options.DefaultCompletionOptions;
-        DefaultModerationOptions = options.DefaultModerationOptions;
     }
 
     /// <summary>
@@ -87,7 +86,6 @@ public class ClaudeClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         }
 
         DefaultCompletionOptions = options.Value.DefaultCompletionOptions;
-        DefaultModerationOptions = options.Value.DefaultModerationOptions;
     }
 
     /// <summary>
@@ -100,15 +98,6 @@ public class ClaudeClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     }
 
     /// <summary>
-    /// Initializes a new instance of the client with default moderation options.
-    /// </summary>
-    /// <param name="defaultModerationOptions">Default moderation options.</param>
-    public ClaudeClient(ModerationOptions defaultModerationOptions)
-    {
-        DefaultModerationOptions = defaultModerationOptions;
-    }
-
-    /// <summary>
     /// Gets or sets the API key used for outbound Claude requests.
     /// </summary>
     public string? ApiKey { get; set; }
@@ -117,11 +106,6 @@ public class ClaudeClient<TChat, TMessage, TFunctionCall, TFunctionResult>
     /// Gets or sets the default chat completion options applied when none are supplied.
     /// </summary>
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the default moderation options applied when none are supplied.
-    /// </summary>
-    public ModerationOptions DefaultModerationOptions { get; set; } = new();
 
     /// <summary>
     /// Runs a one-off text completion for the supplied prompt.
@@ -204,18 +188,6 @@ public class ClaudeClient<TChat, TMessage, TFunctionCall, TFunctionResult>
         {
             yield return chunk;
         }
-    }
-
-    /// <summary>
-    /// Runs text through Claude-based moderation classification.
-    /// </summary>
-    /// <param name="text">Text to moderate.</param>
-    /// <param name="options">Optional moderation options.</param>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>Structured moderation result.</returns>
-    public async Task<ModerationResult> ModerateAsync(string text, ModerationOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return await Moderation.ModerateAsync(text, ApiKey, options ?? DefaultModerationOptions, _httpClient, cancellationToken);
     }
 
     /// <summary>
@@ -476,9 +448,4 @@ public class ClaudeClient : ClaudeClient<Chat, ChatMessage, FunctionCall, Functi
     /// <param name="defaultCompletionOptions">Default chat completion options.</param>
     public ClaudeClient(ChatCompletionOptions defaultCompletionOptions) : base(defaultCompletionOptions) { }
 
-    /// <summary>
-    /// Initializes a new instance with default moderation options.
-    /// </summary>
-    /// <param name="defaultModerationOptions">Default moderation options.</param>
-    public ClaudeClient(ModerationOptions defaultModerationOptions) : base(defaultModerationOptions) { }
 }
