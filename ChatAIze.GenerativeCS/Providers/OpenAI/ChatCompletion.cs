@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -249,10 +250,7 @@ internal static class ChatCompletion
         using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var responseReader = new StreamReader(responseContent);
 
-        var functionCalls = new List<TFunctionCall>();
-        var currentToolCallId = string.Empty;
-        var currentFunctionName = string.Empty;
-        var currentFunctionArguments = string.Empty;
+        var streamingToolCalls = new SortedDictionary<int, StreamingToolCallState>();
         // Aggregate streamed text chunks so we can add a single chatbot message after the stream completes.
         var entireContent = string.Empty;
 
@@ -315,36 +313,56 @@ internal static class ChatCompletion
 
             if (delta.TryGetProperty("tool_calls", out var toolCallsProperty))
             {
-                var toolCallProperty = toolCallsProperty[0];
-                if (toolCallProperty.TryGetProperty("function", out var functionProperty))
+                for (var toolCallOffset = 0; toolCallOffset < toolCallsProperty.GetArrayLength(); toolCallOffset++)
                 {
-                    // The streaming API sends tool call pieces incrementally; start a new call whenever
-                    // a name arrives and keep appending arguments until the next one shows up.
+                    var toolCallProperty = toolCallsProperty[toolCallOffset];
+                    var toolCallIndex = toolCallProperty.TryGetProperty("index", out var indexProperty)
+                        ? indexProperty.GetInt32()
+                        : toolCallOffset;
+
+                    if (!streamingToolCalls.TryGetValue(toolCallIndex, out var streamingToolCall))
+                    {
+                        streamingToolCall = new StreamingToolCallState();
+                        streamingToolCalls[toolCallIndex] = streamingToolCall;
+                    }
+
+                    if (toolCallProperty.TryGetProperty("id", out var toolCallIdProperty))
+                    {
+                        streamingToolCall.ToolCallId = toolCallIdProperty.GetString();
+                    }
+
+                    if (!toolCallProperty.TryGetProperty("function", out var functionProperty))
+                    {
+                        continue;
+                    }
+
                     if (functionProperty.TryGetProperty("name", out var functionNameProperty))
                     {
-                        if (!string.IsNullOrWhiteSpace(currentFunctionName))
-                        {
-                            functionCalls.Add(new TFunctionCall { ToolCallId = currentToolCallId, Name = currentFunctionName, Arguments = currentFunctionArguments });
-                        }
-
-                        currentToolCallId = toolCallProperty.GetProperty("id").GetString()!;
-                        currentFunctionName = functionNameProperty.GetString()!;
-                        currentFunctionArguments = string.Empty;
+                        streamingToolCall.Name = functionNameProperty.GetString();
                     }
 
                     if (functionProperty.TryGetProperty("arguments", out var functionArgumentsProperty))
                     {
-                        currentFunctionArguments += functionArgumentsProperty.GetString()!;
+                        _ = streamingToolCall.Arguments.Append(functionArgumentsProperty.GetString());
                     }
                 }
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(currentFunctionName))
-        {
-            // Flush the final in-progress function call that would not be pushed by the loop above.
-            functionCalls.Add(new TFunctionCall { ToolCallId = currentToolCallId, Name = currentFunctionName, Arguments = currentFunctionArguments });
-        }
+        var functionCalls = streamingToolCalls
+            .Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value.Name))
+            .OrderBy(kvp => kvp.Key)
+            .Select(kvp => new TFunctionCall
+            {
+                ToolCallId = string.IsNullOrWhiteSpace(kvp.Value.ToolCallId)
+                    ? $"chatcmpl_tool_{Guid.NewGuid():N}"
+                    : kvp.Value.ToolCallId,
+                Name = kvp.Value.Name!,
+                Arguments = kvp.Value.Arguments.Length == 0
+                    ? "{}"
+                    : kvp.Value.Arguments.ToString()
+            })
+            .ToList();
 
         if (functionCalls.Count > 0)
         {
@@ -352,6 +370,7 @@ internal static class ChatCompletion
             await options.AddMessageCallback(message1);
         }
 
+        var anySuccessfulToolCall = false;
         foreach (var functionCall in functionCalls)
         {
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
@@ -371,6 +390,10 @@ internal static class ChatCompletion
                         var message3 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = functionValue });
 
                         await options.AddMessageCallback(message3);
+                        if (!functionValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            anySuccessfulToolCall = true;
+                        }
                     }
                     else
                     {
@@ -379,11 +402,16 @@ internal static class ChatCompletion
                         {
                             var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = stringValue });
                             await options.AddMessageCallback(message4);
+                            if (!stringValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                anySuccessfulToolCall = true;
+                            }
                         }
                         else
                         {
                             var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
                             await options.AddMessageCallback(message4);
+                            anySuccessfulToolCall = true;
                         }
                     }
                 }
@@ -399,6 +427,19 @@ internal static class ChatCompletion
         {
             var message6 = await chat.FromChatbotAsync(entireContent);
             await options.AddMessageCallback(message6);
+        }
+
+        if (functionCalls.Count > 0 && !anySuccessfulToolCall)
+        {
+            var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+            await options.AddMessageCallback(fallback);
+
+            if (!string.IsNullOrWhiteSpace(fallback.Content))
+            {
+                yield return fallback.Content;
+            }
+
+            yield break;
         }
 
         if (functionCalls.Count > 0)
@@ -655,14 +696,87 @@ internal static class ChatCompletion
     /// <returns>Provider-specific role string.</returns>
     private static string GetRoleName(ChatRole role, string model)
     {
-        var usesDeveloperRole = model.StartsWith("o1") || model.StartsWith("o3");
         return role switch
         {
-            ChatRole.System => usesDeveloperRole ? "developer" : "system",
+            ChatRole.System => UsesDeveloperRole(model) ? "developer" : "system",
             ChatRole.User => "user",
             ChatRole.Chatbot => "assistant",
             ChatRole.Function => "tool",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
+    }
+
+    /// <summary>
+    /// Determines whether the selected OpenAI model family expects developer messages instead of legacy system messages.
+    /// </summary>
+    /// <remarks>
+    /// OpenAI documents developer messages for o-series reasoning models and GPT-5-era chat models.
+    /// Preserve legacy system-role behavior for older families such as GPT-4.x and GPT-4o.
+    /// </remarks>
+    private static bool UsesDeveloperRole(string model)
+    {
+        if (string.IsNullOrWhiteSpace(model))
+        {
+            return false;
+        }
+
+        var normalizedModel = NormalizeModelName(model);
+        if (normalizedModel.Length >= 2
+            && normalizedModel[0] == 'o'
+            && char.IsDigit(normalizedModel[1]))
+        {
+            return true;
+        }
+
+        if (!normalizedModel.StartsWith("gpt-", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var majorVersionStart = "gpt-".Length;
+        var majorVersionLength = 0;
+        while (majorVersionStart + majorVersionLength < normalizedModel.Length
+               && char.IsDigit(normalizedModel[majorVersionStart + majorVersionLength]))
+        {
+            majorVersionLength++;
+        }
+
+        if (majorVersionLength == 0
+            || !int.TryParse(normalizedModel.AsSpan(majorVersionStart, majorVersionLength), out var majorVersion))
+        {
+            return false;
+        }
+
+        return majorVersion >= 5;
+    }
+
+    private static string NormalizeModelName(string model)
+    {
+        var normalizedModel = model.Trim().ToLowerInvariant();
+
+        var lastSlashIndex = normalizedModel.LastIndexOf('/');
+        if (lastSlashIndex >= 0 && lastSlashIndex < normalizedModel.Length - 1)
+        {
+            normalizedModel = normalizedModel[(lastSlashIndex + 1)..];
+        }
+
+        if (normalizedModel.StartsWith("ft:", StringComparison.Ordinal))
+        {
+            var secondColonIndex = normalizedModel.IndexOf(':', "ft:".Length);
+            normalizedModel = secondColonIndex > "ft:".Length
+                ? normalizedModel["ft:".Length..secondColonIndex]
+                : normalizedModel["ft:".Length..];
+        }
+
+        return normalizedModel;
+    }
+
+    private sealed class StreamingToolCallState
+    {
+        public string? ToolCallId { get; set; }
+
+        public string? Name { get; set; }
+
+        public StringBuilder Arguments { get; } = new();
     }
 }
