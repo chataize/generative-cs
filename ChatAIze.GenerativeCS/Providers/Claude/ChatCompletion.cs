@@ -133,13 +133,25 @@ internal static class ChatCompletion
 
         if (toolCalls.Count == 0)
         {
+            if (string.IsNullOrWhiteSpace(initialText))
+            {
+                ThrowForEmptyResponse(stopReason, isStreaming: false);
+            }
+
             return initialText;
         }
 
         var toolCallMessage = await chat.FromChatbotAsync(toolCalls);
         await options.AddMessageCallback(toolCallMessage);
 
-        await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        var shouldContinueConversation = await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        if (!shouldContinueConversation)
+        {
+            var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+            await options.AddMessageCallback(fallback);
+            return initialText + (fallback.Content ?? string.Empty);
+        }
+
         var continuation = await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken);
 
         return initialText + continuation;
@@ -316,13 +328,30 @@ internal static class ChatCompletion
 
         if (completedToolCalls.Count == 0)
         {
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                ThrowForEmptyResponse(stopReason, isStreaming: true);
+            }
+
             yield break;
         }
 
         var toolCallMessage = await chat.FromChatbotAsync(completedToolCalls);
         await options.AddMessageCallback(toolCallMessage);
 
-        await ExecuteToolCallsAsync(chat, completedToolCalls, options, cancellationToken);
+        var shouldContinueConversation = await ExecuteToolCallsAsync(chat, completedToolCalls, options, cancellationToken);
+        if (!shouldContinueConversation)
+        {
+            var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+            await options.AddMessageCallback(fallback);
+
+            if (!string.IsNullOrWhiteSpace(fallback.Content))
+            {
+                yield return fallback.Content;
+            }
+
+            yield break;
+        }
 
         await foreach (var continuationChunk in StreamCompletionAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken))
         {
@@ -387,7 +416,7 @@ internal static class ChatCompletion
         }
     }
 
-    private static async Task ExecuteToolCallsAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
+    private static async Task<bool> ExecuteToolCallsAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat,
         IEnumerable<TFunctionCall> functionCalls,
         ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options,
@@ -397,6 +426,7 @@ internal static class ChatCompletion
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult, new()
     {
+        var shouldContinueConversation = false;
         foreach (var functionCall in functionCalls)
         {
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
@@ -412,6 +442,7 @@ internal static class ChatCompletion
                     });
 
                     await options.AddMessageCallback(confirmationMessage);
+                    shouldContinueConversation = true;
                     continue;
                 }
 
@@ -426,6 +457,10 @@ internal static class ChatCompletion
                     });
 
                     await options.AddMessageCallback(resultMessage);
+                    if (!functionValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        shouldContinueConversation = true;
+                    }
                     continue;
                 }
 
@@ -442,6 +477,10 @@ internal static class ChatCompletion
                 });
 
                 await options.AddMessageCallback(fallbackMessage);
+                if (!serializedValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                {
+                    shouldContinueConversation = true;
+                }
                 continue;
             }
 
@@ -454,6 +493,8 @@ internal static class ChatCompletion
 
             await options.AddMessageCallback(notFoundMessage);
         }
+
+        return shouldContinueConversation;
     }
 
     private static JsonObject CreateChatCompletionRequest<TChat, TMessage, TFunctionCall, TFunctionResult>(
@@ -816,6 +857,22 @@ internal static class ChatCompletion
             ChatRole.Function => "user",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Invalid role")
         };
+    }
+
+    private static void ThrowForEmptyResponse(string? stopReason, bool isStreaming)
+    {
+        if (!string.IsNullOrWhiteSpace(stopReason))
+        {
+            var responseKind = isStreaming ? "streamed assistant content" : "assistant content";
+            throw new InvalidOperationException($"Claude returned no {responseKind}. Stop reason: {stopReason}.");
+        }
+
+        if (isStreaming)
+        {
+            throw new InvalidOperationException("Claude returned an empty streamed assistant message.");
+        }
+
+        throw new InvalidOperationException("Claude returned an empty assistant message.");
     }
 
     private sealed record StreamingToolCall(string Id, string Name, StringBuilder Arguments);

@@ -88,22 +88,20 @@ internal static class ChatCompletion
             Console.WriteLine(responseDocument.RootElement.ToString());
         }
 
-        if (usageTracker is not null)
-        {
-            var usage = responseDocument.RootElement.GetProperty("usage");
-            var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
-            var cachedTokens = usage.GetProperty("prompt_tokens_details").GetProperty("cached_tokens").GetInt32();
-            var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
+        AddUsage(responseDocument.RootElement, usageTracker);
 
-            usageTracker.AddPromptTokens(promptTokens);
-            usageTracker.AddCachedTokens(cachedTokens);
-            usageTracker.AddCompletionTokens(completionTokens);
+        var choice = GetPrimaryChoice(responseDocument.RootElement);
+        var generatedMessage = choice.GetProperty("message");
+        var initialText = ExtractAssistantText(generatedMessage);
+        if (!string.IsNullOrWhiteSpace(initialText))
+        {
+            var textMessage = await chat.FromChatbotAsync(initialText);
+            await options.AddMessageCallback(textMessage);
         }
 
-        var generatedMessage = responseDocument.RootElement.GetProperty("choices")[0].GetProperty("message");
         if (generatedMessage.TryGetProperty("tool_calls", out var toolCallsElement))
         {
-            var anySuccessfulToolCall = false;
+            var shouldContinueConversation = false;
 
             foreach (var toolCallElement in toolCallsElement.EnumerateArray())
             {
@@ -125,6 +123,7 @@ internal static class ChatCompletion
                         {
                             var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                             await options.AddMessageCallback(message2);
+                            shouldContinueConversation = true;
                         }
                         else
                         {
@@ -135,7 +134,7 @@ internal static class ChatCompletion
                                 await options.AddMessageCallback(message3);
                                 if (!functionValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    anySuccessfulToolCall = true;
+                                    shouldContinueConversation = true;
                                 }
                             }
                             else
@@ -147,14 +146,14 @@ internal static class ChatCompletion
                                     await options.AddMessageCallback(message4);
                                     if (!stringValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        anySuccessfulToolCall = true;
+                                        shouldContinueConversation = true;
                                     }
                                 }
                                 else
                                 {
                                     var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = toolCallId, Name = functionName, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
                                     await options.AddMessageCallback(message4);
-                                    anySuccessfulToolCall = true;
+                                    shouldContinueConversation = true;
                                 }
                             }
                         }
@@ -167,22 +166,23 @@ internal static class ChatCompletion
                 }
             }
 
-            if (!anySuccessfulToolCall)
+            if (!shouldContinueConversation)
             {
                 var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
                 await options.AddMessageCallback(fallback);
-                return fallback.Content ?? string.Empty;
+                return initialText + (fallback.Content ?? string.Empty);
             }
 
             // Ask the model to continue now that function results have been appended to the chat.
-            return await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions);
+            return initialText + await CompleteAsync(chat, apiKey, options, usageTracker, httpClient, recursion + 1, cancellationToken, requestUri, includeProviderExtensions);
         }
 
-        var messageContent = generatedMessage.GetProperty("content").GetString()!;
-        var message6 = await chat.FromChatbotAsync(messageContent);
+        if (string.IsNullOrWhiteSpace(initialText))
+        {
+            ThrowForEmptyChoice(choice);
+        }
 
-        await options.AddMessageCallback(message6);
-        return messageContent;
+        return initialText;
     }
 
     /// <summary>
@@ -252,7 +252,8 @@ internal static class ChatCompletion
 
         var streamingToolCalls = new SortedDictionary<int, StreamingToolCallState>();
         // Aggregate streamed text chunks so we can add a single chatbot message after the stream completes.
-        var entireContent = string.Empty;
+        var entireContent = new StringBuilder();
+        string? lastFinishReason = null;
 
         string? chunk;
         while ((chunk = await responseReader.ReadLineAsync(cancellationToken)) is not null)
@@ -280,35 +281,45 @@ internal static class ChatCompletion
                 Console.WriteLine(chunkDocument.RootElement.ToString());
             }
 
-            if (usageTracker is not null && chunkDocument.RootElement.TryGetProperty("usage", out var usage))
-            {
-                if (usage.ValueKind != JsonValueKind.Null)
-                {
-                    var promptTokens = usage.GetProperty("prompt_tokens").GetInt32();
-                    var cachedTokens = usage.GetProperty("prompt_tokens_details").GetProperty("cached_tokens").GetInt32();
-                    var completionTokens = usage.GetProperty("completion_tokens").GetInt32();
+            AddUsage(chunkDocument.RootElement, usageTracker);
 
-                    usageTracker.AddPromptTokens(promptTokens);
-                    usageTracker.AddCachedTokens(cachedTokens);
-                    usageTracker.AddCompletionTokens(completionTokens);
-                }
+            if (!chunkDocument.RootElement.TryGetProperty("choices", out var choices))
+            {
+                continue;
             }
 
-            var choices = chunkDocument.RootElement.GetProperty("choices");
             if (choices.GetArrayLength() == 0)
             {
                 continue;
             }
 
             var choice = choices[0];
+            if (choice.TryGetProperty("finish_reason", out var finishReasonProperty)
+                && finishReasonProperty.ValueKind != JsonValueKind.Null)
+            {
+                lastFinishReason = finishReasonProperty.GetString();
+            }
+
             var delta = choice.GetProperty("delta");
 
             if (delta.TryGetProperty("content", out var contentProperty) && contentProperty.ValueKind != JsonValueKind.Null)
             {
-                var content = contentProperty.GetString()!;
-                entireContent += content;
+                var content = ExtractMessageText(contentProperty);
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    _ = entireContent.Append(content);
+                    yield return content;
+                }
+            }
 
-                yield return content;
+            if (delta.TryGetProperty("refusal", out var refusalProperty) && refusalProperty.ValueKind != JsonValueKind.Null)
+            {
+                var refusal = ExtractMessageText(refusalProperty);
+                if (!string.IsNullOrWhiteSpace(refusal))
+                {
+                    _ = entireContent.Append(refusal);
+                    yield return refusal;
+                }
             }
 
             if (delta.TryGetProperty("tool_calls", out var toolCallsProperty))
@@ -370,7 +381,7 @@ internal static class ChatCompletion
             await options.AddMessageCallback(message1);
         }
 
-        var anySuccessfulToolCall = false;
+        var shouldContinueConversation = false;
         foreach (var functionCall in functionCalls)
         {
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(functionCall.Name));
@@ -381,6 +392,7 @@ internal static class ChatCompletion
                 {
                     var message2 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId, Name = functionCall.Name, Value = "Before executing, are you sure the user wants to run this function? If yes, call it again to confirm." });
                     await options.AddMessageCallback(message2);
+                    shouldContinueConversation = true;
                 }
                 else
                 {
@@ -392,7 +404,7 @@ internal static class ChatCompletion
                         await options.AddMessageCallback(message3);
                         if (!functionValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                         {
-                            anySuccessfulToolCall = true;
+                            shouldContinueConversation = true;
                         }
                     }
                     else
@@ -404,14 +416,14 @@ internal static class ChatCompletion
                             await options.AddMessageCallback(message4);
                             if (!stringValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
                             {
-                                anySuccessfulToolCall = true;
+                                shouldContinueConversation = true;
                             }
                         }
                         else
                         {
                             var message4 = await chat.FromFunctionAsync(new TFunctionResult { ToolCallId = functionCall.ToolCallId!, Name = functionCall.Name, Value = JsonSerializer.Serialize(functionValue, JsonOptions) });
                             await options.AddMessageCallback(message4);
-                            anySuccessfulToolCall = true;
+                            shouldContinueConversation = true;
                         }
                     }
                 }
@@ -423,13 +435,13 @@ internal static class ChatCompletion
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(entireContent))
+        if (entireContent.Length > 0)
         {
-            var message6 = await chat.FromChatbotAsync(entireContent);
+            var message6 = await chat.FromChatbotAsync(entireContent.ToString());
             await options.AddMessageCallback(message6);
         }
 
-        if (functionCalls.Count > 0 && !anySuccessfulToolCall)
+        if (functionCalls.Count > 0 && !shouldContinueConversation)
         {
             var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
             await options.AddMessageCallback(fallback);
@@ -449,6 +461,13 @@ internal static class ChatCompletion
             {
                 yield return chunk2;
             }
+
+            yield break;
+        }
+
+        if (entireContent.Length == 0)
+        {
+            ThrowForEmptyStreamResponse(lastFinishReason);
         }
     }
 
@@ -769,6 +788,143 @@ internal static class ChatCompletion
         }
 
         return normalizedModel;
+    }
+
+    private static JsonElement GetPrimaryChoice(JsonElement root)
+    {
+        if (!root.TryGetProperty("choices", out var choicesElement) || choicesElement.GetArrayLength() == 0)
+        {
+            throw new InvalidOperationException("OpenAI returned no choices.");
+        }
+
+        return choicesElement[0];
+    }
+
+    private static void AddUsage(JsonElement root, TokenUsageTracker? usageTracker)
+    {
+        if (usageTracker is null || !root.TryGetProperty("usage", out var usageElement) || usageElement.ValueKind == JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (usageElement.TryGetProperty("prompt_tokens", out var promptTokensElement)
+            && promptTokensElement.ValueKind == JsonValueKind.Number)
+        {
+            usageTracker.AddPromptTokens(promptTokensElement.GetInt32());
+        }
+
+        if (usageElement.TryGetProperty("prompt_tokens_details", out var promptTokenDetailsElement)
+            && promptTokenDetailsElement.ValueKind == JsonValueKind.Object
+            && promptTokenDetailsElement.TryGetProperty("cached_tokens", out var cachedTokensElement)
+            && cachedTokensElement.ValueKind == JsonValueKind.Number)
+        {
+            usageTracker.AddCachedTokens(cachedTokensElement.GetInt32());
+        }
+
+        if (usageElement.TryGetProperty("completion_tokens", out var completionTokensElement)
+            && completionTokensElement.ValueKind == JsonValueKind.Number)
+        {
+            usageTracker.AddCompletionTokens(completionTokensElement.GetInt32());
+        }
+    }
+
+    private static string ExtractAssistantText(JsonElement message)
+    {
+        var builder = new StringBuilder();
+
+        if (message.TryGetProperty("content", out var contentElement))
+        {
+            AppendMessageText(builder, contentElement);
+        }
+
+        if (builder.Length == 0
+            && message.TryGetProperty("refusal", out var refusalElement)
+            && refusalElement.ValueKind == JsonValueKind.String)
+        {
+            _ = builder.Append(refusalElement.GetString());
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ExtractMessageText(JsonElement contentElement)
+    {
+        var builder = new StringBuilder();
+        AppendMessageText(builder, contentElement);
+        return builder.ToString();
+    }
+
+    private static void AppendMessageText(StringBuilder builder, JsonElement contentElement)
+    {
+        switch (contentElement.ValueKind)
+        {
+            case JsonValueKind.String:
+            {
+                var value = contentElement.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    _ = builder.Append(value);
+                }
+
+                break;
+            }
+
+            case JsonValueKind.Array:
+                foreach (var partElement in contentElement.EnumerateArray())
+                {
+                    if (partElement.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    if (partElement.TryGetProperty("text", out var textElement) && textElement.ValueKind == JsonValueKind.String)
+                    {
+                        var text = textElement.GetString();
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            _ = builder.Append(text);
+                        }
+
+                        continue;
+                    }
+
+                    if (partElement.TryGetProperty("refusal", out var refusalElement) && refusalElement.ValueKind == JsonValueKind.String)
+                    {
+                        var refusal = refusalElement.GetString();
+                        if (!string.IsNullOrWhiteSpace(refusal))
+                        {
+                            _ = builder.Append(refusal);
+                        }
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private static void ThrowForEmptyChoice(JsonElement choice)
+    {
+        var finishReason = choice.TryGetProperty("finish_reason", out var finishReasonElement)
+            && finishReasonElement.ValueKind == JsonValueKind.String
+            ? finishReasonElement.GetString()
+            : null;
+
+        if (!string.IsNullOrWhiteSpace(finishReason))
+        {
+            throw new InvalidOperationException($"OpenAI returned no assistant content. Finish reason: {finishReason}.");
+        }
+
+        throw new InvalidOperationException("OpenAI returned an empty assistant message.");
+    }
+
+    private static void ThrowForEmptyStreamResponse(string? finishReason)
+    {
+        if (!string.IsNullOrWhiteSpace(finishReason))
+        {
+            throw new InvalidOperationException($"OpenAI returned no streamed assistant content. Finish reason: {finishReason}.");
+        }
+
+        throw new InvalidOperationException("OpenAI returned an empty streamed assistant message.");
     }
 
     private sealed class StreamingToolCallState

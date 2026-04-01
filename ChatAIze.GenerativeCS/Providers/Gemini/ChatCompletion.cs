@@ -171,7 +171,13 @@ internal static class ChatCompletion
         GeminiMessagePartStore.Set(toolCallMessage, functionParts);
         await options.AddMessageCallback(toolCallMessage);
 
-        await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        var shouldContinueConversation = await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        if (!shouldContinueConversation)
+        {
+            var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+            await options.AddMessageCallback(fallback);
+            return initialText + (fallback.Content ?? string.Empty);
+        }
 
         var continuation = await CompleteAsync(
             chat,
@@ -375,6 +381,11 @@ internal static class ChatCompletion
 
         if (toolCalls.Count == 0)
         {
+            if (textBuilder.Length == 0)
+            {
+                ThrowForEmptyStreamCandidate(lastFinishReason);
+            }
+
             yield break;
         }
 
@@ -382,7 +393,19 @@ internal static class ChatCompletion
         GeminiMessagePartStore.Set(toolCallMessage, functionParts);
         await options.AddMessageCallback(toolCallMessage);
 
-        await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        var shouldContinueConversation = await ExecuteToolCallsAsync(chat, toolCalls, options, cancellationToken);
+        if (!shouldContinueConversation)
+        {
+            var fallback = await chat.FromChatbotAsync("No tool call succeeded; provide required parameters or respond directly.");
+            await options.AddMessageCallback(fallback);
+
+            if (!string.IsNullOrWhiteSpace(fallback.Content))
+            {
+                yield return fallback.Content;
+            }
+
+            yield break;
+        }
 
         await foreach (var continuationChunk in StreamCompletionAsync(
             chat,
@@ -398,7 +421,7 @@ internal static class ChatCompletion
         }
     }
 
-    private static async Task ExecuteToolCallsAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
+    private static async Task<bool> ExecuteToolCallsAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
         TChat chat,
         IReadOnlyCollection<TFunctionCall> toolCalls,
         ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options,
@@ -408,6 +431,7 @@ internal static class ChatCompletion
         where TFunctionCall : IFunctionCall, new()
         where TFunctionResult : IFunctionResult, new()
     {
+        var shouldContinueConversation = false;
         foreach (var toolCall in toolCalls)
         {
             var function = options.Functions.FirstOrDefault(f => f.Name.NormalizedEquals(toolCall.Name));
@@ -434,6 +458,7 @@ internal static class ChatCompletion
                 });
 
                 await options.AddMessageCallback(confirmationMessage);
+                shouldContinueConversation = true;
                 continue;
             }
 
@@ -462,7 +487,13 @@ internal static class ChatCompletion
             });
 
             await options.AddMessageCallback(resultMessage);
+            if (!serializedValue.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+            {
+                shouldContinueConversation = true;
+            }
         }
+
+        return shouldContinueConversation;
     }
 
     private static async Task<JsonObject> CreateChatCompletionRequestAsync<TChat, TMessage, TFunctionCall, TFunctionResult>(
@@ -776,6 +807,16 @@ internal static class ChatCompletion
         }
 
         throw new InvalidOperationException("Gemini returned an empty candidate.");
+    }
+
+    private static void ThrowForEmptyStreamCandidate(string? finishReason)
+    {
+        if (!string.IsNullOrWhiteSpace(finishReason))
+        {
+            throw new InvalidOperationException($"Gemini returned no streamed content. Finish reason: {finishReason}.");
+        }
+
+        throw new InvalidOperationException("Gemini returned an empty streamed candidate.");
     }
 
     private static void AddUsage(JsonElement root, TokenUsageTracker? usageTracker)

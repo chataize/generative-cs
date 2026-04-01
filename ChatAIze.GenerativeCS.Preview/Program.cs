@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 
 var argsList = args.Select(arg => arg.Trim()).ToArray();
 var shouldRunClaudeSmoke = argsList.Length == 0 || argsList.Any(arg => arg.Equals("claude-smoke", StringComparison.OrdinalIgnoreCase));
+var shouldRunClaudeLocalSmoke = argsList.Any(arg => arg.Equals("claude-local-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunGeminiSmoke = argsList.Any(arg => arg.Equals("gemini-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunGeminiChatSmoke = argsList.Any(arg => arg.Equals("gemini-chat-smoke", StringComparison.OrdinalIgnoreCase));
 var shouldRunGeminiTailSmoke = argsList.Any(arg => arg.Equals("gemini-tail-smoke", StringComparison.OrdinalIgnoreCase));
@@ -27,6 +28,12 @@ var shouldRunInteractiveOpenAI = argsList.Any(arg => arg.Equals("openai-chat", S
 if (shouldRunClaudeSmoke)
 {
     await RunClaudeSmokeTestsAsync();
+    return;
+}
+
+if (shouldRunClaudeLocalSmoke)
+{
+    await RunClaudeLocalRegressionTestsAsync();
     return;
 }
 
@@ -75,6 +82,7 @@ if (shouldRunOpenAISmoke)
 Console.WriteLine("Usage:");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- claude-smoke");
+Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- claude-local-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemini-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemini-chat-smoke");
 Console.WriteLine("  dotnet run --project ChatAIze.GenerativeCS.Preview -- gemini-tail-smoke");
@@ -1066,6 +1074,74 @@ static async Task RunGeminiLocalRegressionTestsAsync()
         ExpectContains(response, "GEMINI_LOCAL_DOUBLE_CHECK_OK", "The local Gemini double-check flow did not return the expected marker.");
     });
 
+    await RunTestAsync("failed tool fallback (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateGeminiSseResponse(CreateGeminiFunctionCallCandidate("lookup_city_weather", new JsonObject
+            {
+                ["city"] = "Atlantis"
+            }))
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGeminiOfflineClient(httpClient);
+        var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+        options.AddFunction("LookupCityWeather", "Returns the weather for a city.", new FunctionParameter(typeof(string), "city", "City name."));
+        options.DefaultFunctionCallback = (_, arguments, _) =>
+        {
+            ExpectContains(arguments, "Atlantis", "The local Gemini failed-tool callback received the wrong arguments.");
+            return ValueTask.FromResult<object?>("Error: Unsupported city 'Atlantis'.");
+        };
+
+        var streamedBuilder = new StringBuilder();
+        await foreach (var chunk in client.StreamCompletionAsync("Use LookupCityWeather for Atlantis and answer as best you can.", options))
+        {
+            _ = streamedBuilder.Append(chunk);
+        }
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local Gemini failed-tool streaming flow made {handler.Requests.Count} requests instead of 1.");
+        }
+
+        ExpectContains(streamedBuilder.ToString(), "No tool call succeeded; provide required parameters or respond directly.", "The local Gemini failed-tool streaming flow did not emit the fallback message.");
+    });
+
+    await RunTestAsync("empty streaming response throws (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateGeminiSseResponse(CreateGeminiEmptyCandidate())
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateGeminiOfflineClient(httpClient);
+        var options = CreateGeminiOptions(ChatCompletionModels.Gemini.Gemini20Flash);
+        options.MaxAttempts = 1;
+
+        _ = await ExpectThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var chunk in client.StreamCompletionAsync("Reply with anything.", options))
+            {
+                _ = chunk;
+            }
+        }, "Gemini returned no streamed content");
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local Gemini empty-stream flow made {handler.Requests.Count} requests instead of 1.");
+        }
+    });
+
     await RunTestAsync("system instruction request shaping (local)", async () =>
     {
         var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
@@ -1262,6 +1338,160 @@ static async Task RunGeminiLocalRegressionTestsAsync()
     Console.WriteLine("Gemini local regression tests passed.");
 }
 
+static async Task RunClaudeLocalRegressionTestsAsync()
+{
+    Console.WriteLine("Claude local regression tests starting...");
+
+    await RunTestAsync("double-check function execution (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateClaudeJsonResponse(CreateClaudeToolUseResponsePayload("toolu_delete_1", "delete_reminder", new JsonObject
+            {
+                ["reminder_id"] = "42"
+            })),
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "Before executing, are you sure the user wants to run this function?", "The local Claude double-check follow-up request did not include the confirmation prompt.");
+                return CreateClaudeJsonResponse(CreateClaudeToolUseResponsePayload("toolu_delete_2", "delete_reminder", new JsonObject
+                {
+                    ["reminder_id"] = "42"
+                }));
+            },
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "Reminder 42 deleted.", "The local Claude double-check final request did not include the function result.");
+                return CreateClaudeJsonResponse(CreateClaudeTextResponsePayload("Reminder 42 deleted. CLAUDE_LOCAL_DOUBLE_CHECK_OK"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateClaudeOfflineClient(httpClient);
+        var options = CreateClaudeOptions();
+        options.MaxAttempts = 1;
+        var callbackInvocations = 0;
+        options.AddFunction("DeleteReminder", "Deletes a reminder by id.", true, new FunctionParameter(typeof(string), "reminder_id", "Reminder id."));
+        options.DefaultFunctionCallback = (_, arguments, _) =>
+        {
+            callbackInvocations++;
+            ExpectContains(arguments, "42", "The local Claude double-check callback received the wrong arguments.");
+            return ValueTask.FromResult<object?>("Reminder 42 deleted.");
+        };
+
+        var response = await client.CompleteAsync("Delete reminder 42. If the tool asks you to confirm first, confirm and let it run again. End with CLAUDE_LOCAL_DOUBLE_CHECK_OK.", options);
+
+        if (handler.Requests.Count != 3)
+        {
+            throw new InvalidOperationException($"The local Claude double-check flow made {handler.Requests.Count} requests instead of 3.");
+        }
+
+        if (callbackInvocations != 1)
+        {
+            throw new InvalidOperationException($"The local Claude double-check callback ran {callbackInvocations} times instead of once.");
+        }
+
+        ExpectContains(response, "CLAUDE_LOCAL_DOUBLE_CHECK_OK", "The local Claude double-check flow did not return the expected marker.");
+    });
+
+    await RunTestAsync("failed tool fallback (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateClaudeJsonResponse(CreateClaudeToolUseResponsePayload("toolu_atlantis", "lookup_city_weather", new JsonObject
+            {
+                ["city"] = "Atlantis"
+            }))
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateClaudeOfflineClient(httpClient);
+        var options = CreateClaudeOptions();
+        options.MaxAttempts = 1;
+        options.AddFunction("LookupCityWeather", "Returns the weather for a city.", new FunctionParameter(typeof(string), "city", "City name."));
+        options.DefaultFunctionCallback = (_, arguments, _) =>
+        {
+            ExpectContains(arguments, "Atlantis", "The local Claude failed-tool callback received the wrong arguments.");
+            return ValueTask.FromResult<object?>("Error: Unsupported city 'Atlantis'.");
+        };
+
+        var response = await client.CompleteAsync("Use LookupCityWeather for Atlantis and answer as best you can.", options);
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local Claude failed-tool flow made {handler.Requests.Count} requests instead of 1.");
+        }
+
+        ExpectContains(response, "No tool call succeeded; provide required parameters or respond directly.", "The local Claude failed-tool flow did not emit the fallback message.");
+    });
+
+    await RunTestAsync("empty response throws (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateClaudeJsonResponse(CreateClaudeEmptyResponsePayload())
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateClaudeOfflineClient(httpClient);
+        var options = CreateClaudeOptions();
+        options.MaxAttempts = 1;
+
+        _ = await ExpectThrowsAsync<InvalidOperationException>(() => client.CompleteAsync("Reply with anything.", options), "Claude returned no assistant content");
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local Claude empty-response flow made {handler.Requests.Count} requests instead of 1.");
+        }
+    });
+
+    await RunTestAsync("empty streaming response throws (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateClaudeSseResponse(
+                CreateClaudeMessageStartEvent(),
+                CreateClaudeMessageDeltaEvent())
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateClaudeOfflineClient(httpClient);
+        var options = CreateClaudeOptions();
+        options.MaxAttempts = 1;
+
+        _ = await ExpectThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var chunk in client.StreamCompletionAsync("Reply with anything.", options))
+            {
+                _ = chunk;
+            }
+        }, "Claude returned no streamed assistant content");
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local Claude empty-stream flow made {handler.Requests.Count} requests instead of 1.");
+        }
+    });
+
+    Console.WriteLine();
+    Console.WriteLine("Claude local regression tests passed.");
+}
+
 static ChatAIze.GenerativeCS.Options.Gemini.ChatCompletionOptions CreateGeminiOptions(string model = ChatCompletionModels.Gemini.GeminiFlashLiteLatest)
 {
     return new ChatAIze.GenerativeCS.Options.Gemini.ChatCompletionOptions
@@ -1284,6 +1514,14 @@ static GeminiClient CreateGeminiOfflineClient(HttpClient httpClient)
     return new GeminiClient(httpClient, Options.Create(new ChatAIze.GenerativeCS.Options.Gemini.GeminiClientOptions
     {
         ApiKey = "offline-gemini-key"
+    }));
+}
+
+static ClaudeClient CreateClaudeOfflineClient(HttpClient httpClient)
+{
+    return new ClaudeClient(httpClient, Options.Create(new ClaudeClientOptions
+    {
+        ApiKey = "offline-claude-key"
     }));
 }
 
@@ -1344,6 +1582,29 @@ static JsonObject CreateGeminiTextCandidate(string text, string finishReason = "
     };
 }
 
+static JsonObject CreateGeminiEmptyCandidate(string finishReason = "STOP")
+{
+    return new JsonObject
+    {
+        ["candidates"] = new JsonArray
+        {
+            new JsonObject
+            {
+                ["content"] = new JsonObject
+                {
+                    ["parts"] = new JsonArray()
+                },
+                ["finishReason"] = finishReason
+            }
+        },
+        ["usageMetadata"] = new JsonObject
+        {
+            ["promptTokenCount"] = 1,
+            ["candidatesTokenCount"] = 1
+        }
+    };
+}
+
 static JsonObject CreateGeminiFunctionCallCandidate(string name, JsonObject args, string finishReason = "STOP")
 {
     return new JsonObject
@@ -1377,6 +1638,121 @@ static JsonObject CreateGeminiFunctionCallCandidate(string name, JsonObject args
     };
 }
 
+static HttpResponseMessage CreateClaudeJsonResponse(JsonObject payload)
+{
+    var response = new HttpResponseMessage(HttpStatusCode.OK)
+    {
+        Content = new StringContent(payload.ToJsonString(), Encoding.UTF8)
+    };
+    response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+    return response;
+}
+
+static JsonObject CreateClaudeToolUseResponsePayload(string toolUseId, string name, JsonObject input, string stopReason = "tool_use")
+{
+    return new JsonObject
+    {
+        ["content"] = new JsonArray
+        {
+            new JsonObject
+            {
+                ["type"] = "tool_use",
+                ["id"] = toolUseId,
+                ["name"] = name,
+                ["input"] = input
+            }
+        },
+        ["stop_reason"] = stopReason,
+        ["usage"] = new JsonObject
+        {
+            ["input_tokens"] = 1,
+            ["output_tokens"] = 1
+        }
+    };
+}
+
+static JsonObject CreateClaudeTextResponsePayload(string text, string stopReason = "end_turn")
+{
+    return new JsonObject
+    {
+        ["content"] = new JsonArray
+        {
+            new JsonObject
+            {
+                ["type"] = "text",
+                ["text"] = text
+            }
+        },
+        ["stop_reason"] = stopReason,
+        ["usage"] = new JsonObject
+        {
+            ["input_tokens"] = 1,
+            ["output_tokens"] = 1
+        }
+    };
+}
+
+static JsonObject CreateClaudeEmptyResponsePayload(string stopReason = "end_turn")
+{
+    return new JsonObject
+    {
+        ["content"] = new JsonArray(),
+        ["stop_reason"] = stopReason,
+        ["usage"] = new JsonObject
+        {
+            ["input_tokens"] = 1,
+            ["output_tokens"] = 1
+        }
+    };
+}
+
+static HttpResponseMessage CreateClaudeSseResponse(params JsonObject[] payloads)
+{
+    var builder = new StringBuilder();
+    foreach (var payload in payloads)
+    {
+        _ = builder.Append("data: ").Append(payload.ToJsonString()).Append("\n\n");
+    }
+
+    var response = new HttpResponseMessage(HttpStatusCode.OK)
+    {
+        Content = new StringContent(builder.ToString(), Encoding.UTF8)
+    };
+    response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+    return response;
+}
+
+static JsonObject CreateClaudeMessageStartEvent()
+{
+    return new JsonObject
+    {
+        ["type"] = "message_start",
+        ["message"] = new JsonObject
+        {
+            ["usage"] = new JsonObject
+            {
+                ["input_tokens"] = 1
+            }
+        }
+    };
+}
+
+static JsonObject CreateClaudeMessageDeltaEvent(string stopReason = "end_turn", int outputTokens = 1)
+{
+    return new JsonObject
+    {
+        ["type"] = "message_delta",
+        ["delta"] = new JsonObject
+        {
+            ["stop_reason"] = stopReason
+        },
+        ["usage"] = new JsonObject
+        {
+            ["output_tokens"] = outputTokens
+        }
+    };
+}
+
 static OpenAIClient CreateOpenAIOfflineClient(HttpClient httpClient)
 {
     return new OpenAIClient(httpClient, Options.Create(new ChatAIze.GenerativeCS.Options.OpenAI.OpenAIClientOptions
@@ -1395,7 +1771,7 @@ static HttpResponseMessage CreateOpenAIJsonResponse(JsonObject payload)
     return response;
 }
 
-static JsonObject CreateOpenAITextResponsePayload(string text)
+static JsonObject CreateOpenAITextResponsePayload(string text, bool includePromptTokenDetails = true)
 {
     return new JsonObject
     {
@@ -1410,19 +1786,11 @@ static JsonObject CreateOpenAITextResponsePayload(string text)
                 }
             }
         },
-        ["usage"] = new JsonObject
-        {
-            ["prompt_tokens"] = 1,
-            ["completion_tokens"] = 1,
-            ["prompt_tokens_details"] = new JsonObject
-            {
-                ["cached_tokens"] = 0
-            }
-        }
+        ["usage"] = CreateOpenAIUsagePayload(includePromptTokenDetails)
     };
 }
 
-static JsonObject CreateOpenAIToolCallResponsePayload(string toolCallId, string functionName, string arguments)
+static JsonObject CreateOpenAIToolCallResponsePayload(string toolCallId, string functionName, string arguments, string? text = null, bool includePromptTokenDetails = true)
 {
     return new JsonObject
     {
@@ -1433,7 +1801,7 @@ static JsonObject CreateOpenAIToolCallResponsePayload(string toolCallId, string 
                 ["message"] = new JsonObject
                 {
                     ["role"] = "assistant",
-                    ["content"] = JsonValue.Create((string?)null),
+                    ["content"] = JsonValue.Create(text),
                     ["tool_calls"] = new JsonArray
                     {
                         new JsonObject
@@ -1450,15 +1818,27 @@ static JsonObject CreateOpenAIToolCallResponsePayload(string toolCallId, string 
                 }
             }
         },
-        ["usage"] = new JsonObject
+        ["usage"] = CreateOpenAIUsagePayload(includePromptTokenDetails)
+    };
+}
+
+static JsonObject CreateOpenAIEmptyResponsePayload(string finishReason = "stop", bool includePromptTokenDetails = true)
+{
+    return new JsonObject
+    {
+        ["choices"] = new JsonArray
         {
-            ["prompt_tokens"] = 1,
-            ["completion_tokens"] = 1,
-            ["prompt_tokens_details"] = new JsonObject
+            new JsonObject
             {
-                ["cached_tokens"] = 0
+                ["finish_reason"] = finishReason,
+                ["message"] = new JsonObject
+                {
+                    ["role"] = "assistant",
+                    ["content"] = JsonValue.Create((string?)null)
+                }
             }
-        }
+        },
+        ["usage"] = CreateOpenAIUsagePayload(includePromptTokenDetails)
     };
 }
 
@@ -1529,21 +1909,47 @@ static JsonObject CreateOpenAIStreamToolCallDelta(int index, string toolCallId, 
     };
 }
 
-static JsonObject CreateOpenAIStreamUsageChunk()
+static JsonObject CreateOpenAIStreamUsageChunk(bool includePromptTokenDetails = true)
 {
     return new JsonObject
     {
         ["choices"] = new JsonArray(),
-        ["usage"] = new JsonObject
+        ["usage"] = CreateOpenAIUsagePayload(includePromptTokenDetails)
+    };
+}
+
+static JsonObject CreateOpenAIStreamFinishChunk(string finishReason = "stop")
+{
+    return new JsonObject
+    {
+        ["choices"] = new JsonArray
         {
-            ["prompt_tokens"] = 1,
-            ["completion_tokens"] = 1,
-            ["prompt_tokens_details"] = new JsonObject
+            new JsonObject
             {
-                ["cached_tokens"] = 0
+                ["delta"] = new JsonObject(),
+                ["finish_reason"] = finishReason
             }
         }
     };
+}
+
+static JsonObject CreateOpenAIUsagePayload(bool includePromptTokenDetails = true)
+{
+    var usage = new JsonObject
+    {
+        ["prompt_tokens"] = 1,
+        ["completion_tokens"] = 1
+    };
+
+    if (includePromptTokenDetails)
+    {
+        usage["prompt_tokens_details"] = new JsonObject
+        {
+            ["cached_tokens"] = 0
+        };
+    }
+
+    return usage;
 }
 
 static async Task RunGrokSmokeTestsAsync()
@@ -2314,6 +2720,110 @@ static async Task RunOpenAISmokeTestsAsync()
         ExpectContains(response, "OPENAI_DI_OK", "The DI-registered OpenAI client did not complete successfully.");
     });
 
+    await RunTestAsync("double-check function execution (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAIJsonResponse(CreateOpenAIToolCallResponsePayload("call_delete_1", "delete_reminder", "{\"reminder_id\":\"42\"}")),
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "Before executing, are you sure the user wants to run this function?", "The local OpenAI double-check follow-up request did not include the confirmation prompt.");
+                return CreateOpenAIJsonResponse(CreateOpenAIToolCallResponsePayload("call_delete_2", "delete_reminder", "{\"reminder_id\":\"42\"}"));
+            },
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "Reminder 42 deleted.", "The local OpenAI double-check final request did not include the function result.");
+                return CreateOpenAIJsonResponse(CreateOpenAITextResponsePayload("Reminder 42 deleted. OPENAI_LOCAL_DOUBLE_CHECK_OK"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 128,
+            Temperature = 0
+        };
+
+        var callbackInvocations = 0;
+        options.AddFunction("DeleteReminder", "Deletes a reminder by id.", true, new FunctionParameter(typeof(string), "reminder_id", "Reminder id."));
+        options.DefaultFunctionCallback = (_, arguments, _) =>
+        {
+            callbackInvocations++;
+            ExpectContains(arguments, "42", "The local OpenAI double-check callback received the wrong arguments.");
+            return ValueTask.FromResult<object?>("Reminder 42 deleted.");
+        };
+
+        var response = await client.CompleteAsync("Delete reminder 42. If the tool asks you to confirm first, confirm and let it run again. End with OPENAI_LOCAL_DOUBLE_CHECK_OK.", options);
+
+        if (handler.Requests.Count != 3)
+        {
+            throw new InvalidOperationException($"The local OpenAI double-check flow made {handler.Requests.Count} requests instead of 3.");
+        }
+
+        if (callbackInvocations != 1)
+        {
+            throw new InvalidOperationException($"The local OpenAI double-check callback ran {callbackInvocations} times instead of once.");
+        }
+
+        ExpectContains(response, "OPENAI_LOCAL_DOUBLE_CHECK_OK", "The local OpenAI double-check flow did not return the expected marker.");
+    });
+
+    await RunTestAsync("assistant text preserved before tool follow-up (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAIJsonResponse(CreateOpenAIToolCallResponsePayload(
+                "call_weather",
+                "get_city_temperature",
+                "{\"city\":\"Warsaw\"}",
+                text: "Let me check that first.")),
+            (request, _) =>
+            {
+                ExpectContains(request.Content, "Let me check that first.", "The local OpenAI follow-up request omitted assistant text emitted before the tool call.");
+                ExpectContains(request.Content, "Warsaw is 21 C.", "The local OpenAI follow-up request omitted the tool result.");
+                return CreateOpenAIJsonResponse(CreateOpenAITextResponsePayload("Warsaw is 21 C. OPENAI_LOCAL_TEXT_TOOL_OK"));
+            }
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 128,
+            Temperature = 0
+        };
+
+        options.AddFunction("GetCityTemperature", "Returns the temperature for a city.", new FunctionParameter(typeof(string), "city", "City name."));
+        options.DefaultFunctionCallback = (_, arguments, _) =>
+        {
+            ExpectContains(arguments, "Warsaw", "The local OpenAI text-before-tool callback received the wrong arguments.");
+            return ValueTask.FromResult<object?>("Warsaw is 21 C.");
+        };
+
+        var response = await client.CompleteAsync("Call GetCityTemperature for Warsaw and end with OPENAI_LOCAL_TEXT_TOOL_OK.", options);
+
+        if (handler.Requests.Count != 2)
+        {
+            throw new InvalidOperationException($"The local OpenAI text-before-tool flow made {handler.Requests.Count} requests instead of 2.");
+        }
+
+        ExpectContains(response, "Let me check that first.", "The local OpenAI text-before-tool flow dropped the assistant text emitted before the tool call.");
+        ExpectContains(response, "OPENAI_LOCAL_TEXT_TOOL_OK", "The local OpenAI text-before-tool flow did not return the expected marker.");
+    });
+
     await RunTestAsync("streaming multi-tool aggregation (local)", async () =>
     {
         var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
@@ -2426,6 +2936,70 @@ static async Task RunOpenAISmokeTestsAsync()
         ExpectContains(streamedBuilder.ToString(), "No tool call succeeded; provide required parameters or respond directly.", "The local OpenAI failed-tool streaming flow did not emit the fallback message.");
     });
 
+    await RunTestAsync("empty response throws (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAIJsonResponse(CreateOpenAIEmptyResponsePayload())
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 64,
+            Temperature = 0
+        };
+
+        _ = await ExpectThrowsAsync<InvalidOperationException>(() => client.CompleteAsync("Reply with anything.", options), "OpenAI returned no assistant content");
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local OpenAI empty-response flow made {handler.Requests.Count} requests instead of 1.");
+        }
+    });
+
+    await RunTestAsync("empty streaming response throws (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAISseResponse(CreateOpenAIStreamFinishChunk())
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 64,
+            Temperature = 0
+        };
+
+        _ = await ExpectThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var chunk in client.StreamCompletionAsync("Reply with anything.", options))
+            {
+                _ = chunk;
+            }
+        }, "OpenAI returned no streamed assistant content");
+
+        if (handler.Requests.Count != 1)
+        {
+            throw new InvalidOperationException($"The local OpenAI empty-stream flow made {handler.Requests.Count} requests instead of 1.");
+        }
+    });
+
     await RunTestAsync("structured follow-up request shaping (local)", async () =>
     {
         var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
@@ -2517,6 +3091,75 @@ static async Task RunOpenAISmokeTestsAsync()
         ExpectContains(response, "OPENAI_LOCAL_SYSTEM_OK", "The local OpenAI developer-role flow did not return the expected marker.");
     });
 
+    await RunTestAsync("usage without prompt token details (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAIJsonResponse(CreateOpenAITextResponsePayload("OPENAI_LOCAL_USAGE_OK", includePromptTokenDetails: false))
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var usageTracker = new TokenUsageTracker();
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 64,
+            Temperature = 0
+        };
+
+        var response = await client.CompleteAsync("Reply with OPENAI_LOCAL_USAGE_OK.", options, usageTracker);
+        ExpectContains(response, "OPENAI_LOCAL_USAGE_OK", "The local OpenAI usage-regression flow did not return the expected marker.");
+
+        if (usageTracker.PromptTokens != 1 || usageTracker.CompletionTokens != 1 || usageTracker.CachedTokens != 0)
+        {
+            throw new InvalidOperationException($"The local OpenAI usage-regression flow recorded unexpected token counts: prompt={usageTracker.PromptTokens}, cached={usageTracker.CachedTokens}, completion={usageTracker.CompletionTokens}.");
+        }
+    });
+
+    await RunTestAsync("streaming usage without prompt token details (local)", async () =>
+    {
+        var handler = new SequenceHttpMessageHandler(new Func<RecordedHttpRequest, int, HttpResponseMessage>[]
+        {
+            (_, _) => CreateOpenAISseResponse(
+                CreateOpenAIStreamTextChunk("OPENAI_LOCAL_STREAM_USAGE_OK"),
+                CreateOpenAIStreamUsageChunk(includePromptTokenDetails: false))
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromMinutes(1)
+        };
+
+        var client = CreateOpenAIOfflineClient(httpClient);
+        var usageTracker = new TokenUsageTracker();
+        var options = new ChatAIze.GenerativeCS.Options.OpenAI.ChatCompletionOptions
+        {
+            Model = ChatCompletionModels.OpenAI.GPT54,
+            MaxAttempts = 1,
+            MaxOutputTokens = 64,
+            Temperature = 0
+        };
+
+        var streamedBuilder = new StringBuilder();
+        await foreach (var chunk in client.StreamCompletionAsync("Reply with OPENAI_LOCAL_STREAM_USAGE_OK.", options, usageTracker))
+        {
+            _ = streamedBuilder.Append(chunk);
+        }
+
+        ExpectContains(streamedBuilder.ToString(), "OPENAI_LOCAL_STREAM_USAGE_OK", "The local OpenAI streaming usage-regression flow did not return the expected marker.");
+
+        if (usageTracker.PromptTokens != 1 || usageTracker.CompletionTokens != 1 || usageTracker.CachedTokens != 0)
+        {
+            throw new InvalidOperationException($"The local OpenAI streaming usage-regression flow recorded unexpected token counts: prompt={usageTracker.PromptTokens}, cached={usageTracker.CachedTokens}, completion={usageTracker.CompletionTokens}.");
+        }
+    });
+
     Console.WriteLine();
     Console.WriteLine("OpenAI smoke tests passed.");
 }
@@ -2543,6 +3186,26 @@ static void ExpectContainsNormalizedNumber(string value, string expectedDigits, 
     {
         throw new InvalidOperationException($"{failureMessage} Actual response: {value}");
     }
+}
+
+static async Task<TException> ExpectThrowsAsync<TException>(Func<Task> action, string? expectedMessageSubstring = null)
+    where TException : Exception
+{
+    try
+    {
+        await action();
+    }
+    catch (TException exception)
+    {
+        if (!string.IsNullOrWhiteSpace(expectedMessageSubstring))
+        {
+            ExpectContains(exception.Message, expectedMessageSubstring, $"The thrown {typeof(TException).Name} did not include the expected message fragment.");
+        }
+
+        return exception;
+    }
+
+    throw new InvalidOperationException($"Expected {typeof(TException).Name} to be thrown, but no exception was raised.");
 }
 
 file sealed class SequenceHttpMessageHandler(IReadOnlyList<Func<RecordedHttpRequest, int, HttpResponseMessage>> responders) : HttpMessageHandler
