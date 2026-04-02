@@ -654,14 +654,19 @@ internal static class ChatCompletion
             foreach (var function in options.Functions)
             {
                 var functionObject = SchemaSerializer.SerializeFunction(function, useOpenAIFeatures: false, isStrictModeOn: false);
-                var inputSchema = functionObject["parameters"];
+                var inputSchema = functionObject["parameters"] as JsonObject;
                 _ = functionObject.Remove("parameters");
 
-                if (inputSchema is JsonObject inputSchemaObject)
+                // Anthropic requires an input_schema for every tool, even when the tool
+                // takes no arguments. Represent parameterless tools as an empty object schema.
+                var inputSchemaObject = inputSchema ?? new JsonObject
                 {
-                    SchemaSerializer.SanitizeForClaudeStructuredOutputs(inputSchemaObject);
-                    functionObject["input_schema"] = inputSchemaObject;
-                }
+                    ["type"] = "object",
+                    ["properties"] = new JsonObject()
+                };
+
+                SchemaSerializer.SanitizeForClaudeStructuredOutputs(inputSchemaObject);
+                functionObject["input_schema"] = inputSchemaObject;
 
                 if (options.IsStrictFunctionCallingOn)
                 {

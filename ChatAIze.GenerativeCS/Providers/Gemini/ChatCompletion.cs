@@ -649,7 +649,7 @@ internal static class ChatCompletion
             generationConfig["stop_sequences"] = stopSequences;
         }
 
-        var thinkingConfig = CreateThinkingConfig(options);
+        var thinkingConfig = CreateThinkingConfig(options, options.Model);
         if (thinkingConfig is not null)
         {
             generationConfig["thinking_config"] = thinkingConfig;
@@ -668,31 +668,96 @@ internal static class ChatCompletion
         return generationConfig;
     }
 
-    private static JsonObject? CreateThinkingConfig<TMessage, TFunctionCall, TFunctionResult>(ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options)
+    private static JsonObject? CreateThinkingConfig<TMessage, TFunctionCall, TFunctionResult>(ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> options, string model)
         where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
         where TFunctionCall : IFunctionCall
         where TFunctionResult : IFunctionResult
     {
         var thinkingConfig = new JsonObject();
-        var thinkingLevel = options.ThinkingLevel ?? options.ReasoningEffort switch
-        {
-            ReasoningEffort.Low => "low",
-            ReasoningEffort.Medium => "medium",
-            ReasoningEffort.High => "high",
-            _ => null
-        };
 
+        if (options.ThinkingBudget.HasValue)
+        {
+            thinkingConfig["thinking_budget"] = options.ThinkingBudget.Value;
+            return thinkingConfig;
+        }
+
+        // Gemini 2.5 models currently use thinking_budget rather than thinking_level,
+        // while Gemini 3 models use thinking_level. Avoid auto-sending unsupported
+        // fields so callers can switch model families without hitting hard 400s.
+        if (UsesThinkingBudget(model))
+        {
+            var thinkingBudget = options.ThinkingLevel is null
+                ? MapThinkingBudget(options.ReasoningEffort, model)
+                : MapThinkingBudget(options.ThinkingLevel, model);
+
+            if (thinkingBudget.HasValue)
+            {
+                thinkingConfig["thinking_budget"] = thinkingBudget.Value;
+            }
+
+            return thinkingConfig.Count == 0 ? null : thinkingConfig;
+        }
+
+        var thinkingLevel = options.ThinkingLevel ?? MapThinkingLevel(options.ReasoningEffort);
         if (!string.IsNullOrWhiteSpace(thinkingLevel))
         {
             thinkingConfig["thinking_level"] = thinkingLevel;
         }
 
-        if (options.ThinkingBudget.HasValue)
+        return thinkingConfig.Count == 0 ? null : thinkingConfig;
+    }
+
+    private static string? MapThinkingLevel(ReasoningEffort effort)
+    {
+        return effort switch
         {
-            thinkingConfig["thinking_budget"] = options.ThinkingBudget.Value;
+            ReasoningEffort.Minimal => "low",
+            ReasoningEffort.Low => "low",
+            ReasoningEffort.Medium => "medium",
+            ReasoningEffort.High => "high",
+            _ => null
+        };
+    }
+
+    private static int? MapThinkingBudget(ReasoningEffort effort, string model)
+    {
+        return effort switch
+        {
+            ReasoningEffort.None => CanDisableThinking(model) ? 0 : null,
+            ReasoningEffort.Minimal => 1024,
+            ReasoningEffort.Low => 1024,
+            ReasoningEffort.Medium => 8192,
+            ReasoningEffort.High => 24576,
+            _ => null
+        };
+    }
+
+    private static int? MapThinkingBudget(string thinkingLevel, string model)
+    {
+        if (string.IsNullOrWhiteSpace(thinkingLevel))
+        {
+            return null;
         }
 
-        return thinkingConfig.Count == 0 ? null : thinkingConfig;
+        return thinkingLevel.Trim().ToLowerInvariant() switch
+        {
+            "none" => CanDisableThinking(model) ? 0 : null,
+            "minimal" => 1024,
+            "low" => 1024,
+            "medium" => 8192,
+            "high" => 24576,
+            _ => null
+        };
+    }
+
+    private static bool UsesThinkingBudget(string model)
+    {
+        return model.StartsWith("gemini-2.5", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool CanDisableThinking(string model)
+    {
+        return !model.StartsWith("gemini-2.5-pro", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<JsonArray> CreatePartsAsync<TMessage, TFunctionCall, TFunctionResult>(

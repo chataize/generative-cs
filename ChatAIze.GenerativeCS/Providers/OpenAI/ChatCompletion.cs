@@ -708,6 +708,7 @@ internal static class ChatCompletion
                 }
 
                 var functionObject = SchemaSerializer.SerializeFunction(function, useOpenAIFeatures: true, options.IsStrictFunctionCallingOn);
+                EnsureFunctionParameters(functionObject);
                 var toolObject = new JsonObject
                 {
                     ["type"] = "function",
@@ -722,6 +723,24 @@ internal static class ChatCompletion
         }
 
         return requestObject;
+    }
+
+    /// <summary>
+    /// Some OpenAI-compatible providers reject parameterless tools unless an explicit empty schema is supplied.
+    /// </summary>
+    private static void EnsureFunctionParameters(JsonObject functionObject)
+    {
+        if (functionObject["parameters"] is not null)
+        {
+            return;
+        }
+
+        functionObject["parameters"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["properties"] = new JsonObject(),
+            ["additionalProperties"] = true
+        };
     }
 
     /// <summary>
