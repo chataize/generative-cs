@@ -1,10 +1,10 @@
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Enums;
 
-namespace ChatAIze.GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.Gemini;
 
 /// <summary>
-/// Configures speech translation requests.
+/// Configures Gemini audio translation requests built on top of audio understanding.
 /// </summary>
 public record TranslationOptions
 {
@@ -22,8 +22,7 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets the model identifier used for translation.
     /// </summary>
-    /// <remarks>The dedicated translation endpoint currently defaults to <see cref="SpeechRecognitionModels.OpenAI.Whisper1"/>.</remarks>
-    public string Model { get; set; } = DefaultModels.OpenAI.SpeechTranslation;
+    public string Model { get; set; } = DefaultModels.Gemini.SpeechTranslation;
 
     /// <summary>
     /// Gets or sets an optional API key that overrides the client-level key.
@@ -33,8 +32,13 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets an optional prompt to guide translation.
     /// </summary>
-    /// <remarks>Useful for steering tone or providing glossary hints.</remarks>
     public string? Prompt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target language.
+    /// </summary>
+    /// <remarks>Defaults to English to match the OpenAI translation endpoint.</remarks>
+    public string TargetLanguage { get; set; } = "English";
 
     /// <summary>
     /// Gets or sets the sampling temperature.
@@ -49,6 +53,5 @@ public record TranslationOptions
     /// <summary>
     /// Gets or sets the desired translation response format.
     /// </summary>
-    /// <remarks>Use JSON variants to retrieve richer metadata; text returns plain translated content.</remarks>
     public TranscriptionResponseFormat ResponseFormat { get; set; } = TranscriptionResponseFormat.Text;
 }

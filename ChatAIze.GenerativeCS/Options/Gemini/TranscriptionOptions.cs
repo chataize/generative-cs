@@ -1,29 +1,28 @@
 using ChatAIze.GenerativeCS.Constants;
 using ChatAIze.GenerativeCS.Enums;
 
-namespace ChatAIze.GenerativeCS.Options.OpenAI;
+namespace ChatAIze.GenerativeCS.Options.Gemini;
 
 /// <summary>
-/// Configures speech translation requests.
+/// Configures Gemini audio transcription requests built on top of audio understanding.
 /// </summary>
-public record TranslationOptions
+public record TranscriptionOptions
 {
     /// <summary>
-    /// Initializes translation options.
+    /// Initializes transcription options.
     /// </summary>
-    /// <param name="prompt">Optional prompt to guide translation.</param>
+    /// <param name="language">Optional expected language hint.</param>
     /// <param name="apiKey">Optional API key overriding the client default.</param>
-    public TranslationOptions(string? prompt = null, string? apiKey = null)
+    public TranscriptionOptions(string? language = null, string? apiKey = null)
     {
-        Prompt = prompt;
+        Language = language;
         ApiKey = apiKey;
     }
 
     /// <summary>
-    /// Gets or sets the model identifier used for translation.
+    /// Gets or sets the model identifier used for transcription.
     /// </summary>
-    /// <remarks>The dedicated translation endpoint currently defaults to <see cref="SpeechRecognitionModels.OpenAI.Whisper1"/>.</remarks>
-    public string Model { get; set; } = DefaultModels.OpenAI.SpeechTranslation;
+    public string Model { get; set; } = DefaultModels.Gemini.SpeechToText;
 
     /// <summary>
     /// Gets or sets an optional API key that overrides the client-level key.
@@ -31,14 +30,19 @@ public record TranslationOptions
     public string? ApiKey { get; set; }
 
     /// <summary>
-    /// Gets or sets an optional prompt to guide translation.
+    /// Gets or sets the expected spoken language of the audio.
     /// </summary>
-    /// <remarks>Useful for steering tone or providing glossary hints.</remarks>
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional prompt to guide transcription.
+    /// </summary>
     public string? Prompt { get; set; }
 
     /// <summary>
     /// Gets or sets the sampling temperature.
     /// </summary>
+    /// <remarks>Only applies when the selected Gemini model honors temperature for the request.</remarks>
     public double Temperature { get; set; }
 
     /// <summary>
@@ -47,8 +51,7 @@ public record TranslationOptions
     public int MaxAttempts { get; set; } = 5;
 
     /// <summary>
-    /// Gets or sets the desired translation response format.
+    /// Gets or sets the desired transcription response format.
     /// </summary>
-    /// <remarks>Use JSON variants to retrieve richer metadata; text returns plain translated content.</remarks>
     public TranscriptionResponseFormat ResponseFormat { get; set; } = TranscriptionResponseFormat.Text;
 }

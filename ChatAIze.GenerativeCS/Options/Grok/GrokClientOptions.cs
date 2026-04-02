@@ -1,15 +1,15 @@
 using ChatAIze.Abstractions.Chat;
 using ChatAIze.GenerativeCS.Models;
 
-namespace ChatAIze.GenerativeCS.Options.Gemini;
+namespace ChatAIze.GenerativeCS.Options.Grok;
 
 /// <summary>
-/// Groups default settings for the <see cref="Clients.GeminiClient{TChat, TMessage, TFunctionCall, TFunctionResult}"/>.
+/// Groups default settings for the <see cref="Clients.GrokClient{TChat, TMessage, TFunctionCall, TFunctionResult}"/>.
 /// </summary>
 /// <typeparam name="TMessage">Message type used in the chat.</typeparam>
 /// <typeparam name="TFunctionCall">Function call type used in the chat.</typeparam>
 /// <typeparam name="TFunctionResult">Function result type used in the chat.</typeparam>
-public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
+public record GrokClientOptions<TMessage, TFunctionCall, TFunctionResult>
     where TMessage : IChatMessage<TFunctionCall, TFunctionResult>
     where TFunctionCall : IFunctionCall
     where TFunctionResult : IFunctionResult
@@ -17,13 +17,13 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
     /// <summary>
     /// Initializes client options with defaults.
     /// </summary>
-    public GeminiClientOptions() { }
+    public GrokClientOptions() { }
 
     /// <summary>
     /// Initializes client options with a specific API key.
     /// </summary>
-    /// <param name="apiKey">Gemini API key.</param>
-    public GeminiClientOptions(string? apiKey)
+    /// <param name="apiKey">Grok API key.</param>
+    public GrokClientOptions(string? apiKey)
     {
         ApiKey = apiKey;
     }
@@ -39,39 +39,24 @@ public record GeminiClientOptions<TMessage, TFunctionCall, TFunctionResult>
     public ChatCompletionOptions<TMessage, TFunctionCall, TFunctionResult> DefaultCompletionOptions { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the default embedding options.
-    /// </summary>
-    public EmbeddingOptions DefaultEmbeddingOptions { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the default text-to-speech options.
     /// </summary>
     public TextToSpeechOptions DefaultTextToSpeechOptions { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the default transcription options.
-    /// </summary>
-    public TranscriptionOptions DefaultTranscriptionOptions { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the default translation options.
-    /// </summary>
-    public TranslationOptions DefaultTranslationOptions { get; set; } = new();
 }
 
 /// <summary>
-/// Non-generic Gemini client options using the built-in chat models.
+/// Non-generic Grok client options using the built-in chat models.
 /// </summary>
-public record GeminiClientOptions : GeminiClientOptions<ChatMessage, FunctionCall, FunctionResult>
+public record GrokClientOptions : GrokClientOptions<ChatMessage, FunctionCall, FunctionResult>
 {
     /// <summary>
     /// Initializes client options with defaults.
     /// </summary>
-    public GeminiClientOptions() : base() { }
+    public GrokClientOptions() : base() { }
 
     /// <summary>
     /// Initializes client options with a specific API key.
     /// </summary>
-    /// <param name="apiKey">Gemini API key.</param>
-    public GeminiClientOptions(string? apiKey) : base(apiKey) { }
+    /// <param name="apiKey">Grok API key.</param>
+    public GrokClientOptions(string? apiKey) : base(apiKey) { }
 }

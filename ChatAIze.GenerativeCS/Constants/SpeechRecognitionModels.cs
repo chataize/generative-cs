@@ -6,6 +6,22 @@ namespace ChatAIze.GenerativeCS.Constants;
 public static class SpeechRecognitionModels
 {
     /// <summary>
+    /// Gemini models commonly used for audio understanding.
+    /// </summary>
+    public static class Gemini
+    {
+        /// <summary>
+        /// Stable model identifier for gemini-2.5-flash.
+        /// </summary>
+        public const string Gemini25Flash = ChatCompletionModels.Gemini.Gemini25Flash;
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash.
+        /// </summary>
+        public const string Gemini20Flash = ChatCompletionModels.Gemini.Gemini20Flash;
+    }
+
+    /// <summary>
     /// OpenAI speech recognition models.
     /// </summary>
     public static class OpenAI

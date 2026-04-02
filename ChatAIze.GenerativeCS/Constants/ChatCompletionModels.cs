@@ -359,6 +359,81 @@ public static class ChatCompletionModels
     public static class Gemini
     {
         /// <summary>
+        /// Stable model identifier for gemini-2.5-flash.
+        /// </summary>
+        public const string Gemini25Flash = "gemini-2.5-flash";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.5-pro.
+        /// </summary>
+        public const string Gemini25Pro = "gemini-2.5-pro";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash.
+        /// </summary>
+        public const string Gemini20Flash = "gemini-2.0-flash";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-001.
+        /// </summary>
+        public const string Gemini20Flash001 = "gemini-2.0-flash-001";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-lite.
+        /// </summary>
+        public const string Gemini20FlashLite = "gemini-2.0-flash-lite";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.0-flash-lite-001.
+        /// </summary>
+        public const string Gemini20FlashLite001 = "gemini-2.0-flash-lite-001";
+
+        /// <summary>
+        /// Stable model identifier for gemini-2.5-flash-lite.
+        /// </summary>
+        public const string Gemini25FlashLite = "gemini-2.5-flash-lite";
+
+        /// <summary>
+        /// Alias model identifier for gemini-flash-latest.
+        /// </summary>
+        public const string GeminiFlashLatest = "gemini-flash-latest";
+
+        /// <summary>
+        /// Alias model identifier for gemini-flash-lite-latest.
+        /// </summary>
+        public const string GeminiFlashLiteLatest = "gemini-flash-lite-latest";
+
+        /// <summary>
+        /// Alias model identifier for gemini-pro-latest.
+        /// </summary>
+        public const string GeminiProLatest = "gemini-pro-latest";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3-flash-preview.
+        /// </summary>
+        public const string Gemini3FlashPreview = "gemini-3-flash-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3-pro-preview.
+        /// </summary>
+        public const string Gemini3ProPreview = "gemini-3-pro-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-pro-preview.
+        /// </summary>
+        public const string Gemini31ProPreview = "gemini-3.1-pro-preview";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-pro-preview-customtools.
+        /// </summary>
+        public const string Gemini31ProPreviewCustomTools = "gemini-3.1-pro-preview-customtools";
+
+        /// <summary>
+        /// Preview model identifier for gemini-3.1-flash-lite-preview.
+        /// </summary>
+        public const string Gemini31FlashLitePreview = "gemini-3.1-flash-lite-preview";
+
+        /// <summary>
         /// Model identifier for gemini-1.5-pro-002.
         /// </summary>
         public const string Gemini15Pro002 = "gemini-1.5-pro-002";
@@ -417,5 +492,92 @@ public static class ChatCompletionModels
         /// Model identifier for gemini-1.0-pro.
         /// </summary>
         public const string Gemini10Pro = "gemini-1.0-pro";
+    }
+
+    /// <summary>
+    /// Claude chat completion model identifiers.
+    /// </summary>
+    public static class Claude
+    {
+        /// <summary>
+        /// Model identifier for claude-opus-4-6.
+        /// </summary>
+        public const string Opus46 = "claude-opus-4-6";
+
+        /// <summary>
+        /// Model identifier for claude-sonnet-4-6.
+        /// </summary>
+        public const string Sonnet46 = "claude-sonnet-4-6";
+
+        /// <summary>
+        /// Snapshot model identifier for claude-haiku-4-5-20251001.
+        /// </summary>
+        public const string Haiku4520251001 = "claude-haiku-4-5-20251001";
+
+        /// <summary>
+        /// Alias model identifier for claude-haiku-4-5.
+        /// </summary>
+        public const string Haiku45 = "claude-haiku-4-5";
+    }
+
+    /// <summary>
+    /// xAI Grok chat completion model identifiers.
+    /// </summary>
+    public static class Grok
+    {
+        /// <summary>
+        /// Model identifier for grok-3.
+        /// </summary>
+        public const string Grok3 = "grok-3";
+
+        /// <summary>
+        /// Model identifier for grok-3-mini.
+        /// </summary>
+        public const string Grok3Mini = "grok-3-mini";
+
+        /// <summary>
+        /// Model identifier for grok-4-0709.
+        /// </summary>
+        public const string Grok40709 = "grok-4-0709";
+
+        /// <summary>
+        /// Model identifier for grok-4-1-fast-non-reasoning.
+        /// </summary>
+        public const string Grok41FastNonReasoning = "grok-4-1-fast-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-1-fast-reasoning.
+        /// </summary>
+        public const string Grok41FastReasoning = "grok-4-1-fast-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-fast-non-reasoning.
+        /// </summary>
+        public const string Grok4FastNonReasoning = "grok-4-fast-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4-fast-reasoning.
+        /// </summary>
+        public const string Grok4FastReasoning = "grok-4-fast-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-0309-non-reasoning.
+        /// </summary>
+        public const string Grok4200309NonReasoning = "grok-4.20-0309-non-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-0309-reasoning.
+        /// </summary>
+        public const string Grok4200309Reasoning = "grok-4.20-0309-reasoning";
+
+        /// <summary>
+        /// Model identifier for grok-4.20-multi-agent-0309.
+        /// </summary>
+        public const string Grok420MultiAgent0309 = "grok-4.20-multi-agent-0309";
+
+        /// <summary>
+        /// Model identifier for grok-code-fast-1.
+        /// </summary>
+        public const string GrokCodeFast1 = "grok-code-fast-1";
     }
 }

@@ -34,6 +34,12 @@ public static class DefaultModels
         public const string SpeechToText = SpeechRecognitionModels.OpenAI.GPT4oTranscribe;
 
         /// <summary>
+        /// Default speech-translation model.
+        /// </summary>
+        /// <remarks>OpenAI currently only supports <c>whisper-1</c> on the dedicated translation endpoint.</remarks>
+        public const string SpeechTranslation = SpeechRecognitionModels.OpenAI.Whisper1;
+
+        /// <summary>
         /// Default moderation model.
         /// </summary>
         public const string Moderation = ModerationModels.OpenAI.OmniModerationLatest;
@@ -47,6 +53,51 @@ public static class DefaultModels
         /// <summary>
         /// Default chat completion model.
         /// </summary>
-        public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini15Flash;
+        public const string ChatCompletion = ChatCompletionModels.Gemini.Gemini25Flash;
+
+        /// <summary>
+        /// Default embedding model.
+        /// </summary>
+        public const string Embedding = EmbeddingModels.Gemini.GeminiEmbedding001;
+
+        /// <summary>
+        /// Default text-to-speech model.
+        /// </summary>
+        public const string TextToSpeech = TextToSpeechModels.Gemini.Gemini25FlashPreviewTTS;
+
+        /// <summary>
+        /// Default speech-to-text model.
+        /// </summary>
+        public const string SpeechToText = SpeechRecognitionModels.Gemini.Gemini25Flash;
+
+        /// <summary>
+        /// Default speech-translation model.
+        /// </summary>
+        public const string SpeechTranslation = SpeechRecognitionModels.Gemini.Gemini25Flash;
+    }
+
+    /// <summary>
+    /// Default Claude model identifiers.
+    /// </summary>
+    public static class Claude
+    {
+        /// <summary>
+        /// Default chat completion model.
+        /// </summary>
+        /// <remarks>Favours Anthropic's current speed and capability balance for general-purpose chat workloads.</remarks>
+        public const string ChatCompletion = ChatCompletionModels.Claude.Sonnet46;
+
+    }
+
+    /// <summary>
+    /// Default Grok model identifiers.
+    /// </summary>
+    public static class Grok
+    {
+        /// <summary>
+        /// Default chat completion model.
+        /// </summary>
+        /// <remarks>Favours xAI's current fast non-reasoning Grok 4.1 variant for general-purpose assistant workloads.</remarks>
+        public const string ChatCompletion = ChatCompletionModels.Grok.Grok41FastNonReasoning;
     }
 }

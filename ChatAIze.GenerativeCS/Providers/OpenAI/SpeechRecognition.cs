@@ -17,10 +17,11 @@ internal static class SpeechRecognition
     /// <param name="audio">Audio payload.</param>
     /// <param name="apiKey">API key used for the request.</param>
     /// <param name="options">Optional transcription options.</param>
+    /// <param name="fileName">Logical file name sent to the provider for content-type inference.</param>
     /// <param name="httpClient">HTTP client to use.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Text transcript of the audio.</returns>
-    internal static async Task<string> TranscriptAsync(byte[] audio, string? apiKey, TranscriptionOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> TranscriptAsync(byte[] audio, string? apiKey, TranscriptionOptions? options = null, string fileName = "audio.mp3", HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new()
@@ -33,7 +34,7 @@ internal static class SpeechRecognition
             apiKey = options.ApiKey;
         }
 
-        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", () => CreateTranscriptionRequest(audio, options), apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/transcriptions", () => CreateTranscriptionRequest(audio, options, fileName), apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -44,10 +45,11 @@ internal static class SpeechRecognition
     /// <param name="audio">Audio payload.</param>
     /// <param name="apiKey">API key used for the request.</param>
     /// <param name="options">Optional translation options.</param>
+    /// <param name="fileName">Logical file name sent to the provider for content-type inference.</param>
     /// <param name="httpClient">HTTP client to use.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Translated text.</returns>
-    internal static async Task<string> TranslateAsync(byte[] audio, string? apiKey, TranslationOptions? options = null, HttpClient? httpClient = null, CancellationToken cancellationToken = default)
+    internal static async Task<string> TranslateAsync(byte[] audio, string? apiKey, TranslationOptions? options = null, string fileName = "audio.mp3", HttpClient? httpClient = null, CancellationToken cancellationToken = default)
     {
         options ??= new();
         httpClient ??= new()
@@ -60,7 +62,7 @@ internal static class SpeechRecognition
             apiKey = options.ApiKey;
         }
 
-        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", () => CreateTranslationRequest(audio, options), apiKey, options.MaxAttempts, cancellationToken);
+        using var response = await httpClient.RepeatPostAsync("https://api.openai.com/v1/audio/translations", () => CreateTranslationRequest(audio, options, fileName), apiKey, options.MaxAttempts, cancellationToken);
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
@@ -70,15 +72,15 @@ internal static class SpeechRecognition
     /// </summary>
     /// <param name="audio">Audio payload.</param>
     /// <param name="options">Transcription options.</param>
+    /// <param name="fileName">Logical file name sent to the provider.</param>
     /// <returns>Multipart content ready to send.</returns>
-    private static MultipartFormDataContent CreateTranscriptionRequest(byte[] audio, TranscriptionOptions options)
+    private static MultipartFormDataContent CreateTranscriptionRequest(byte[] audio, TranscriptionOptions options, string fileName)
     {
-        var fileContent = new ByteArrayContent(audio);
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+        var fileContent = CreateAudioFileContent(audio, fileName);
 
         var content = new MultipartFormDataContent
         {
-            { fileContent, "file", Path.GetFileName("audio.mp3") },
+            { fileContent, "file", fileName },
             { new StringContent(options.Model), "model" }
         };
 
@@ -111,15 +113,15 @@ internal static class SpeechRecognition
     /// </summary>
     /// <param name="audio">Audio payload.</param>
     /// <param name="options">Translation options.</param>
+    /// <param name="fileName">Logical file name sent to the provider.</param>
     /// <returns>Multipart content ready to send.</returns>
-    private static MultipartFormDataContent CreateTranslationRequest(byte[] audio, TranslationOptions options)
+    private static MultipartFormDataContent CreateTranslationRequest(byte[] audio, TranslationOptions options, string fileName)
     {
-        var fileContent = new ByteArrayContent(audio);
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+        var fileContent = CreateAudioFileContent(audio, fileName);
 
         var content = new MultipartFormDataContent
         {
-            { fileContent, "file", Path.GetFileName("audio.mp3") },
+            { fileContent, "file", fileName },
             { new StringContent(options.Model), "model" }
         };
 
@@ -154,5 +156,43 @@ internal static class SpeechRecognition
         }
 
         return format.ToString().ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Creates the file part for audio uploads with a media type that matches the supplied file extension.
+    /// </summary>
+    /// <param name="audio">Audio bytes to upload.</param>
+    /// <param name="fileName">Logical file name for the upload.</param>
+    /// <returns>Configured byte-array content for the multipart request.</returns>
+    private static ByteArrayContent CreateAudioFileContent(byte[] audio, string fileName)
+    {
+        var normalizedFileName = string.IsNullOrWhiteSpace(fileName) ? "audio.mp3" : Path.GetFileName(fileName);
+        var fileContent = new ByteArrayContent(audio);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(GetAudioContentType(normalizedFileName));
+
+        return fileContent;
+    }
+
+    /// <summary>
+    /// Maps supported audio file extensions to the content types expected by the provider.
+    /// </summary>
+    /// <param name="fileName">Logical file name for the upload.</param>
+    /// <returns>HTTP content type for the audio payload.</returns>
+    private static string GetAudioContentType(string fileName)
+    {
+        return Path.GetExtension(fileName).ToLowerInvariant() switch
+        {
+            ".flac" => "audio/flac",
+            ".m4a" => "audio/mp4",
+            ".mp3" => "audio/mpeg",
+            ".mp4" => "audio/mp4",
+            ".mpeg" => "audio/mpeg",
+            ".mpga" => "audio/mpeg",
+            ".oga" => "audio/ogg",
+            ".ogg" => "audio/ogg",
+            ".wav" => "audio/wav",
+            ".webm" => "audio/webm",
+            _ => "application/octet-stream"
+        };
     }
 }
