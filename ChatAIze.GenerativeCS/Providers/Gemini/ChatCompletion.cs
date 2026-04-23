@@ -111,7 +111,7 @@ internal static class ChatCompletion
                 if (partElement.TryGetProperty("text", out var textElement))
                 {
                     var text = textElement.GetString();
-                    if (!string.IsNullOrWhiteSpace(text))
+                    if (!string.IsNullOrEmpty(text))
                     {
                         _ = textBuilder.Append(text);
                         textParts.Add(CloneNode(partElement));
@@ -312,7 +312,7 @@ internal static class ChatCompletion
                 if (partElement.TryGetProperty("text", out var textElement))
                 {
                     var text = textElement.GetString();
-                    if (!string.IsNullOrWhiteSpace(text))
+                    if (!string.IsNullOrEmpty(text))
                     {
                         _ = textBuilder.Append(text);
                         textParts.Add(CloneNode(partElement));

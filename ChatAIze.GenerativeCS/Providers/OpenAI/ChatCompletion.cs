@@ -311,7 +311,9 @@ internal static class ChatCompletion
             if (delta.TryGetProperty("content", out var contentProperty) && contentProperty.ValueKind != JsonValueKind.Null)
             {
                 var content = ExtractMessageText(contentProperty);
-                if (!string.IsNullOrWhiteSpace(content))
+                // Providers may emit standalone space tokens (for example between a word and a number),
+                // so preserve any non-empty chunk instead of discarding whitespace-only deltas.
+                if (!string.IsNullOrEmpty(content))
                 {
                     _ = entireContent.Append(content);
                     yield return content;
@@ -321,7 +323,7 @@ internal static class ChatCompletion
             if (delta.TryGetProperty("refusal", out var refusalProperty) && refusalProperty.ValueKind != JsonValueKind.Null)
             {
                 var refusal = ExtractMessageText(refusalProperty);
-                if (!string.IsNullOrWhiteSpace(refusal))
+                if (!string.IsNullOrEmpty(refusal))
                 {
                     _ = entireContent.Append(refusal);
                     yield return refusal;
@@ -924,7 +926,7 @@ internal static class ChatCompletion
             case JsonValueKind.String:
             {
                 var value = contentElement.GetString();
-                if (!string.IsNullOrWhiteSpace(value))
+                if (!string.IsNullOrEmpty(value))
                 {
                     _ = builder.Append(value);
                 }
@@ -943,7 +945,7 @@ internal static class ChatCompletion
                     if (partElement.TryGetProperty("text", out var textElement) && textElement.ValueKind == JsonValueKind.String)
                     {
                         var text = textElement.GetString();
-                        if (!string.IsNullOrWhiteSpace(text))
+                        if (!string.IsNullOrEmpty(text))
                         {
                             _ = builder.Append(text);
                         }
@@ -954,7 +956,7 @@ internal static class ChatCompletion
                     if (partElement.TryGetProperty("refusal", out var refusalElement) && refusalElement.ValueKind == JsonValueKind.String)
                     {
                         var refusal = refusalElement.GetString();
-                        if (!string.IsNullOrWhiteSpace(refusal))
+                        if (!string.IsNullOrEmpty(refusal))
                         {
                             _ = builder.Append(refusal);
                         }

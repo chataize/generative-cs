@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>Generative CS Tests</Title>
+    <Product>Generative CS</Product>
+    <Version>0.1.0</Version>
+    <Company>ChatAIze</Company>
+    <Authors>Marcel Kwiatkowski</Authors>
+    <Copyright>© ChatAIze 2025</Copyright>
+    <AssemblyName>ChatAIze.GenerativeCS.Tests</AssemblyName>
+    <RootNamespace>ChatAIze.GenerativeCS.Tests</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ChatAIze.GenerativeCS\ChatAIze.GenerativeCS.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+</Project>

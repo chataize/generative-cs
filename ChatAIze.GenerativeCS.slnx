@@ -1,4 +1,5 @@
 ﻿<Solution>
   <Project Path="ChatAIze.GenerativeCS/ChatAIze.GenerativeCS.csproj" />
   <Project Path="ChatAIze.GenerativeCS.Preview/ChatAIze.GenerativeCS.Preview.csproj" />
+  <Project Path="ChatAIze.GenerativeCS.Tests/ChatAIze.GenerativeCS.Tests.csproj" />
 </Solution>
