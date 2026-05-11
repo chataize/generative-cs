@@ -13,6 +13,16 @@ public static class ChatCompletionModels
         // Keep this list scoped to model IDs OpenAI still documents for chat-completions use.
         // Exclude IDs that are Responses-only, legacy-Completions-only, or already shut down.
         /// <summary>
+        /// Model identifier for gpt-5.5.
+        /// </summary>
+        public const string GPT55 = "gpt-5.5";
+
+        /// <summary>
+        /// Model identifier for gpt-5.5-2026-04-23.
+        /// </summary>
+        public const string GPT5520260423 = "gpt-5.5-2026-04-23";
+
+        /// <summary>
         /// Model identifier for gpt-5.4.
         /// </summary>
         public const string GPT54 = "gpt-5.4";

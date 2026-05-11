@@ -747,6 +747,7 @@ internal static class ChatCompletion
             ReasoningEffort.Low => "low",
             ReasoningEffort.Medium => "medium",
             ReasoningEffort.High => "high",
+            ReasoningEffort.XHigh => "high",
             _ => null
         };
     }

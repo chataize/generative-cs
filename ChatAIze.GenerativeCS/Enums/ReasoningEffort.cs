@@ -28,5 +28,10 @@ public enum ReasoningEffort
     /// <summary>
     /// High reasoning effort.
     /// </summary>
-    High
+    High,
+
+    /// <summary>
+    /// Extra high reasoning effort.
+    /// </summary>
+    XHigh
 }
